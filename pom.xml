@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2003-2013 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 3 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>maven-parent-pom</artifactId>
+    <groupId>org.exoplatform</groupId>
+    <version>12-SNAPSHOT</version>
+    <relativePath />
+  </parent>
+  <groupId>org.exoplatform.platform</groupId>
+  <artifactId>addons-manager</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>eXo Platform - Add-ons Manager</name>
+  <description>Command line utility to manage Platform add-ons</description>
+  <properties>
+    <commons-cli.version>1.2</commons-cli.version>
+    <junit.version>4.11</junit.version>
+    <groovy.version>2.2.1</groovy.version>
+    <groovy-eclipse-compiler.version>2.7.0-01</groovy-eclipse-compiler.version>
+    <groovy-eclipse-batch.version>2.1.3-01</groovy-eclipse-batch.version>
+    <org.fusesource.jansi.version>1.11</org.fusesource.jansi.version>
+    <platform.version>4.0.3</platform.version>
+    <integration.tests.dir.path>${project.build.directory}/integration-tests</integration.tests.dir.path>
+    <tested.artifact.path>${project.build.directory}/${project.build.finalName}.jar</tested.artifact.path>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>commons-cli</groupId>
+      <artifactId>commons-cli</artifactId>
+      <version>${commons-cli.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy</artifactId>
+      <version>${groovy.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-json</artifactId>
+      <version>${groovy.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-xml</artifactId>
+      <version>${groovy.version}</version>
+    </dependency>
+    <!-- Required for colorized console on windows -->
+    <dependency>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+      <version>${org.fusesource.jansi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <resources>
+      <resource>
+        <filtering>true</filtering>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>**/*.properties</include>
+        </includes>
+      </resource>
+      <resource>
+        <filtering>false</filtering>
+        <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>**/*.properties</exclude>
+        </excludes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-batch</artifactId>
+            <version>${groovy-eclipse-batch.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-compiler</artifactId>
+            <version>${groovy-eclipse-compiler.version}</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <compilerId>groovy-eclipse-compiler</compilerId>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-eclipse-compiler</artifactId>
+        <version>${groovy-eclipse-compiler.version}</version>
+        <extensions>true</extensions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+              <manifestEntries>
+                <Main-Class>org.exoplatform.platform.addon.AddonsManager</Main-Class>
+                <Date>${maven.build.timestamp}</Date>
+                <Implementation-URL>${project.url}</Implementation-URL>
+                <SCM-URL>${project.scm.connection}</SCM-URL>
+                <SCM-Revision>${buildNumber}</SCM-Revision>
+                <Specification-Title>${exo.product.name}</Specification-Title>
+                <Specification-Version>${parsedVersion.majorVersion}.0</Specification-Version>
+                <Specification-Vendor>${project.organization.name}</Specification-Vendor>
+                <Implementation-Title>${project.name}</Implementation-Title>
+                <Implementation-Version>${project.version}</Implementation-Version>
+                <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
+              </manifestEntries>
+            </transformer>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+          </transformers>
+        </configuration>
+      </plugin>
+      <!-- ZIP archive -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>create-zip-package</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assemblies/bundle.xml</descriptor>
+              </descriptors>
+              <appendAssemblyId>false</appendAssemblyId>
+              <attach>true</attach>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <!-- Integration tests -->
+    <profile>
+      <id>run-its</id>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-failsafe-plugin</artifactId>
+              <configuration>
+                <systemPropertyVariables>
+                  <integrationTestsDirPath>${integration.tests.dir.path}</integrationTestsDirPath>
+                  <testedArtifactPath>${tested.artifact.path}</testedArtifactPath>
+                  <platformVersion>${platform.version}</platformVersion>
+                </systemPropertyVariables>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>prepare-integration-tests</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>unpack-dependencies</goal>
+                </goals>
+                <configuration>
+                  <includeScope>test</includeScope>
+                  <includeTypes>zip</includeTypes>
+                  <outputDirectory>${integration.tests.dir.path}</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>platform-community-tomcat-its</id>
+      <activation>
+        <property>
+          <name>!platform.distribution</name>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.exoplatform.platform.distributions</groupId>
+          <artifactId>plf-community-tomcat-standalone</artifactId>
+          <version>${platform.version}</version>
+          <type>zip</type>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <!-- You need to have access to eXo private repositories to download these packages -->
+    <profile>
+      <id>platform-enterprise-tomcat-its</id>
+      <activation>
+        <property>
+          <name>platform.distribution</name>
+          <value>platform-enterprise-tomcat</value>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>com.exoplatform.platform.distributions</groupId>
+          <artifactId>plf-enterprise-tomcat-standalone</artifactId>
+          <version>${platform.version}</version>
+          <type>zip</type>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>platform-enterprise-jbosseap-its</id>
+      <activation>
+        <property>
+          <name>platform.distribution</name>
+          <value>platform-enterprise-jbosseap</value>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>com.exoplatform.platform.distributions</groupId>
+          <artifactId>plf-enterprise-jbosseap-standalone</artifactId>
+          <version>${platform.version}</version>
+          <type>zip</type>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+</project>
