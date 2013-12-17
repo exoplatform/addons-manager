@@ -33,7 +33,7 @@ class AddonsManagerIT {
   public File productHome;
 
   @Parameter(1)
-  public String params;
+  public String[] params;
 
   @Parameter(2)
   public int exitCode;
@@ -49,15 +49,15 @@ class AddonsManagerIT {
     def data = new ArrayList<Object[]>()
     integrationTestsDir.eachDir { directory ->
       // Without any param the program must return an error code 1
-      data.add([directory, "", 1] as Object[])
+      data.add([directory, [""] as String[], 1] as Object[])
       // With --help param the program must display the help return 0
-      data.add([directory, "--help", 0] as Object[])
+      data.add([directory, ["--help"] as String[], 0] as Object[])
       // With --list param the program must display the list of available add-ons and return 0
-      data.add([directory, "--list", 0] as Object[])
+      data.add([directory, ["--list"] as String[], 0] as Object[])
       // Install an extension
-      data.add([directory, "--install exo-chat-extension", 0] as Object[])
+      data.add([directory, ["--install", "exo-chat-extension"] as String[], 0] as Object[])
       // Uninstall an extension
-      data.add([directory, "--uninstall exo-chat-extension", 0] as Object[])
+      data.add([directory, ["--uninstall", "exo-chat-extension"] as String[], 0] as Object[])
     }
     return data
   }
@@ -67,11 +67,19 @@ class AddonsManagerIT {
     def testedArtifactPath = System.getProperty("testedArtifactPath")
     assertNotNull("Tested artifact path mustn't be null", testedArtifactPath)
     println "Testing on ${productHome.name}"
-    def commandToExecute = "java -Dproduct.home=${productHome.absolutePath} -jar ${testedArtifactPath} -v ${params}"
-    println "Command launched : ${commandToExecute}"
+    def commandToExecute = [
+        "${System.getProperty('java.home')}/bin/java",
+        "-Dproduct.home=${productHome.absolutePath}",
+        "-jar", "${testedArtifactPath}",
+        "-v"]
+    commandToExecute.addAll(params)
+    println "Command launched : ${commandToExecute.join(' ')}"
     def process = commandToExecute.execute()
-    process.waitFor()
-    println "${process.text}"
+    process.waitFor() // Wait for the command to finish
+    // Obtain status and output
+    println "return code: ${process.exitValue()}"
+    println "stderr: ${process.err.text}"
+    println "stdout: ${process.in.text}" // *out* from the external program is *in* for groovy
     assertEquals("Invalid exit value", exitCode, process.exitValue())
   }
 
