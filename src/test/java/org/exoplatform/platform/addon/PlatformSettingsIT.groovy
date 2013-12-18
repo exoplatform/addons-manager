@@ -35,7 +35,7 @@ class PlatformSettingsIT {
   void validateVersion() {
     PlatformSettings settings = new PlatformSettings(productHome)
     String expectedVersion =
-        productHome.name.replaceAll("platform-","").replaceAll("community-","").replaceAll("-jboss-standalone","")
+        productHome.name.replaceAll("platform-", "").replaceAll("community-", "").replaceAll("-jboss-standalone", "")
     assertEquals("Cannot validate platform version", expectedVersion, settings.version)
   }
 
@@ -53,7 +53,7 @@ class PlatformSettingsIT {
     PlatformSettings settings = new PlatformSettings(productHome)
     PlatformSettings.DistributionType expectedDistributionType =
         productHome.name.contains("community") ?
-                    PlatformSettings.DistributionType.COMMUNITY : PlatformSettings.DistributionType.ENTERPRISE
+            PlatformSettings.DistributionType.COMMUNITY : PlatformSettings.DistributionType.ENTERPRISE
     assertEquals("Cannot validate platform version", expectedDistributionType, settings.distributionType)
   }
 }

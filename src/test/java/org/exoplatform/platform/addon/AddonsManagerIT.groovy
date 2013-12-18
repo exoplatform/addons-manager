@@ -59,13 +59,13 @@ class AddonsManagerIT {
       // Uninstall an extension
       data.add([directory, ["--uninstall", "exo-chat-extension"] as String[], CLI.RETURN_CODE_OK] as Object[])
       // With --list --snapshots param the program must display the list of available add-ons and return 0
-      data.add([directory, ["--list","--snapshots"] as String[], CLI.RETURN_CODE_OK] as Object[])
+      data.add([directory, ["--list", "--snapshots"] as String[], CLI.RETURN_CODE_OK] as Object[])
       // Install another extension with a given version
       data.add([directory, ["--install", "exo-sirona:1.0.0"] as String[], CLI.RETURN_CODE_OK] as Object[])
       // Install the same extension must fail
-      data.add([directory, ["--install", "exo-sirona","--snapshots"] as String[], CLI.RETURN_CODE_KO] as Object[])
+      data.add([directory, ["--install", "exo-sirona", "--snapshots"] as String[], CLI.RETURN_CODE_KO] as Object[])
       // Install the same extension must succeed if forced
-      data.add([directory, ["--install", "exo-sirona","--snapshots","--force"] as String[], CLI.RETURN_CODE_OK] as Object[])
+      data.add([directory, ["--install", "exo-sirona", "--snapshots", "--force"] as String[], CLI.RETURN_CODE_OK] as Object[])
       // Uninstall it
       data.add([directory, ["--uninstall", "exo-sirona"] as String[], CLI.RETURN_CODE_OK] as Object[])
       // Install unknown add-on
