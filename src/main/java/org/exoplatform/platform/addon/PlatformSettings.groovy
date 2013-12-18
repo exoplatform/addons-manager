@@ -1,26 +1,26 @@
 package org.exoplatform.platform.addon
+/**
+ * Platform instance settings
+ */
+class PlatformSettings {
 
-import java.nio.file.*;
+  static final String ADDONS_DIR = "addons"
 
-public class PlatformSettings {
-
-  public static final String ADDONS_DIR = "addons"
-
-  public enum AppServerType {
+  enum AppServerType {
     TOMCAT, JBOSSEAP, UNKNOWN
   }
 
-  public enum DistributionType {
+  enum DistributionType {
     COMMUNITY, ENTERPRISE, UNKNOWN
   }
 
-  private File homeDirectory
+  File homeDirectory
 
-  public PlatformSettings(File homeDirectory) {
+  PlatformSettings(File homeDirectory) {
     this.homeDirectory = homeDirectory
   }
 
-  public File getAddonsDirectory() {
+  File getAddonsDirectory() {
     File directory = new File(homeDirectory, ADDONS_DIR)
     if (!directory.exists()) {
       MiscUtils.mkdirs(directory)
@@ -28,18 +28,18 @@ public class PlatformSettings {
     return directory
   }
 
-  public AppServerType getAppServerType() {
+  AppServerType getAppServerType() {
     if (new File(homeDirectory, "bin/catalina.sh").exists()) return AppServerType.TOMCAT
     if (new File(homeDirectory, "bin/standalone.sh").exists()) return AppServerType.JBOSSEAP
     return AppServerType.UNKNOWN
   }
 
-  public DistributionType getDistributionType() {
+  DistributionType getDistributionType() {
     if (new File(homeDirectory, "eXo_Subscription_Agreement_US.pdf").exists()) return DistributionType.ENTERPRISE
     return DistributionType.COMMUNITY
   }
 
-  public String getVersion() {
+  String getVersion() {
     def filePattern = ~/platform-component-common-.*jar/
     def fileFound
     def findFilenameClosure = {
@@ -51,7 +51,7 @@ public class PlatformSettings {
     return fileFound.name.replaceAll("platform-component-common-", "").replaceAll(".jar", "")
   }
 
-  public File getLibrariesDirectory() {
+  File getLibrariesDirectory() {
     switch (appServerType) {
       case AppServerType.TOMCAT:
         return new File(homeDirectory, "lib")
@@ -60,7 +60,7 @@ public class PlatformSettings {
     }
   }
 
-  public File getWebappsDirectory() {
+  File getWebappsDirectory() {
     switch (appServerType) {
       case AppServerType.TOMCAT:
         return new File(homeDirectory, "webapps")
@@ -72,31 +72,30 @@ public class PlatformSettings {
   boolean validate() {
     def result = true;
     if (!homeDirectory.isDirectory()) {
-      println "error: Erroneous setup, product home directory (${homeDirectory}) is invalid."
+      Logging.displayMsgError("error: Erroneous setup, product home directory (${homeDirectory}) is invalid.")
       result = false
     }
     if (!addonsDirectory.isDirectory()) {
-      println "error: Erroneous setup, add-ons directory (${addonsDirectory}) is invalid."
+      Logging.displayMsgError("error: Erroneous setup, add-ons directory (${addonsDirectory}) is invalid.")
       result = false
     }
     if (!librariesDirectory.isDirectory()) {
-      println "error: Erroneous setup, platform libraries directory (${librariesDir}) is invalid."
+      Logging.displayMsgError("error: Erroneous setup, platform libraries directory (${librariesDirectory}) is invalid.")
       result = false
     }
     if (!webappsDirectory.isDirectory()) {
-      println "error: Erroneous setup, platform web applications directory (${webappsDir}) is invalid."
+      Logging.displayMsgError("error: Erroneous setup, platform web applications directory (${webappsDirectory}) is invalid.")
       result = false
     }
     if (AppServerType.UNKNOWN.equals(appServerType)) {
-      println "error: Erroneous setup, cannot computes the application server type."
+      Logging.displayMsgError("error: Erroneous setup, cannot computes the application server type.")
       result = false
     }
     if (DistributionType.UNKNOWN.equals(distributionType)) {
-      println "error: Erroneous setup, cannot computes the distribution type."
+      Logging.displayMsgError("error: Erroneous setup, cannot computes the distribution type.")
       result = false
     }
     return result
   }
-
 
 }

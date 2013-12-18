@@ -22,8 +22,9 @@ import static org.fusesource.jansi.Ansi.ansi
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-public class Logging {
+class Logging {
   def static final CONSOLE_WIDTH = 120
+  def static boolean verbose
 
   static initialize() {
     AnsiConsole.systemInstall()
@@ -33,7 +34,7 @@ public class Logging {
     AnsiConsole.systemUninstall();
   }
 
-  static displayHeader() {
+  static displayHeader(ManagerSettings managerSettings) {
     println(ansi().render("""
     @|yellow               xx      xx |@
     @|yellow                xx    xx  |@
@@ -42,7 +43,7 @@ public class Logging {
     @|yellow eeeeeeeeeeeee    xxxx   |@ oo        @|yellow  oo |@
     @|yellow ee              xx  xx  |@ oo        @|yellow  oo |@
     @|yellow  ee       ee   xx    xx |@  oo       @|yellow oo  |@
-    @|yellow    eeeeeee    xx      xx    ooooooo |@           Add-ons Manager v @|yellow ${Settings.instance.version} |@
+    @|yellow    eeeeeee    xx      xx    ooooooo |@           Add-ons Manager v @|yellow ${managerSettings.version} |@
     """).toString())
   }
 
@@ -58,19 +59,19 @@ public class Logging {
     }
   }
 
-  static logWithStatusOK(String text){
+  static logWithStatusOK(String text) {
     displayMsg(text)
     displayStatusOK()
   }
 
-  static logWithStatusKO(String text){
+  static logWithStatusKO(String text) {
     displayMsg(text)
     displayStatusKO()
   }
 
   static displayException(Exception e) {
     displayMsgError("Error : " + e.getMessage() + " <" + e.getClass() + ">")
-    if (Settings.instance.verbose) {
+    if (verbose) {
       e.printStackTrace()
     }
   }
@@ -88,7 +89,7 @@ public class Logging {
   }
 
   static displayMsgVerbose(String text) {
-    if (Settings.instance.verbose) {
+    if (verbose) {
       printf(ansi().render('@|cyan . %s|@\n').toString(), ansi().render(text).toString())
     }
   }

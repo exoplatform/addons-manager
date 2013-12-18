@@ -49,15 +49,15 @@ class AddonsManagerIT {
     def data = new ArrayList<Object[]>()
     integrationTestsDir.eachDir { directory ->
       // Without any param the program must return an error code 1
-      data.add([directory, [""] as String[], 1] as Object[])
+      data.add([directory, [""] as String[], CLI.RETURN_CODE_KO] as Object[])
       // With --help param the program must display the help return 0
-      data.add([directory, ["--help"] as String[], 0] as Object[])
+      data.add([directory, ["--help"] as String[], CLI.RETURN_CODE_OK] as Object[])
       // With --list param the program must display the list of available add-ons and return 0
-      data.add([directory, ["--list"] as String[], 0] as Object[])
+      data.add([directory, ["--list"] as String[], CLI.RETURN_CODE_OK] as Object[])
       // Install an extension
-      data.add([directory, ["--install", "exo-chat-extension"] as String[], 0] as Object[])
+      data.add([directory, ["--install", "exo-chat-extension"] as String[], CLI.RETURN_CODE_OK] as Object[])
       // Uninstall an extension
-      data.add([directory, ["--uninstall", "exo-chat-extension"] as String[], 0] as Object[])
+      data.add([directory, ["--uninstall", "exo-chat-extension"] as String[], CLI.RETURN_CODE_OK] as Object[])
     }
     return data
   }

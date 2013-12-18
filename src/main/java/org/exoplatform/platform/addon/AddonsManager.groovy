@@ -29,43 +29,64 @@ try {
 
 // Initialize logging system
   Logging.initialize()
+  def ManagerSettings managerSettings = new ManagerSettings()
 // And display header
-  Logging.displayHeader()
+  Logging.displayHeader(managerSettings)
 // Parse command line parameters and fill settings with user inputs
-  if (!CLI.initialize(args)) {
+  managerSettings = CLI.initialize(args, managerSettings)
+  if (managerSettings == null) {
+    // Something went wrong, bye
     Logging.dispose()
-    System.exit 1
-  } else if (Settings.instance.action == Settings.Action.HELP) {
+    System.exit CLI.RETURN_CODE_KO
+  } else if (managerSettings.action == ManagerSettings.Action.HELP) {
+    // Just asking for help
     Logging.dispose()
-    System.exit 0
+    System.exit CLI.RETURN_CODE_OK
   }
 
-// Validate execution settings
-  Settings.instance.validate()
+  // Platform settings initialization
+  if (!System.getProperty("product.home")) {
+    Logging.displayMsgError('error: Erroneous setup, system property product.home not defined.')
+    System.exit CLI.RETURN_CODE_KO
+  }
+  PlatformSettings platformSettings = new PlatformSettings(new File(System.getProperty("product.home")))
+  managerSettings.platformSettings = platformSettings
+  if (!managerSettings.validate() || !platformSettings.validate()) {
+    Logging.dispose()
+    System.exit CLI.RETURN_CODE_KO
+  }
 
   def List<Addon> addons = new ArrayList<Addon>()
-  def catalog
-  if (Settings.instance.localAddonsCatalogFile.exists()) {
-    Logging.logWithStatus("Reading local add-ons list...") {
-      catalog = Settings.instance.localAddonsCatalog
-    }
-    Logging.logWithStatus("Loading add-ons...") {
-      addons.addAll(Addon.parseJSONAddonsList(catalog))
-    }
-  } else {
-    Logging.displayMsgVerbose("No local catalog to load")
-  }
-  Logging.logWithStatus("Downloading central add-ons list...") {
-    catalog = Settings.instance.centralCatalog
-  }
-  Logging.logWithStatus("Loading add-ons...") {
-    addons.addAll(Addon.parseJSONAddonsList(catalog))
+  // Load add-ons list when listing them or installing one
+  switch (managerSettings.action) {
+    case [ManagerSettings.Action.LIST, ManagerSettings.Action.INSTALL]:
+      // Let's load the list of available add-ons
+      def catalog
+      // Load the optional local list
+      if (managerSettings.localAddonsCatalogFile.exists()) {
+        Logging.logWithStatus("Reading local add-ons list...") {
+          catalog = managerSettings.localAddonsCatalog
+        }
+        Logging.logWithStatus("Loading add-ons...") {
+          addons.addAll(Addon.parseJSONAddonsList(catalog, managerSettings))
+        }
+      } else {
+        Logging.displayMsgVerbose("No local catalog to load")
+      }
+      // Load the central list
+      Logging.logWithStatus("Downloading central add-ons list...") {
+        catalog = managerSettings.centralCatalog
+      }
+      Logging.logWithStatus("Loading add-ons...") {
+        addons.addAll(Addon.parseJSONAddonsList(catalog, managerSettings))
+      }
   }
 
-  switch (Settings.instance.action) {
-    case Settings.Action.LIST:
+  //
+  switch (managerSettings.action) {
+    case ManagerSettings.Action.LIST:
       println ansi().render("\n@|bold Available add-ons:|@\n")
-      addons.findAll { it.isStable() || Settings.instance.snapshots }.groupBy { it.id }.each {
+      addons.findAll { it.isStable() || managerSettings.snapshots }.groupBy { it.id }.each {
         Addon anAddon = it.value.first()
         printf(ansi().render("+ @|bold,yellow %-${addons.id*.size().max()}s|@ : @|bold %s|@, %s\n").toString(), anAddon.id,
                anAddon.name, anAddon.description)
@@ -79,21 +100,23 @@ try {
     ${CLI.getScriptName()} --install <@|yellow add-on|@>
   """).toString()
       break
-    case Settings.Action.INSTALL:
-      def addonList = addons.findAll { (it.isStable() || Settings.instance.snapshots) && Settings.instance.addonId.equals(it.id) }
+    case ManagerSettings.Action.INSTALL:
+      def addonList = addons.findAll {
+        (it.isStable() || managerSettings.snapshots) && managerSettings.addonId.equals(it.id)
+      }
       if (addonList.size() == 0) {
-        Logging.logWithStatusKO("No add-on with identifier ${Settings.instance.addonId} found")
+        Logging.logWithStatusKO("No add-on with identifier ${managerSettings.addonId} found")
         break
       }
       def addon = addonList.first();
       addon.install()
       break
-    case Settings.Action.UNINSTALL:
-      def statusFile = new File(Settings.instance.addonsDirectory, "${Settings.instance.addonId}.status")
+    case ManagerSettings.Action.UNINSTALL:
+      def statusFile = new File(platformSettings.addonsDirectory, "${managerSettings.addonId}.status")
       if (statusFile.exists()) {
         def addon
-        Logging.logWithStatus("Loading addon details...") {
-          addon = Addon.parseJSONAddon(statusFile.text);
+        Logging.logWithStatus("Loading add-on details...") {
+          addon = Addon.parseJSONAddon(statusFile.text,managerSettings);
         }
         addon.uninstall()
       } else {
@@ -103,11 +126,11 @@ try {
     default:
       Logging.displayMsgError("Unsupported operation.")
       Logging.dispose()
-      System.exit 1
+      System.exit CLI.RETURN_CODE_KO
   }
 } catch (Exception e) {
   Logging.displayException(e)
-  System.exit 1
+  System.exit CLI.RETURN_CODE_KO
 } finally {
   Logging.dispose()
 }

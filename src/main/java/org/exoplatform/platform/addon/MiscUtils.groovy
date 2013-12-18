@@ -24,7 +24,7 @@ import java.util.zip.ZipInputStream
 /**
  * Miscellaneous utilities
  */
-public class MiscUtils {
+class MiscUtils {
   /**
    * Downloads a file following redirects if required
    * @param url The URL from which to download
@@ -54,10 +54,10 @@ public class MiscUtils {
    * @param destFile where the file should be copied
    * @throws IOException If there is an IO error
    */
-  public static void copyFile(File sourceFile, File destFile) throws IOException {
+  static void copyFile(File sourceFile, File destFile) throws IOException {
     if (!destFile.exists()) {
       destFile.createNewFile();
-    }else{
+    } else {
       Logging.displayMsgWarn("${destFile.name} already exists. Replacing it.")
     }
 
@@ -84,7 +84,7 @@ public class MiscUtils {
    * @param dirToCreate The directory to create
    * @throws IOException If an error occurs
    */
-  public static void mkdirs(File dirToCreate) throws IOException {
+  static void mkdirs(File dirToCreate) throws IOException {
     if (!dirToCreate.mkdirs()) {
       throw new IOException("Unable to create directory ${dirToCreate}")
     }
@@ -97,7 +97,7 @@ public class MiscUtils {
    * @param pattern
    * @throws IOException
    */
-  public static List<String> flatExtractFromZip(File zipToExtract, File destinationDir, String pattern) throws IOException {
+  static List<String> flatExtractFromZip(File zipToExtract, File destinationDir, String pattern) throws IOException {
     def result = new ArrayList<String>()
     def zipInputStream = new ZipInputStream(new FileInputStream(zipToExtract))
     if (!destinationDir.exists()) {
@@ -125,7 +125,7 @@ public class MiscUtils {
     result
   }
 
-  public static String extractFilename(String fullpath){
+  static String extractFilename(String fullpath) {
     return fullpath.substring(fullpath.lastIndexOf('/') + 1, fullpath.length())
   }
 

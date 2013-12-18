@@ -20,7 +20,10 @@ import static org.fusesource.jansi.Ansi.ansi
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-public class CLI {
+class CLI {
+
+  final static int RETURN_CODE_OK = 0
+  final static int RETURN_CODE_KO = 1
 
   static String getScriptName() {
     def scriptBaseName = "addon"
@@ -32,7 +35,12 @@ public class CLI {
     return scriptName
   }
 
-  static boolean initialize(String[] args) {
+  /**
+   * Initialize settings from command line parameters
+   * @param args Command line parameters
+   * @return a ManagerSettings instance or null if something went wrong
+   */
+  static ManagerSettings initialize(String[] args,ManagerSettings managerSettings) {
 
     def cli = new CliBuilder(
         posix: false,
@@ -62,19 +70,20 @@ public class CLI {
     if (!options) {
       Logging.displayMsgError("Invalid command line parameter(s)")
       cli.usage()
-      return false
+      return null
     }
 
     if (options.v) {
-      Settings.instance.verbose = true
+      managerSettings.verbose = true
+      Logging.verbose = true
       Logging.displayMsgVerbose("Verbose logs activated")
     }
 
     // Show usage text when -h or --help option is used.
     if (args.length == 0 || options.h) {
-      Settings.instance.action = Settings.Action.HELP
+      managerSettings.action = ManagerSettings.Action.HELP
       cli.usage()
-      return true
+      return managerSettings
     }
 
     // Unknown parameter(s)
@@ -82,32 +91,32 @@ public class CLI {
     if (options.arguments() || [options.l, options.i, options.u].findAll { it }.size() != 1) {
       Logging.displayMsgError("Invalid command line parameter(s)")
       cli.usage()
-      return false
+      return null
     }
 
     if (options.l) {
-      Settings.instance.action = Settings.Action.LIST
-      if(options.s){
-        Settings.instance.snapshots = true
+      managerSettings.action = ManagerSettings.Action.LIST
+      if (options.s) {
+        managerSettings.snapshots = true
       }
     } else if (options.i) {
-      Settings.instance.action = Settings.Action.INSTALL
-      Settings.instance.addonId = options.i
+      managerSettings.action = ManagerSettings.Action.INSTALL
+      managerSettings.addonId = options.i
       if (options.f) {
-        Settings.instance.force = true
+        managerSettings.force = true
         Logging.displayMsgVerbose("Force mode activated")
       }
-      if(options.s){
-        Settings.instance.snapshots = true
+      if (options.s) {
+        managerSettings.snapshots = true
       }
     } else if (options.u) {
-      Settings.instance.action = Settings.Action.UNINSTALL
-      Settings.instance.addonId = options.u
+      managerSettings.action = ManagerSettings.Action.UNINSTALL
+      managerSettings.addonId = options.u
     } else {
       Logging.displayMsgError("Invalid command line parameter(s)")
       cli.usage()
-      return false
+      return null
     }
-    return true
+    return managerSettings
   }
 }
