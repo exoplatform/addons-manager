@@ -43,7 +43,7 @@ class PlatformSettingsIT {
   void validateAppServerType() {
     PlatformSettings settings = new PlatformSettings(productHome)
     PlatformSettings.AppServerType expectedAppServerType =
-        productHome.name.contains("jbosseap") ?
+        productHome.name.contains("jboss") ?
             PlatformSettings.AppServerType.JBOSSEAP : PlatformSettings.AppServerType.TOMCAT
     assertEquals("Cannot validate platform version", expectedAppServerType, settings.appServerType)
   }
