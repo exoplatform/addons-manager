@@ -95,7 +95,11 @@ class Addon {
   }
 
   File getLocalArchive() {
-    return new File(managerSettings.addonsDirectory, id + "-" + version + ".zip")
+    File archivesDirectory = new File(managerSettings.addonsDirectory, "archives")
+    if (!archivesDirectory.exists()) {
+      MiscUtils.mkdirs(archivesDirectory)
+    }
+    return new File(archivesDirectory, id + "-" + version + ".zip")
   }
 
   String getAddonStatusFilename() {
