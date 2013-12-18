@@ -40,7 +40,7 @@ class CLI {
    * @param args Command line parameters
    * @return a ManagerSettings instance or null if something went wrong
    */
-  static ManagerSettings initialize(String[] args,ManagerSettings managerSettings) {
+  static ManagerSettings initialize(String[] args, ManagerSettings managerSettings) {
 
     def cli = new CliBuilder(
         posix: false,
@@ -59,7 +59,7 @@ class CLI {
       l longOpt: 'list', 'List all available add-ons'
       i longOpt: 'install', args: 1, argName: 'addon', 'Install an add-on'
       u longOpt: 'uninstall', args: 1, argName: 'addon', 'Uninstall an add-on'
-      f longOpt: 'force', 'Enforce to reinstall an add-on already deployed'
+      f longOpt: 'force', 'Enforce to download again and reinstall an add-on already deployed'
       v longOpt: 'verbose', 'Show verbose logs'
       s longOpt: 'snapshots', 'List also add-ons SNAPSHOTs'
     }
@@ -101,11 +101,11 @@ class CLI {
       }
     } else if (options.i) {
       managerSettings.action = ManagerSettings.Action.INSTALL
-      if(options.i.indexOf(':')>0){
+      if (options.i.indexOf(':') > 0) {
         // A specific version is asked
-        managerSettings.addonId = options.i.substring(0,options.i.indexOf(':'))
-        managerSettings.addonVersion = options.i.substring(options.i.indexOf(':')+1,options.i.length())
-      }else{
+        managerSettings.addonId = options.i.substring(0, options.i.indexOf(':'))
+        managerSettings.addonVersion = options.i.substring(options.i.indexOf(':') + 1, options.i.length())
+      } else {
         managerSettings.addonId = options.i
       }
       if (options.f) {
