@@ -59,7 +59,7 @@ class CLI {
       l longOpt: 'list', 'List all available add-ons'
       i longOpt: 'install', args: 1, argName: 'add-on', 'Install an add-on'
       u longOpt: 'uninstall', args: 1, argName: 'add-on', 'Uninstall an add-on'
-      f longOpt: 'force', 'Enforce to download remote add-ons even if they are already available locally'
+      f longOpt: 'force', 'Enforce to reinstall an add-on already deployed'
       v longOpt: 'verbose', 'Show verbose logs'
       s longOpt: 'snapshots', 'List also add-ons SNAPSHOTs'
     }
