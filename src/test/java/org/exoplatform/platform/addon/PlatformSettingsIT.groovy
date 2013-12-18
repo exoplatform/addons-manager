@@ -35,7 +35,7 @@ class PlatformSettingsIT {
   void validateVersion() {
     PlatformSettings settings = new PlatformSettings(productHome)
     String expectedVersion =
-        productHome.name.replaceAll("platform-","").replaceAll("community-","").replaceAll("-jbosseap-standalone","")
+        productHome.name.replaceAll("platform-","").replaceAll("community-","").replaceAll("-jboss-standalone","")
     assertEquals("Cannot validate platform version", expectedVersion, settings.version)
   }
 
