@@ -117,8 +117,7 @@ class Addon {
   def install() {
     if (installed) {
       if (!managerSettings.force) {
-        Logging.logWithStatusKO("Add-on already installed. Use --force to enforce to override it")
-        return
+        throw new Exception("Add-on already installed. Use --force to enforce to override it")
       } else {
         Addon oldAddon = Addon.parseJSONAddon(addonStatusFile.text, managerSettings);
         oldAddon.uninstall()
