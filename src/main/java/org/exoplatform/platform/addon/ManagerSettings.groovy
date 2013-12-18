@@ -26,6 +26,7 @@ class ManagerSettings {
   def PlatformSettings platformSettings
   def Action action
   def String addonId
+  def String addonVersion
   def boolean verbose
   def boolean force
   def boolean snapshots

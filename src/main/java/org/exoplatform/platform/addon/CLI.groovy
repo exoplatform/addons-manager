@@ -47,9 +47,9 @@ class CLI {
         stopAtNonOption: true,
         width: Logging.CONSOLE_WIDTH,
         usage: ansi().render("""
-    ${CLI.getScriptName()} --list [-v] [-a]
-    ${CLI.getScriptName()} --install <@|yellow add-on|@> [-v] [-f]
-    ${CLI.getScriptName()} --uninstall <@|yellow add-on|@> [-v]
+    ${CLI.getScriptName()} --list [-v] [-s]
+    ${CLI.getScriptName()} --install @|yellow addon[:version]|@ [-v] [-s] [-f]
+    ${CLI.getScriptName()} --uninstall @|yellow addon|@ [-v]
     """).toString(),
         header: "options :")
 
@@ -57,8 +57,8 @@ class CLI {
     cli.with {
       h longOpt: 'help', 'Show usage information'
       l longOpt: 'list', 'List all available add-ons'
-      i longOpt: 'install', args: 1, argName: 'add-on', 'Install an add-on'
-      u longOpt: 'uninstall', args: 1, argName: 'add-on', 'Uninstall an add-on'
+      i longOpt: 'install', args: 1, argName: 'addon', 'Install an add-on'
+      u longOpt: 'uninstall', args: 1, argName: 'addon', 'Uninstall an add-on'
       f longOpt: 'force', 'Enforce to reinstall an add-on already deployed'
       v longOpt: 'verbose', 'Show verbose logs'
       s longOpt: 'snapshots', 'List also add-ons SNAPSHOTs'
@@ -101,7 +101,13 @@ class CLI {
       }
     } else if (options.i) {
       managerSettings.action = ManagerSettings.Action.INSTALL
-      managerSettings.addonId = options.i
+      if(options.i.indexOf(':')>0){
+        // A specific version is asked
+        managerSettings.addonId = options.i.substring(0,options.i.indexOf(':'))
+        managerSettings.addonVersion = options.i.substring(options.i.indexOf(':')+1,options.i.length())
+      }else{
+        managerSettings.addonId = options.i
+      }
       if (options.f) {
         managerSettings.force = true
         Logging.displayMsgVerbose("Force mode activated")

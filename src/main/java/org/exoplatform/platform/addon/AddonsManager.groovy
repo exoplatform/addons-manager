@@ -94,21 +94,34 @@ try {
                ansi().render(it.value.collect { "@|yellow ${it.version}|@" }.join(', ')))
       }
       println ansi().render("""
-  To have more details about an add-on:
-    ${CLI.getScriptName()} --info <@|yellow add-on|@>
   To install an add-on:
-    ${CLI.getScriptName()} --install <@|yellow add-on|@>
+    ${CLI.getScriptName()} --install @|yellow addon|@
   """).toString()
       break
     case ManagerSettings.Action.INSTALL:
-      def addonList = addons.findAll {
-        (it.isStable() || managerSettings.snapshots) && managerSettings.addonId.equals(it.id)
+      def addon
+      if (managerSettings.addonVersion == null) {
+        // Let's find the first add-on with the given id (including or not snapshots depending of the option)
+        addon = addons.find {
+          (it.isStable() || managerSettings.snapshots) && managerSettings.addonId.equals(it.id)
+        }
+        if (addon == null) {
+          Logging.displayMsgError("No add-on with identifier ${managerSettings.addonId} found")
+          Logging.dispose()
+          System.exit CLI.RETURN_CODE_KO
+        }
+      } else {
+        // Let's find the add-on with the given id and version
+        addon = addons.find {
+          managerSettings.addonId.equals(it.id) && managerSettings.addonVersion.equalsIgnoreCase(it.version)
+        }
+        if (addon == null) {
+          Logging.displayMsgError(
+              "No add-on with identifier ${managerSettings.addonId} and version ${managerSettings.addonVersion} found")
+          Logging.dispose()
+          System.exit CLI.RETURN_CODE_KO
+        }
       }
-      if (addonList.size() == 0) {
-        Logging.logWithStatusKO("No add-on with identifier ${managerSettings.addonId} found")
-        break
-      }
-      def addon = addonList.first();
       addon.install()
       break
     case ManagerSettings.Action.UNINSTALL:
@@ -116,7 +129,7 @@ try {
       if (statusFile.exists()) {
         def addon
         Logging.logWithStatus("Loading add-on details...") {
-          addon = Addon.parseJSONAddon(statusFile.text,managerSettings);
+          addon = Addon.parseJSONAddon(statusFile.text, managerSettings);
         }
         addon.uninstall()
       } else {
