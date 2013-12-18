@@ -107,7 +107,11 @@ class Addon {
   }
 
   File getAddonStatusFile() {
-    return new File(managerSettings.addonsDirectory, addonStatusFilename)
+    File statusesDirectory = new File(managerSettings.addonsDirectory, "statuses")
+    if (!statusesDirectory.exists()) {
+      MiscUtils.mkdirs(statusesDirectory)
+    }
+    return new File(statusesDirectory, addonStatusFilename)
   }
 
   boolean isInstalled() {
