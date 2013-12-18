@@ -1,4 +1,8 @@
 package org.exoplatform.platform.addon
+
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
+
 /**
  * Platform instance settings
  */
@@ -40,7 +44,7 @@ class PlatformSettings {
   }
 
   String getVersion() {
-    def filePattern = ~/platform-component-common-.*jar/
+    def filePattern = ~/platform-component-upgrade-plugins.*jar/
     def fileFound
     def findFilenameClosure = {
       if (filePattern.matcher(it.name).find()) {
@@ -48,7 +52,16 @@ class PlatformSettings {
       }
     }
     librariesDirectory.eachFile(findFilenameClosure)
-    return fileFound.name.replaceAll("platform-component-common-", "").replaceAll(".jar", "")
+    if (fileFound == null) {
+      throw new Exception("Unable to find platform-component-upgrade-plugins jar in ${librariesDirectory}")
+    } else {
+      JarFile jarFile = new JarFile(fileFound)
+      JarEntry jarEntry = jarFile.getJarEntry("conf/platform.properties")
+      InputStream inputStream = jarFile.getInputStream(jarEntry)
+      Properties platformProperties = new Properties()
+      platformProperties.load(inputStream)
+      return platformProperties.getProperty("org.exoplatform.platform")
+    }
   }
 
   File getLibrariesDirectory() {
