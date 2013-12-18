@@ -144,9 +144,6 @@ class Addon {
                                                            '^.*jar$')
     this.installedWebapps = MiscUtils.flatExtractFromZip(localArchive, managerSettings.platformSettings.webappsDirectory,
                                                          '^.*war$')
-    println this.installedLibraries
-    println this.installedWebapps
-
     // Update application.xml if it exists
     def applicationDescriptorFile = new File(managerSettings.platformSettings.webappsDirectory, "META-INF/application.xml")
     if (applicationDescriptorFile.exists()) {
