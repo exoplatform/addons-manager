@@ -79,13 +79,13 @@ class Addon {
   static List<Addon> parseJSONAddonsList(String text, ManagerSettings managerSettings) {
     List<Addon> addonsList = new ArrayList<Addon>();
     new JsonSlurper().parseText(text).each { anAddon ->
-      addonsList.add(fromJSON(anAddon,managerSettings))
+      addonsList.add(fromJSON(anAddon, managerSettings))
     }
     return addonsList
   }
 
   static Addon parseJSONAddon(String text, ManagerSettings managerSettings) {
-    return fromJSON(new JsonSlurper().parseText(text),managerSettings)
+    return fromJSON(new JsonSlurper().parseText(text), managerSettings)
   }
 
   Addon(String id, String version, ManagerSettings managerSettings) {
@@ -120,7 +120,7 @@ class Addon {
         Logging.logWithStatusKO("Add-on already installed. Use --force to enforce to override it")
         return
       } else {
-        Addon oldAddon = Addon.parseJSONAddon(addonStatusFile.text,managerSettings);
+        Addon oldAddon = Addon.parseJSONAddon(addonStatusFile.text, managerSettings);
         oldAddon.uninstall()
       }
     }
@@ -140,34 +140,38 @@ class Addon {
         throw new Exception("Invalid or not supported download URL : ${downloadUrl}")
       }
     }
-    this.installedLibraries = MiscUtils.flatExtractFromZip(localArchive, managerSettings.platformSettings.librariesDirectory, '^.*jar$')
-    this.installedWebapps = MiscUtils.flatExtractFromZip(localArchive, managerSettings.platformSettings.webappsDirectory, '^.*war$')
+    this.installedLibraries = MiscUtils.flatExtractFromZip(localArchive, managerSettings.platformSettings.librariesDirectory,
+                                                           '^.*jar$')
+    this.installedWebapps = MiscUtils.flatExtractFromZip(localArchive, managerSettings.platformSettings.webappsDirectory,
+                                                         '^.*war$')
+    println this.installedLibraries
+    println this.installedWebapps
+
     // Update application.xml if it exists
-    def applicationDescriptor = new File(managerSettings.platformSettings.webappsDirectory, "META-INF/application.xml")
-    if (applicationDescriptor.exists()) {
-      processFileInplace(applicationDescriptor) { text ->
-        application = new XmlSlurper(false, false).parseText(text)
+    def applicationDescriptorFile = new File(managerSettings.platformSettings.webappsDirectory, "META-INF/application.xml")
+    if (applicationDescriptorFile.exists()) {
+      processFileInplace(applicationDescriptorFile) { text ->
+        def applicationXmlContent = new XmlSlurper(false, false).parseText(text)
         installedWebapps.each { file ->
-          def webArchive = file
-          def webContext = file.substring(0, file.name.length() - 4)
-          Logging.logWithStatus("Adding context declaration /${webContext} for ${webArchive} in application.xml ... ") {
-            application.depthFirst().findAll {
-              (it.name() == 'module') && (it.'web'.'web-uri'.text() == webArchive)
+          def webContext = file.substring(0, file.length() - 4)
+          Logging.logWithStatus("Adding context declaration /${webContext} for ${file} in application.xml ... ") {
+            applicationXmlContent.depthFirst().findAll {
+              (it.name() == 'module') && (it.'web'.'web-uri'.text() == file)
             }.each { node ->
               // remove existing node
               node.replaceNode {}
             }
-            application."initialize-in-order" + {
+            applicationXmlContent."initialize-in-order" + {
               module {
                 web {
-                  'web-uri'(webArchive)
+                  'web-uri'(file)
                   'context-root'(webContext)
                 }
               }
             }
           }
-          serializeXml(application)
         }
+        serializeXml(applicationXmlContent)
       }
     }
     Logging.logWithStatus("Recording installation details into ${addonStatusFilename} ... ") {
@@ -213,11 +217,12 @@ class Addon {
     }
 
     // Update application.xml if it exists
-    def applicationDescriptor = new File(managerSettings.platformSettings.webappsDirectory, "META-INF/application.xml")
+    def applicationDescriptorFile = new File(managerSettings.platformSettings.webappsDirectory, "META-INF/application.xml")
 
     installedWebapps.each {
       webapp ->
         def File fileToDelete = new File(managerSettings.platformSettings.webappsDirectory, webapp)
+        def webContext = webapp.substring(0, webapp.length() - 4)
         if (!fileToDelete.exists()) {
           Logging.displayMsgWarn("No web application ${webapp} to delete")
         } else {
@@ -226,19 +231,17 @@ class Addon {
             assert !fileToDelete.exists()
           }
         }
-        if (applicationDescriptor.exists()) {
+        if (applicationDescriptorFile.exists()) {
           Logging.logWithStatus("Adding context declaration /${webContext} for ${webapp} in application.xml ...") {
-            processFileInplace(applicationDescriptor) { text ->
-              application = new XmlSlurper(false, false).parseText(text)
-              def webArchive = webapp
-              def webContext = webapp.substring(0, file.name.length() - 4)
-              application.depthFirst().findAll {
-                (it.name() == 'module') && (it.'web'.'web-uri'.text() == webArchive)
+            processFileInplace(applicationDescriptorFile) { text ->
+              def applicationXmlContent = new XmlSlurper(false, false).parseText(text)
+              applicationXmlContent.depthFirst().findAll {
+                (it.name() == 'module') && (it.'web'.'web-uri'.text() == webapp)
               }.each { node ->
                 // remove existing node
                 node.replaceNode {}
               }
-              serializeXml(application)
+              serializeXml(applicationXmlContent)
             }
           }
         }
@@ -256,7 +259,7 @@ class Addon {
     })
   }
 
-  private processFileInplace(file, Closure processText) {
+  private processFileInplace(File file, Closure processText) {
     def text = file.text
     file.write(processText(text))
   }
