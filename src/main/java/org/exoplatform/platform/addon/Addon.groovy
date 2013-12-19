@@ -102,16 +102,17 @@ class Addon {
     return new File(archivesDirectory, id + "-" + version + ".zip")
   }
 
-  String getAddonStatusFilename() {
-    return "${id}.status"
-  }
-
-  File getAddonStatusFile() {
-    File statusesDirectory = new File(managerSettings.addonsDirectory, "statuses")
+  static File getAddonStatusFile(File addonsDir, String id) {
+    File statusesDirectory = new File(addonsDir, "statuses")
     if (!statusesDirectory.exists()) {
       MiscUtils.mkdirs(statusesDirectory)
     }
-    return new File(statusesDirectory, addonStatusFilename)
+    return new File(statusesDirectory, "${id}.status")
+  }
+
+
+  File getAddonStatusFile() {
+    getAddonStatusFile(managerSettings.addonsDirectory, id)
   }
 
   boolean isInstalled() {
@@ -178,7 +179,7 @@ class Addon {
         serializeXml(applicationXmlContent)
       }
     }
-    Logging.logWithStatus("Recording installation details into ${addonStatusFilename} ... ") {
+    Logging.logWithStatus("Recording installation details into ${addonStatusFile.name} ... ") {
       new FileWriter(addonStatusFile).withWriter { w ->
         def builder = new StreamingJsonBuilder(w)
         builder(
@@ -250,7 +251,7 @@ class Addon {
           }
         }
     }
-    Logging.logWithStatus("Deleting installation details ${addonStatusFilename} ... ") {
+    Logging.logWithStatus("Deleting installation details ${addonStatusFile.name} ... ") {
       addonStatusFile.delete()
       assert !addonStatusFile.exists()
     }

@@ -125,7 +125,7 @@ try {
       addon.install()
       break
     case ManagerSettings.Action.UNINSTALL:
-      def statusFile = new File(platformSettings.addonsDirectory, "${managerSettings.addonId}.status")
+      def statusFile = Addon.getAddonStatusFile(platformSettings.addonsDirectory, managerSettings.addonId)
       if (statusFile.exists()) {
         def addon
         Logging.logWithStatus("Loading add-on details...") {
@@ -134,6 +134,8 @@ try {
         addon.uninstall()
       } else {
         Logging.logWithStatusKO("Add-on not installed. Exiting.")
+        Logging.dispose()
+        System.exit CLI.RETURN_CODE_KO
       }
       break
     default:
@@ -148,4 +150,4 @@ try {
   Logging.dispose()
 }
 
-System.exit 0
+System.exit CLI.RETURN_CODE_OK

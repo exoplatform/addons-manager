@@ -70,6 +70,8 @@ class AddonsManagerIT {
       data.add([directory, ["--uninstall", "exo-sirona"] as String[], CLI.RETURN_CODE_OK] as Object[])
       // Install unknown add-on
       data.add([directory, ["--install", "unknown-addon"] as String[], CLI.RETURN_CODE_KO] as Object[])
+      // Uninstall unknown add-on
+      data.add([directory, ["--uninstall", "unknown-addon"] as String[], CLI.RETURN_CODE_KO] as Object[])
     }
     return data
   }
