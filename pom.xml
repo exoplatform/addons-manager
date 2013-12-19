@@ -24,19 +24,19 @@
   <parent>
     <artifactId>maven-parent-pom</artifactId>
     <groupId>org.exoplatform</groupId>
-    <version>11</version>
+    <version>12-SNAPSHOT</version>
     <relativePath />
   </parent>
   <groupId>org.exoplatform.platform</groupId>
   <artifactId>addons-manager</artifactId>
-  <version>1.0.0-alpha-2</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>eXo Platform - Add-ons Manager</name>
   <description>Command line utility to manage Platform add-ons</description>
   <scm>
     <connection>scm:git:git://github.com/exoplatform/addons-manager.git</connection>
     <developerConnection>scm:git:git@github.com:exoplatform/addons-manager.git</developerConnection>
-    <tag>1.0.0-alpha-2</tag>
+    <tag>HEAD</tag>
   </scm>
   <properties>
     <commons-cli.version>1.2</commons-cli.version>
