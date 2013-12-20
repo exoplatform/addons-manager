@@ -80,7 +80,7 @@ class AddonsManagerIT {
   void testExitValue() {
     def testedArtifactPath = System.getProperty("testedArtifactPath")
     assertNotNull("Tested artifact path mustn't be null", testedArtifactPath)
-    println "Testing on ${productHome.name}"
+    println "Testing on ${productHome.name}, expecting return code ${exitCode} with params ${params.join(" ")}"
     def commandToExecute = [
         "${System.getProperty('java.home')}/bin/java",
         "-Dproduct.home=${productHome.absolutePath}",
