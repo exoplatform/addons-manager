@@ -15,6 +15,19 @@ Command line tool for eXo platform 4.x to install/uninstall add-ons
 - [Apache Maven](http://maven.apache.org) 3.0.4+ (Build)
 - [eXo platform](http://www.exoplatform.org/) 4.0.0+ (Run)
 
+## RESOURCES
+
+- [Issues Tracker](https://jira.exoplatform.org/browse/AM/)
+- [Continuous Integration Job (Unit tests + deployment in maven repository) ![Build Status](https://ci.exoplatform.org/buildStatus/icon?job=addons-manager-master-ci)](https://ci.exoplatform.org/job/addons-manager-master-ci/)
+- [Integration Tests Validation Job ![Build Status](https://ci.exoplatform.org/buildStatus/icon?job=addons-manager-master-ci)](https://ci.exoplatform.org/job/addons-manager-master-ci/)
+- [Reporting Job (Sonar + Maven website) ![Build Status](https://ci.exoplatform.org/buildStatus/icon?job=addons-manager-master-reporting)](https://ci.exoplatform.org/job/addons-manager-master-reporting/)
+- [Sonar Quality dashboard](https://sonar.exoplatform.org/dashboard/index/org.exoplatform.platform:addons-manager)
+- [Maven website](https://projects.exoplatform.org/addons-manager/)
+- Maven artifacts
+  - [Snapshots](https://repository.exoplatform.org/content/repositories/exo-snapshots/org/exoplatform/platform/addons-manager/)
+  - [Releases](https://repository.exoplatform.org/content/repositories/exo-releases/org/exoplatform/platform/addons-manager/)
+- [Specifications](http://community.exoplatform.com/portal/intranet/wiki/group/spaces/platform_41/Add-ons_Manager)
+
 ## QUICKSTART
 
     git clone git@github.com:exoplatform/addons-manager.git && mvn package
@@ -55,10 +68,6 @@ Uninstall the add-on ```foo```
     addon.sh --uninstall foo
 
 ## BUILD (AND AUTOMATED TESTS)
-
-Continuous Integration (Unit tests + deployment in maven repository) : [![Build Status](https://ci.exoplatform.org/buildStatus/icon?job=addons-manager-master-ci)](https://ci.exoplatform.org/job/addons-manager-master-ci/)
-
-Integration Tests : [![Build Status](https://ci.exoplatform.org/buildStatus/icon?job=addons-manager-master-ci)](https://ci.exoplatform.org/job/addons-manager-master-ci/)
 
 To build the project you launch
 
