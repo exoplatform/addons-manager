@@ -58,7 +58,7 @@
     <org.fusesource.jansi.version>1.11</org.fusesource.jansi.version>
     <platform.groupId>org.exoplatform.platform.distributions</platform.groupId>
     <platform.artifactId>plf-community-tomcat-standalone</platform.artifactId>
-    <platform.version>4.0.3</platform.version>
+    <platform.version>4.1-M1</platform.version>
     <integration.tests.dir.path>${project.build.directory}/integration-tests</integration.tests.dir.path>
     <tested.artifact.path>${project.build.directory}/${project.build.finalName}.jar</tested.artifact.path>
   </properties>
