@@ -81,11 +81,15 @@ class AddonsManagerIT {
     def testedArtifactPath = System.getProperty("testedArtifactPath")
     assertNotNull("Tested artifact path mustn't be null", testedArtifactPath)
     println "Testing on ${productHome.name}, expecting return code ${exitCode} with params ${params.join(" ")}"
-    def commandToExecute = [
-        "${System.getProperty('java.home')}/bin/java",
-        "-Dproduct.home=${productHome.absolutePath}",
-        "-jar", "${testedArtifactPath}",
-        "-v"]
+    def commandToExecute = ["${System.getProperty('java.home')}/bin/java"]
+    // If Jacoco Agent is used, let's pass it to the forked VM
+    if (System.getProperty('jacocoAgent') != null) {
+      commandToExecute << "${System.getProperty('jacocoAgent')}"
+    }
+    commandToExecute << "-Dproduct.home=${productHome.absolutePath}"
+    commandToExecute << "-jar"
+    commandToExecute << "${testedArtifactPath}"
+    commandToExecute << "-v"
     commandToExecute.addAll(params)
     println "Command launched : ${commandToExecute.join(' ')}"
     def process = commandToExecute.execute()
