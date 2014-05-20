@@ -39,6 +39,17 @@
     <tag>HEAD</tag>
   </scm>
   <properties>
+    <!-- **************************************** -->
+    <!-- Jira Settings -->
+    <!-- **************************************** -->
+    <jira.project.key>PLF</jira.project.key>
+    <!-- **************************************** -->
+    <!-- Jenkins Settings -->
+    <!-- **************************************** -->
+    <jenkins.job.name>addons-manager-master-ci</jenkins.job.name>
+    <!-- **************************************** -->
+    <!-- Project Dependencies -->
+    <!-- **************************************** -->
     <commons-cli.version>1.2</commons-cli.version>
     <junit.version>4.11</junit.version>
     <groovy.version>2.2.1</groovy.version>
