@@ -26,7 +26,7 @@ class CLI {
   final static int RETURN_CODE_KO = 1
 
   static String getScriptName() {
-    def scriptBaseName = "addon"
+    def scriptBaseName = "addons"
     // Computes the script addon from the OS
     def scriptName = "${scriptBaseName}.sh"
     if (System.properties['os.name'].toLowerCase().contains('windows')) {
