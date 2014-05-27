@@ -32,12 +32,12 @@ try {
 // And display header
   Logging.displayHeader(managerSettings)
 // Parse command line parameters and fill settings with user inputs
-  managerSettings = CLI.initialize(args, managerSettings)
-  if (managerSettings == null) {
+  managerSettings.cliArgs = CLI.initialize(args, new ManagerCLIArgs())
+  if (managerSettings.cliArgs == null) {
     // Something went wrong, bye
     Logging.dispose()
     System.exit CLI.RETURN_CODE_KO
-  } else if (managerSettings.action == ManagerSettings.Action.HELP) {
+  } else if (managerSettings.cliArgs.action == ManagerCLIArgs.Action.HELP) {
     // Just asking for help
     Logging.dispose()
     System.exit CLI.RETURN_CODE_OK
@@ -57,8 +57,8 @@ try {
 
   def List<Addon> addons = new ArrayList<Addon>()
   // Load add-ons list when listing them or installing one
-  switch (managerSettings.action) {
-    case [ManagerSettings.Action.LIST, ManagerSettings.Action.INSTALL]:
+  switch (managerSettings.cliArgs.action) {
+    case [ManagerCLIArgs.Action.LIST, ManagerCLIArgs.Action.INSTALL]:
       // Let's load the list of available add-ons
       def catalog
       // Load the optional local list
@@ -82,10 +82,10 @@ try {
   }
 
   //
-  switch (managerSettings.action) {
-    case ManagerSettings.Action.LIST:
+  switch (managerSettings.cliArgs.action) {
+    case ManagerCLIArgs.Action.LIST:
       println ansi().render("\n@|bold Available add-ons:|@\n")
-      addons.findAll { it.isStable() || managerSettings.snapshots }.groupBy { it.id }.each {
+      addons.findAll { it.isStable() || managerSettings.cliArgs.snapshots }.groupBy { it.id }.each {
         Addon anAddon = it.value.first()
         printf(ansi().render("+ @|bold,yellow %-${addons.id*.size().max()}s|@ : @|bold %s|@, %s\n").toString(), anAddon.id,
                anAddon.name, anAddon.description)
@@ -97,34 +97,34 @@ try {
     ${CLI.getScriptName()} --install @|yellow addon|@
   """).toString()
       break
-    case ManagerSettings.Action.INSTALL:
+    case ManagerCLIArgs.Action.INSTALL:
       def addon
-      if (managerSettings.addonVersion == null) {
+      if (managerSettings.cliArgs.addonVersion == null) {
         // Let's find the first add-on with the given id (including or not snapshots depending of the option)
         addon = addons.find {
-          (it.isStable() || managerSettings.snapshots) && managerSettings.addonId.equals(it.id)
+          (it.isStable() || managerSettings.cliArgs.snapshots) && managerSettings.cliArgs.addonId.equals(it.id)
         }
         if (addon == null) {
-          Logging.displayMsgError("No add-on with identifier ${managerSettings.addonId} found")
+          Logging.displayMsgError("No add-on with identifier ${managerSettings.cliArgs.addonId} found")
           Logging.dispose()
           System.exit CLI.RETURN_CODE_KO
         }
       } else {
         // Let's find the add-on with the given id and version
         addon = addons.find {
-          managerSettings.addonId.equals(it.id) && managerSettings.addonVersion.equalsIgnoreCase(it.version)
+          managerSettings.cliArgs.addonId.equals(it.id) && managerSettings.cliArgs.addonVersion.equalsIgnoreCase(it.version)
         }
         if (addon == null) {
           Logging.displayMsgError(
-              "No add-on with identifier ${managerSettings.addonId} and version ${managerSettings.addonVersion} found")
+              "No add-on with identifier ${managerSettings.cliArgs.addonId} and version ${managerSettings.cliArgs.addonVersion} found")
           Logging.dispose()
           System.exit CLI.RETURN_CODE_KO
         }
       }
       addon.install()
       break
-    case ManagerSettings.Action.UNINSTALL:
-      def statusFile = Addon.getAddonStatusFile(platformSettings.addonsDirectory, managerSettings.addonId)
+    case ManagerCLIArgs.Action.UNINSTALL:
+      def statusFile = Addon.getAddonStatusFile(platformSettings.addonsDirectory, managerSettings.cliArgs.addonId)
       if (statusFile.exists()) {
         def addon
         Logging.logWithStatus("Loading add-on details...") {

@@ -25,14 +25,14 @@ import spock.lang.Specification
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class CLITest extends Specification {
-  def settings = new ManagerSettings()
+  def cliArgs = new ManagerCLIArgs()
 
   def "Test command line parameters to display help"(String[] args) {
     when:
     println "Input parameters : $args"
-    CLI.initialize(args, settings)
+    CLI.initialize(args, cliArgs)
     then:
-    ManagerSettings.Action.HELP == settings.action
+    ManagerCLIArgs.Action.HELP == cliArgs.action
     where:
     args << [
         [],
@@ -43,10 +43,10 @@ class CLITest extends Specification {
   def "Test command line parameters to list all add-ons"(String[] args) {
     when:
     println "Input parameters : $args"
-    CLI.initialize(args, settings)
+    CLI.initialize(args, cliArgs)
     then:
-    ManagerSettings.Action.LIST == settings.action
-    !settings.snapshots
+    ManagerCLIArgs.Action.LIST == cliArgs.action
+    !cliArgs.snapshots
     where:
     args << [
         ["--list", "-l"],
@@ -56,10 +56,10 @@ class CLITest extends Specification {
   def "Test command line parameters to list all add-ons including snapshots"(String[] args) {
     when:
     println "Input parameters : $args"
-    CLI.initialize(args, settings)
+    CLI.initialize(args, cliArgs)
     then:
-    ManagerSettings.Action.LIST == settings.action
-    settings.snapshots
+    ManagerCLIArgs.Action.LIST == cliArgs.action
+    cliArgs.snapshots
     where:
     args << [
         ["--list", "-l"],
@@ -70,13 +70,13 @@ class CLITest extends Specification {
   def "Test command line parameters to install the latest version of an add-on"(String[] args) {
     when:
     println "Input parameters : $args"
-    CLI.initialize(args, settings)
+    CLI.initialize(args, cliArgs)
     then:
-    ManagerSettings.Action.INSTALL == settings.action
-    !settings.snapshots
-    !settings.force
-    "my-addon".equals(settings.addonId)
-    settings.addonVersion == null
+    ManagerCLIArgs.Action.INSTALL == cliArgs.action
+    !cliArgs.snapshots
+    !cliArgs.force
+    "my-addon".equals(cliArgs.addonId)
+    cliArgs.addonVersion == null
     where:
     args << [
         ["--install", "-i"],
@@ -87,13 +87,13 @@ class CLITest extends Specification {
   def "Test command line parameters to install a given version of an add-on"(String[] args) {
     when:
     println "Input parameters : $args"
-    CLI.initialize(args, settings)
+    CLI.initialize(args, cliArgs)
     then:
-    ManagerSettings.Action.INSTALL == settings.action
-    !settings.snapshots
-    !settings.force
-    "my-addon".equals(settings.addonId)
-    "42".equals(settings.addonVersion)
+    ManagerCLIArgs.Action.INSTALL == cliArgs.action
+    !cliArgs.snapshots
+    !cliArgs.force
+    "my-addon".equals(cliArgs.addonId)
+    "42".equals(cliArgs.addonVersion)
     where:
     args << [
         ["--install", "-i"],
@@ -104,12 +104,12 @@ class CLITest extends Specification {
   def "Test command line parameters to force to install an add-on"(String[] args) {
     when:
     println "Input parameters : $args"
-    CLI.initialize(args, settings)
+    CLI.initialize(args, cliArgs)
     then:
-    ManagerSettings.Action.INSTALL == settings.action
-    !settings.snapshots
-    settings.force
-    "my-addon".equals(settings.addonId)
+    ManagerCLIArgs.Action.INSTALL == cliArgs.action
+    !cliArgs.snapshots
+    cliArgs.force
+    "my-addon".equals(cliArgs.addonId)
     where:
     args << [
         ["--install", "-i"],
@@ -121,12 +121,12 @@ class CLITest extends Specification {
   def "Test command line parameters to install a SNAPSHOT version of an add-on"(String[] args) {
     when:
     println "Input parameters : $args"
-    CLI.initialize(args, settings)
+    CLI.initialize(args, cliArgs)
     then:
-    ManagerSettings.Action.INSTALL == settings.action
-    settings.snapshots
-    !settings.force
-    "my-addon".equals(settings.addonId)
+    ManagerCLIArgs.Action.INSTALL == cliArgs.action
+    cliArgs.snapshots
+    !cliArgs.force
+    "my-addon".equals(cliArgs.addonId)
     where:
     args << [
         ["--install", "-i"],
@@ -138,10 +138,10 @@ class CLITest extends Specification {
   def "Test command line parameters to uninstall an add-on"(String[] args) {
     when:
     println "Input parameters : $args"
-    CLI.initialize(args, settings)
+    CLI.initialize(args, cliArgs)
     then:
-    ManagerSettings.Action.UNINSTALL == settings.action
-    "my-addon".equals(settings.addonId)
+    ManagerCLIArgs.Action.UNINSTALL == cliArgs.action
+    "my-addon".equals(cliArgs.addonId)
     where:
     args << [
         ["--uninstall", "-u"],

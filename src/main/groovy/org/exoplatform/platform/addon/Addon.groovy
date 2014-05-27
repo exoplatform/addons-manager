@@ -125,7 +125,7 @@ class Addon {
 
   def install() {
     if (installed) {
-      if (!managerSettings.force) {
+      if (!managerSettings.cliArgs.force) {
         throw new Exception("Add-on already installed. Use --force to enforce to override it")
       } else {
         Addon oldAddon = Addon.parseJSONAddon(addonStatusFile.text, managerSettings);
@@ -133,7 +133,7 @@ class Addon {
       }
     }
     Logging.displayMsgInfo("Installing @|yellow ${name} ${version}|@ ...")
-    if (!localArchive.exists() || managerSettings.force) {
+    if (!localArchive.exists() || managerSettings.cliArgs.force) {
       // Let's download it
       if (downloadUrl.startsWith("http")) {
         Logging.logWithStatus("Downloading add-on ${name} ${version} ...") {

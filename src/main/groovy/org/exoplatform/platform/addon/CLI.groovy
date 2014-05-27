@@ -18,7 +18,8 @@
  */
 package org.exoplatform.platform.addon
 
-import static org.fusesource.jansi.Ansi.ansi
+import com.beust.jcommander.JCommander
+import com.beust.jcommander.ParameterException
 
 class CLI {
 
@@ -40,89 +41,66 @@ class CLI {
    * @param args Command line parameters
    * @return a ManagerSettings instance or null if something went wrong
    */
-  static ManagerSettings initialize(String[] args, ManagerSettings managerSettings) {
+  static ManagerCLIArgs initialize(String[] args, ManagerCLIArgs managerCLIArgs) {
 
-    def cli = new CliBuilder(
-        posix: false,
-        stopAtNonOption: true,
-        width: Logging.CONSOLE_WIDTH,
-        usage: ansi().render("""
-    ${CLI.getScriptName()} --list [-v] [-s]
-    ${CLI.getScriptName()} --install @|yellow addon[:version]|@ [-v] [-s] [-f]
-    ${CLI.getScriptName()} --uninstall @|yellow addon|@ [-v]
-    """).toString(),
-        header: "options :")
-
-    // Create the list of options.
-    cli.with {
-      h longOpt: 'help', 'Show usage information'
-      l longOpt: 'list', 'List all available add-ons'
-      i longOpt: 'install', args: 1, argName: 'addon', 'Install an add-on'
-      u longOpt: 'uninstall', args: 1, argName: 'addon', 'Uninstall an add-on'
-      f longOpt: 'force', 'Enforce to download again and reinstall an add-on already deployed'
-      v longOpt: 'verbose', 'Show verbose logs'
-      s longOpt: 'snapshots', 'List also add-ons SNAPSHOTs'
-    }
-
-    def options = cli.parse(args)
-
-    // Erroneous command line
-    if (!options) {
+    def JCommander cli = new JCommander(managerCLIArgs);
+    cli.setColumnSize(Logging.CONSOLE_WIDTH);
+    cli.setProgramName(CLI.getScriptName());
+    try {
+      cli.parse(args);
+    } catch (ParameterException pe) {
+      managerCLIArgs.action = ManagerCLIArgs.Action.HELP
       Logging.displayMsgError("Invalid command line parameter(s)")
       cli.usage()
       return null
     }
 
-    if (options.v) {
-      managerSettings.verbose = true
+    if (managerCLIArgs.verbose) {
       Logging.verbose = true
       Logging.displayMsgVerbose("Verbose logs activated")
     }
 
     // Show usage text when -h or --help option is used.
-    if (args.length == 0 || options.h) {
-      managerSettings.action = ManagerSettings.Action.HELP
+    if (managerCLIArgs.helpAction) {
+      managerCLIArgs.action = ManagerCLIArgs.Action.HELP
       cli.usage()
-      return managerSettings
+      return managerCLIArgs
     }
 
     // Unknown parameter(s)
     // And validate parameters constraints (only one)
-    if (options.arguments() || [options.l, options.i, options.u].findAll { it }.size() != 1) {
+    if ([managerCLIArgs.listAction, managerCLIArgs.installAction?.trim(), managerCLIArgs.uninstallAction?.trim()].findAll {
+      it
+    }.size() != 1) {
+      managerCLIArgs.action = ManagerCLIArgs.Action.HELP
       Logging.displayMsgError("Invalid command line parameter(s)")
       cli.usage()
       return null
     }
 
-    if (options.l) {
-      managerSettings.action = ManagerSettings.Action.LIST
-      if (options.s) {
-        managerSettings.snapshots = true
-      }
-    } else if (options.i) {
-      managerSettings.action = ManagerSettings.Action.INSTALL
-      if (options.i.indexOf(':') > 0) {
+    if (managerCLIArgs.listAction) {
+      managerCLIArgs.action = ManagerCLIArgs.Action.LIST
+    } else if (managerCLIArgs.installAction?.trim()) {
+      managerCLIArgs.action = ManagerCLIArgs.Action.INSTALL
+      if (managerCLIArgs.installAction.indexOf(':') > 0) {
         // A specific version is asked
-        managerSettings.addonId = options.i.substring(0, options.i.indexOf(':'))
-        managerSettings.addonVersion = options.i.substring(options.i.indexOf(':') + 1, options.i.length())
+        managerCLIArgs.addonId = managerCLIArgs.installAction.substring(0, managerCLIArgs.installAction.indexOf(':'))
+        managerCLIArgs.addonVersion = managerCLIArgs.installAction.substring(managerCLIArgs.installAction.indexOf(':') + 1,
+                                                                             managerCLIArgs.installAction.length())
       } else {
-        managerSettings.addonId = options.i
+        managerCLIArgs.addonId = managerCLIArgs.installAction
       }
-      if (options.f) {
-        managerSettings.force = true
+      if (managerCLIArgs.force) {
         Logging.displayMsgVerbose("Force mode activated")
       }
-      if (options.s) {
-        managerSettings.snapshots = true
-      }
-    } else if (options.u) {
-      managerSettings.action = ManagerSettings.Action.UNINSTALL
-      managerSettings.addonId = options.u
+    } else if (managerCLIArgs.uninstallAction?.trim()) {
+      managerCLIArgs.action = ManagerCLIArgs.Action.UNINSTALL
+      managerCLIArgs.addonId = managerCLIArgs.uninstallAction
     } else {
       Logging.displayMsgError("Invalid command line parameter(s)")
       cli.usage()
       return null
     }
-    return managerSettings
+    return managerCLIArgs
   }
 }

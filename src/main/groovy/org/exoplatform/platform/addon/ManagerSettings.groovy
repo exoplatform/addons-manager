@@ -17,23 +17,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.exoplatform.platform.addon
-
 /**
  * Manager execution settings
  */
 class ManagerSettings {
   def private Properties props = new Properties()
   def PlatformSettings platformSettings
-  def Action action
-  def String addonId
-  def String addonVersion
-  def boolean verbose
-  def boolean force
-  def boolean snapshots
-
-  enum Action {
-    LIST, INSTALL, UNINSTALL, HELP
-  }
+  def ManagerCLIArgs cliArgs
 
   private Properties getProps() {
     if (props.isEmpty()) {
