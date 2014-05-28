@@ -9,7 +9,7 @@ import spock.lang.Specification
 class CLITest extends Specification {
   def settings = new ManagerSettings()
 
-  def "Display Help"(String[] args) {
+  def "Test command line parameters to display help"(String[] args) {
     when:
     println "Input parameters : $args"
     CLI.initialize(args, settings)
@@ -22,7 +22,7 @@ class CLITest extends Specification {
         ["--help"]]
   }
 
-  def "List all add-ons"(String[] args) {
+  def "Test command line parameters to list all add-ons"(String[] args) {
     when:
     println "Input parameters : $args"
     CLI.initialize(args, settings)
@@ -35,7 +35,7 @@ class CLITest extends Specification {
         ["--verbose", "-v", ""]].combinations().collect { it.minus("") }
   }
 
-  def "List all add-ons including snapshots"(String[] args) {
+  def "Test command line parameters to list all add-ons including snapshots"(String[] args) {
     when:
     println "Input parameters : $args"
     CLI.initialize(args, settings)
@@ -49,7 +49,7 @@ class CLITest extends Specification {
         ["--verbose", "-v", ""]].combinations().collect { it.minus("") }
   }
 
-  def "Install the latest version of an add-on"(String[] args) {
+  def "Test command line parameters to install the latest version of an add-on"(String[] args) {
     when:
     println "Input parameters : $args"
     CLI.initialize(args, settings)
@@ -66,7 +66,7 @@ class CLITest extends Specification {
         ["--verbose", "-v", ""]].combinations().collect { it.minus("") }
   }
 
-  def "Install a given version of an add-on"(String[] args) {
+  def "Test command line parameters to install a given version of an add-on"(String[] args) {
     when:
     println "Input parameters : $args"
     CLI.initialize(args, settings)
@@ -83,7 +83,7 @@ class CLITest extends Specification {
         ["--verbose", "-v", ""]].combinations().collect { it.minus("") }
   }
 
-  def "Force to install an add-on"(String[] args) {
+  def "Test command line parameters to force to install an add-on"(String[] args) {
     when:
     println "Input parameters : $args"
     CLI.initialize(args, settings)
@@ -100,7 +100,7 @@ class CLITest extends Specification {
         ["--verbose", "-v", ""]].combinations().collect { it.minus("") }
   }
 
-  def "Install a SNAPSHOT version of an add-on"(String[] args) {
+  def "Test command line parameters to install a SNAPSHOT version of an add-on"(String[] args) {
     when:
     println "Input parameters : $args"
     CLI.initialize(args, settings)
@@ -117,7 +117,7 @@ class CLITest extends Specification {
         ["--verbose", "-v", ""]].combinations().collect { it.minus("") }
   }
 
-  def "Uninstall an add-on"(String[] args) {
+  def "Test command line parameters to uninstall an add-on"(String[] args) {
     when:
     println "Input parameters : $args"
     CLI.initialize(args, settings)
