@@ -1,5 +1,5 @@
 @REM
-@REM Copyright (C) 2003-2013 eXo Platform SAS.
+@REM Copyright (C) 2003-2014 eXo Platform SAS.
 @REM
 @REM This is free software; you can redistribute it and/or modify it
 @REM under the terms of the GNU Lesser General Public License as
