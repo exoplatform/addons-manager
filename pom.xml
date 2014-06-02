@@ -131,7 +131,7 @@
         </exclusion>
         <exclusion>
           <artifactId>groovy-all</artifactId>
-          <groupId>groovy</groupId>
+          <groupId>org.codehaus.groovy</groupId>
         </exclusion>
       </exclusions>
     </dependency>
