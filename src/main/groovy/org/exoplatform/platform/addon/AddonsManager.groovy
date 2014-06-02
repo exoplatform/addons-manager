@@ -30,7 +30,7 @@ try {
   Logging.initialize()
   def EnvironmentSettings environmentSettings = new EnvironmentSettings()
 // And display header
-  Logging.displayHeader(environmentSettings.managerVersion)
+  Logging.displayHeader(environmentSettings.managerSettings.version)
 // Parse command line parameters and fill settings with user inputs
   environmentSettings.cliArgs = CLI.initialize(args, new ManagerCLIArgs())
   if (environmentSettings.cliArgs == null) {
@@ -43,14 +43,7 @@ try {
     System.exit CLI.RETURN_CODE_OK
   }
 
-  // Platform settings initialization
-  if (!System.getProperty("product.home")) {
-    Logging.displayMsgError('error: Erroneous setup, system property product.home not defined.')
-    System.exit CLI.RETURN_CODE_KO
-  }
-  PlatformSettings platformSettings = new PlatformSettings(new File(System.getProperty("product.home")))
-  environmentSettings.platformSettings = platformSettings
-  if (!environmentSettings.validate() || !platformSettings.validate()) {
+  if (!environmentSettings.validate()) {
     Logging.dispose()
     System.exit CLI.RETURN_CODE_KO
   }
@@ -125,7 +118,7 @@ try {
       addon.install()
       break
     case ManagerCLIArgs.Action.UNINSTALL:
-      def statusFile = Addon.getAddonStatusFile(platformSettings.addonsDirectory, environmentSettings.cliArgs.addonId)
+      def statusFile = Addon.getAddonStatusFile(environmentSettings.addonsDirectory, environmentSettings.cliArgs.addonId)
       if (statusFile.exists()) {
         def addon
         Logging.logWithStatus("Loading add-on details...") {

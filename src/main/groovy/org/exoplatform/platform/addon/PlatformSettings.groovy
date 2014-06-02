@@ -25,8 +25,7 @@ import java.util.jar.JarFile
  * Platform instance settings
  */
 class PlatformSettings {
-
-  static final String ADDONS_DIR = "addons"
+  public static final String PLATFORM_HOME_SYS_PROP = "product.home"
 
   enum AppServerType {
     TOMCAT, JBOSSEAP, UNKNOWN
@@ -38,16 +37,17 @@ class PlatformSettings {
 
   File homeDirectory
 
-  PlatformSettings(File homeDirectory) {
-    this.homeDirectory = homeDirectory
+  PlatformSettings() {
+    // Platform settings initialization
+    if (!System.getProperty(PLATFORM_HOME_SYS_PROP)) {
+      Logging.displayMsgError('error: Erroneous setup, system property ${PLATFORM_HOME_SYS_PROP} not defined.')
+      System.exit CLI.RETURN_CODE_KO
+    }
+    this.homeDirectory = new File(System.getProperty(PLATFORM_HOME_SYS_PROP))
   }
 
-  File getAddonsDirectory() {
-    File directory = new File(homeDirectory, ADDONS_DIR)
-    if (!directory.exists()) {
-      MiscUtils.mkdirs(directory)
-    }
-    return directory
+  PlatformSettings(File homeDirectory) {
+    this.homeDirectory = homeDirectory
   }
 
   AppServerType getAppServerType() {
@@ -104,10 +104,6 @@ class PlatformSettings {
     def result = true;
     if (!homeDirectory.isDirectory()) {
       Logging.displayMsgError("error: Erroneous setup, product home directory (${homeDirectory}) is invalid.")
-      result = false
-    }
-    if (!addonsDirectory.isDirectory()) {
-      Logging.displayMsgError("error: Erroneous setup, add-ons directory (${addonsDirectory}) is invalid.")
       result = false
     }
     if (!librariesDirectory.isDirectory()) {

@@ -22,38 +22,13 @@ package org.exoplatform.platform.addon
  * This class exposes environment settings about the Add-ons Manager, the PLF server, the system, ...
  */
 class EnvironmentSettings {
-  private static final String ADDONS_MANAGER_PROPERTIES = "org/exoplatform/platform/addon/settings.properties"
-  def private Properties props
   def PlatformSettings platformSettings
+  def ManagerSettings managerSettings
   def ManagerCLIArgs cliArgs
 
-  private Properties getProps() {
-    if (!props) {
-      InputStream inputStream = getClass().getClassLoader().
-          getResourceAsStream(ADDONS_MANAGER_PROPERTIES)
-
-      if (inputStream == null) {
-        throw new RuntimeException("Property file settings.properties not found in the classpath")
-      }
-      try {
-        props = new Properties()
-        props.load(inputStream)
-      } finally {
-        try {
-          inputStream.close()
-        } catch (Exception e) {
-        }
-      }
-    }
-    return props;
-  }
-
-  /**
-   * Returns the current version of the platform manager
-   * @return the manager version
-   */
-  public String getManagerVersion() {
-    return getProps().version
+  EnvironmentSettings() {
+    managerSettings = new ManagerSettings()
+    platformSettings = new PlatformSettings()
   }
 
   /**
@@ -61,7 +36,7 @@ class EnvironmentSettings {
    * @return a directory path
    */
   public File getAddonsDirectory() {
-    File directory = new File(platformSettings.homeDirectory, getProps().addonsDirectoryPath)
+    File directory = new File(platformSettings.homeDirectory, managerSettings.addonsDirectoryPath)
     if (!directory.exists()) {
       MiscUtils.mkdirs(directory)
     }
@@ -73,7 +48,7 @@ class EnvironmentSettings {
    * @return a file path
    */
   public File getLocalAddonsCatalogFile() {
-    return new File(addonsDirectory, getProps().localAddonsCatalogFilename)
+    return new File(addonsDirectory, managerSettings.localAddonsCatalogFilename)
   }
 
   /**
@@ -89,7 +64,7 @@ class EnvironmentSettings {
    * @return the URL of the central catalog
    */
   public URL getCentralCatalogUrl() {
-    return new URL(getProps().centralCatalogUrl)
+    return new URL(managerSettings.centralCatalogUrl)
   }
 
   /**
@@ -106,7 +81,7 @@ class EnvironmentSettings {
       Logging.displayMsgError("error: Erroneous setup, add-ons directory (${addonsDirectory}) is invalid.")
       result = false
     }
-    return result
+    return platformSettings.validate() & result
   }
 
 }
