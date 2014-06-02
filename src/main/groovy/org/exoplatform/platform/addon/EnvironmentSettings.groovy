@@ -22,6 +22,7 @@ package org.exoplatform.platform.addon
  * This class exposes environment settings about the Add-ons Manager, the PLF server, the system, ...
  */
 class EnvironmentSettings {
+  private static final String ADDONS_MANAGER_PROPERTIES = "org/exoplatform/platform/addon/settings.properties"
   def private Properties props
   def PlatformSettings platformSettings
   def ManagerCLIArgs cliArgs
@@ -29,7 +30,7 @@ class EnvironmentSettings {
   private Properties getProps() {
     if (!props) {
       InputStream inputStream = getClass().getClassLoader().
-          getResourceAsStream("org/exoplatform/platform/addon/settings.properties")
+          getResourceAsStream(ADDONS_MANAGER_PROPERTIES)
 
       if (inputStream == null) {
         throw new RuntimeException("Property file settings.properties not found in the classpath")
@@ -64,7 +65,6 @@ class EnvironmentSettings {
     if (!directory.exists()) {
       MiscUtils.mkdirs(directory)
     }
-    assert directory.isDirectory()
     return directory
   }
 
