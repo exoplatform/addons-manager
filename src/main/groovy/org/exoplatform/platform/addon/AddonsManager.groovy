@@ -28,16 +28,16 @@ try {
 
 // Initialize logging system
   Logging.initialize()
-  def ManagerSettings managerSettings = new ManagerSettings()
+  def EnvironmentSettings environmentSettings = new EnvironmentSettings()
 // And display header
-  Logging.displayHeader(managerSettings)
+  Logging.displayHeader(environmentSettings.managerVersion)
 // Parse command line parameters and fill settings with user inputs
-  managerSettings.cliArgs = CLI.initialize(args, new ManagerCLIArgs())
-  if (managerSettings.cliArgs == null) {
+  environmentSettings.cliArgs = CLI.initialize(args, new ManagerCLIArgs())
+  if (environmentSettings.cliArgs == null) {
     // Something went wrong, bye
     Logging.dispose()
     System.exit CLI.RETURN_CODE_KO
-  } else if (managerSettings.cliArgs.action == ManagerCLIArgs.Action.HELP) {
+  } else if (environmentSettings.cliArgs.action == ManagerCLIArgs.Action.HELP) {
     // Just asking for help
     Logging.dispose()
     System.exit CLI.RETURN_CODE_OK
@@ -49,43 +49,43 @@ try {
     System.exit CLI.RETURN_CODE_KO
   }
   PlatformSettings platformSettings = new PlatformSettings(new File(System.getProperty("product.home")))
-  managerSettings.platformSettings = platformSettings
-  if (!managerSettings.validate() || !platformSettings.validate()) {
+  environmentSettings.platformSettings = platformSettings
+  if (!environmentSettings.validate() || !platformSettings.validate()) {
     Logging.dispose()
     System.exit CLI.RETURN_CODE_KO
   }
 
   def List<Addon> addons = new ArrayList<Addon>()
   // Load add-ons list when listing them or installing one
-  switch (managerSettings.cliArgs.action) {
+  switch (environmentSettings.cliArgs.action) {
     case [ManagerCLIArgs.Action.LIST, ManagerCLIArgs.Action.INSTALL]:
       // Let's load the list of available add-ons
       def catalog
       // Load the optional local list
-      if (managerSettings.localAddonsCatalogFile.exists()) {
+      if (environmentSettings.localAddonsCatalogFile.exists()) {
         Logging.logWithStatus("Reading local add-ons list...") {
-          catalog = managerSettings.localAddonsCatalog
+          catalog = environmentSettings.localAddonsCatalog
         }
         Logging.logWithStatus("Loading add-ons...") {
-          addons.addAll(Addon.parseJSONAddonsList(catalog, managerSettings))
+          addons.addAll(Addon.parseJSONAddonsList(catalog, environmentSettings))
         }
       } else {
         Logging.displayMsgVerbose("No local catalog to load")
       }
       // Load the central list
       Logging.logWithStatus("Downloading central add-ons list...") {
-        catalog = managerSettings.centralCatalog
+        catalog = environmentSettings.centralCatalog
       }
       Logging.logWithStatus("Loading add-ons...") {
-        addons.addAll(Addon.parseJSONAddonsList(catalog, managerSettings))
+        addons.addAll(Addon.parseJSONAddonsList(catalog, environmentSettings))
       }
   }
 
   //
-  switch (managerSettings.cliArgs.action) {
+  switch (environmentSettings.cliArgs.action) {
     case ManagerCLIArgs.Action.LIST:
       println ansi().render("\n@|bold Available add-ons:|@\n")
-      addons.findAll { it.isStable() || managerSettings.cliArgs.snapshots }.groupBy { it.id }.each {
+      addons.findAll { it.isStable() || environmentSettings.cliArgs.snapshots }.groupBy { it.id }.each {
         Addon anAddon = it.value.first()
         printf(ansi().render("+ @|bold,yellow %-${addons.id*.size().max()}s|@ : @|bold %s|@, %s\n").toString(), anAddon.id,
                anAddon.name, anAddon.description)
@@ -99,24 +99,25 @@ try {
       break
     case ManagerCLIArgs.Action.INSTALL:
       def addon
-      if (managerSettings.cliArgs.addonVersion == null) {
+      if (environmentSettings.cliArgs.addonVersion == null) {
         // Let's find the first add-on with the given id (including or not snapshots depending of the option)
         addon = addons.find {
-          (it.isStable() || managerSettings.cliArgs.snapshots) && managerSettings.cliArgs.addonId.equals(it.id)
+          (it.isStable() || environmentSettings.cliArgs.snapshots) && environmentSettings.cliArgs.addonId.equals(it.id)
         }
         if (addon == null) {
-          Logging.displayMsgError("No add-on with identifier ${managerSettings.cliArgs.addonId} found")
+          Logging.displayMsgError("No add-on with identifier ${environmentSettings.cliArgs.addonId} found")
           Logging.dispose()
           System.exit CLI.RETURN_CODE_KO
         }
       } else {
         // Let's find the add-on with the given id and version
         addon = addons.find {
-          managerSettings.cliArgs.addonId.equals(it.id) && managerSettings.cliArgs.addonVersion.equalsIgnoreCase(it.version)
+          environmentSettings.cliArgs.addonId.equals(it.id) && environmentSettings.cliArgs.addonVersion.equalsIgnoreCase(
+              it.version)
         }
         if (addon == null) {
           Logging.displayMsgError(
-              "No add-on with identifier ${managerSettings.cliArgs.addonId} and version ${managerSettings.cliArgs.addonVersion} found")
+              "No add-on with identifier ${environmentSettings.cliArgs.addonId} and version ${environmentSettings.cliArgs.addonVersion} found")
           Logging.dispose()
           System.exit CLI.RETURN_CODE_KO
         }
@@ -124,11 +125,11 @@ try {
       addon.install()
       break
     case ManagerCLIArgs.Action.UNINSTALL:
-      def statusFile = Addon.getAddonStatusFile(platformSettings.addonsDirectory, managerSettings.cliArgs.addonId)
+      def statusFile = Addon.getAddonStatusFile(platformSettings.addonsDirectory, environmentSettings.cliArgs.addonId)
       if (statusFile.exists()) {
         def addon
         Logging.logWithStatus("Loading add-on details...") {
-          addon = Addon.parseJSONAddon(statusFile.text, managerSettings);
+          addon = Addon.parseJSONAddon(statusFile.text, environmentSettings);
         }
         addon.uninstall()
       } else {

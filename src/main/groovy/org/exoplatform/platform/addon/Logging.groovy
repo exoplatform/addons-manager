@@ -34,7 +34,7 @@ class Logging {
     AnsiConsole.systemUninstall();
   }
 
-  static displayHeader(ManagerSettings managerSettings) {
+  static displayHeader(String managerVersion) {
     println(ansi().render("""
     @|yellow               xx      xx |@
     @|yellow                xx    xx  |@
@@ -43,7 +43,7 @@ class Logging {
     @|yellow eeeeeeeeeeeee    xxxx   |@ oo        @|yellow  oo |@
     @|yellow ee              xx  xx  |@ oo        @|yellow  oo |@
     @|yellow  ee       ee   xx    xx |@  oo       @|yellow oo  |@
-    @|yellow    eeeeeee    xx      xx    ooooooo |@           Add-ons Manager v @|yellow ${managerSettings.version} |@
+    @|yellow    eeeeeee    xx      xx    ooooooo |@           Add-ons Manager v @|yellow ${managerVersion} |@
     """).toString())
   }
 

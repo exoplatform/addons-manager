@@ -39,7 +39,7 @@ class CLI {
   /**
    * Initialize settings from command line parameters
    * @param args Command line parameters
-   * @return a ManagerSettings instance or null if something went wrong
+   * @return a EnvironmentSettings instance or null if something went wrong
    */
   static ManagerCLIArgs initialize(String[] args, ManagerCLIArgs managerCLIArgs) {
 

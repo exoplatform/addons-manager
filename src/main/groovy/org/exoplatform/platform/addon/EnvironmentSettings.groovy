@@ -17,24 +17,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.exoplatform.platform.addon
+
 /**
- * Manager execution settings
+ * This class exposes environment settings about the Add-ons Manager, the PLF server, the system, ...
  */
-class ManagerSettings {
-  def private Properties props = new Properties()
+class EnvironmentSettings {
+  def private Properties props
   def PlatformSettings platformSettings
   def ManagerCLIArgs cliArgs
 
   private Properties getProps() {
-    if (props.isEmpty()) {
+    if (!props) {
       InputStream inputStream = getClass().getClassLoader().
           getResourceAsStream("org/exoplatform/platform/addon/settings.properties")
 
       if (inputStream == null) {
-        Logging.displayMsgError("Property file settings.properties not found in the classpath")
-        return props
+        throw new RuntimeException("Property file settings.properties not found in the classpath")
       }
       try {
+        props = new Properties()
         props.load(inputStream)
       } finally {
         try {
@@ -46,39 +47,56 @@ class ManagerSettings {
     return props;
   }
 
-  String getVersion() {
+  /**
+   * Returns the current version of the platform manager
+   * @return the manager version
+   */
+  public String getManagerVersion() {
     return getProps().version
   }
 
-  String getlocalAddonsCatalogFilename() {
-    return getProps().localAddonsCatalogFilename
-  }
-
-  String getAddonsDirectoryPath() {
-    return getProps().addonsDirectoryPath
-  }
-
-  File getAddonsDirectory() {
-    File directory = new File(platformSettings.homeDirectory, addonsDirectoryPath)
+  /**
+   * Returns the path where add-ons are stored
+   * @return a directory path
+   */
+  public File getAddonsDirectory() {
+    File directory = new File(platformSettings.homeDirectory, getProps().addonsDirectoryPath)
     if (!directory.exists()) {
       MiscUtils.mkdirs(directory)
     }
+    assert directory.isDirectory()
     return directory
   }
 
-  File getLocalAddonsCatalogFile() {
-    return new File(addonsDirectory, getlocalAddonsCatalogFilename())
+  /**
+   * Returns the path to the local catalog
+   * @return a file path
+   */
+  public File getLocalAddonsCatalogFile() {
+    return new File(addonsDirectory, getProps().localAddonsCatalogFilename)
   }
 
-  String getLocalAddonsCatalog() {
+  /**
+   * Returns the content of the local catalog
+   * @return a JSON formatted text
+   */
+  public String getLocalAddonsCatalog() {
     return getLocalAddonsCatalogFile().text
   }
 
-  URL getCentralCatalogUrl() {
+  /**
+   * Returns the URL to the remote catalog
+   * @return the URL of the central catalog
+   */
+  public URL getCentralCatalogUrl() {
     return new URL(getProps().centralCatalogUrl)
   }
 
-  String getCentralCatalog() {
+  /**
+   * Returns the content of the remote catalog
+   * @return a JSON formatted text
+   */
+  public String getCentralCatalog() {
     return getCentralCatalogUrl().text
   }
 
