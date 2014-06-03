@@ -56,7 +56,7 @@ class EnvironmentSettings {
    * @return a JSON formatted text
    */
   public String getLocalAddonsCatalog() {
-    return getLocalAddonsCatalogFile().text
+    return localAddonsCatalogFile.text
   }
 
   /**
@@ -72,7 +72,7 @@ class EnvironmentSettings {
    * @return a JSON formatted text
    */
   public String getCentralCatalog() {
-    return getCentralCatalogUrl().text
+    return centralCatalogUrl.text
   }
 
   boolean validate() {
