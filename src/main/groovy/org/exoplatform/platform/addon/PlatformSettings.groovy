@@ -40,8 +40,7 @@ class PlatformSettings {
   PlatformSettings() {
     // Platform settings initialization
     if (!System.getProperty(PLATFORM_HOME_SYS_PROP)) {
-      Logging.displayMsgError('error: Erroneous setup, system property ${PLATFORM_HOME_SYS_PROP} not defined.')
-      System.exit CLI.RETURN_CODE_KO
+      throw new RuntimeException('error: Erroneous setup, system property ${PLATFORM_HOME_SYS_PROP} not defined.')
     }
     this.homeDirectory = new File(System.getProperty(PLATFORM_HOME_SYS_PROP))
   }

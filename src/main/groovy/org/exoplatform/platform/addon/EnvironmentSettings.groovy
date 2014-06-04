@@ -24,7 +24,7 @@ package org.exoplatform.platform.addon
 class EnvironmentSettings {
   def PlatformSettings platformSettings
   def ManagerSettings managerSettings
-  def ManagerCLIArgs cliArgs
+  def CommandLineParameters commandLineArgs
 
   EnvironmentSettings() {
     managerSettings = new ManagerSettings()

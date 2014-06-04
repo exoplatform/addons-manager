@@ -44,4 +44,14 @@ class ManagerSettings extends Properties {
       }
     }
   }
+
+  public String getScriptName() {
+    def scriptBaseName = "addons"
+    // Computes the script addon from the OS
+    def scriptName = "${scriptBaseName}.sh"
+    if (System.properties['os.name'].toLowerCase().contains('windows')) {
+      scriptName = "${scriptBaseName}.bat"
+    }
+    return scriptName
+  }
 }

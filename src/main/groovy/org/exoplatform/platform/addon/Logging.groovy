@@ -94,6 +94,11 @@ class Logging {
     }
   }
 
+  static activateVerboseMessages() {
+    verbose = true
+    displayMsgVerbose("Verbose logs activated")
+  }
+
   private static displayMsg(String text) {
     printf(ansi().render('+ %-' + (CONSOLE_WIDTH - 8) + 's ').toString(), ansi().render(text).toString())
   }
