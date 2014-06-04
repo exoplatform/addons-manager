@@ -135,6 +135,8 @@
     </dependency>
   </dependencies>
   <build>
+    <sourceDirectory>src/main/groovy</sourceDirectory>
+    <testSourceDirectory>src/test/groovy</testSourceDirectory>
     <resources>
       <resource>
         <filtering>true</filtering>
