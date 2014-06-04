@@ -66,7 +66,6 @@
     <integration.tests.dir.path>${project.build.directory}/integration-tests</integration.tests.dir.path>
     <tested.artifact.path>${project.build.directory}/${project.build.finalName}.jar</tested.artifact.path>
     <!-- maven-surefire-plugin -->
-    <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
     <forkCount>1.5C</forkCount>
     <!-- gmavenplus-plugin -->
     <version.gmavenplus.plugin>1.2</version.gmavenplus.plugin>
