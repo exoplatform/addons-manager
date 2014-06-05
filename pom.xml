@@ -67,8 +67,6 @@
     <tested.artifact.path>${project.build.directory}/${project.build.finalName}.jar</tested.artifact.path>
     <!-- maven-surefire-plugin -->
     <forkCount>1.5C</forkCount>
-    <!-- gmavenplus-plugin -->
-    <version.gmavenplus.plugin>1.2</version.gmavenplus.plugin>
   </properties>
   <dependencies>
     <dependency>
@@ -157,7 +155,6 @@
       <plugin>
         <groupId>org.codehaus.gmavenplus</groupId>
         <artifactId>gmavenplus-plugin</artifactId>
-        <version>${version.gmavenplus.plugin}</version>
         <executions>
           <execution>
             <id>default</id>
@@ -178,9 +175,6 @@
             </configuration>
           </execution>
         </executions>
-        <configuration>
-          <targetBytecode>${maven.compiler.target}</targetBytecode>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
