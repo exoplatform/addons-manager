@@ -82,7 +82,7 @@ class EnvironmentSettings {
   boolean validate() {
     def result = true;
     if (!addonsDirectory.isDirectory()) {
-      Logging.displayMsgError("error: Erroneous setup, add-ons directory (${addonsDirectory}) is invalid.")
+      Logging.displayMsgError("Erroneous setup, add-ons directory (${addonsDirectory}) is invalid.")
       result = false
     }
     return platformSettings.validate() & result

@@ -105,23 +105,23 @@ class PlatformSettings {
   boolean validate() {
     def result = true;
     if (!homeDirectory.isDirectory()) {
-      Logging.displayMsgError("error: Erroneous setup, product home directory (${homeDirectory}) is invalid.")
+      Logging.displayMsgError("Erroneous setup, product home directory (${homeDirectory}) is invalid.")
       result = false
     }
     if (!librariesDirectory.isDirectory()) {
-      Logging.displayMsgError("error: Erroneous setup, platform libraries directory (${librariesDirectory}) is invalid.")
+      Logging.displayMsgError("Erroneous setup, platform libraries directory (${librariesDirectory}) is invalid.")
       result = false
     }
     if (!webappsDirectory.isDirectory()) {
-      Logging.displayMsgError("error: Erroneous setup, platform web applications directory (${webappsDirectory}) is invalid.")
+      Logging.displayMsgError("Erroneous setup, platform web applications directory (${webappsDirectory}) is invalid.")
       result = false
     }
     if (AppServerType.UNKNOWN.equals(appServerType)) {
-      Logging.displayMsgError("error: Erroneous setup, cannot computes the application server type.")
+      Logging.displayMsgError("Erroneous setup, cannot computes the application server type.")
       result = false
     }
     if (DistributionType.UNKNOWN.equals(distributionType)) {
-      Logging.displayMsgError("error: Erroneous setup, cannot computes the distribution type.")
+      Logging.displayMsgError("Erroneous setup, cannot computes the distribution type.")
       result = false
     }
     return result
