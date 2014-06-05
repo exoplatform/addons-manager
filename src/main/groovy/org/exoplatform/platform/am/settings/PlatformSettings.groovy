@@ -73,7 +73,7 @@ class PlatformSettings {
     }
     librariesDirectory.eachFile(findFilenameClosure)
     if (fileFound == null) {
-      throw new Exception("Unable to find platform-component-upgrade-plugins jar in ${librariesDirectory}")
+      throw new AddonsManagerException("Unable to find platform-component-upgrade-plugins jar in ${librariesDirectory}")
     } else {
       JarFile jarFile = new JarFile(fileFound)
       JarEntry jarEntry = jarFile.getJarEntry("conf/platform.properties")

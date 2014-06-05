@@ -24,6 +24,7 @@ import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
 import org.exoplatform.platform.am.settings.EnvironmentSettings
+import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.Logging
 import org.exoplatform.platform.am.utils.MiscUtils
 
@@ -129,7 +130,7 @@ class Addon {
   def install() {
     if (installed) {
       if (!environmentSettings.commandLineArgs.commandInstall.force) {
-        throw new Exception("Add-on already installed. Use --force to enforce to override it")
+        throw new AddonsManagerException("Add-on already installed. Use --force to enforce to override it")
       } else {
         Addon oldAddon = Addon.parseJSONAddon(addonStatusFile.text, environmentSettings);
         oldAddon.uninstall()
@@ -148,7 +149,7 @@ class Addon {
                              localArchive)
         }
       } else {
-        throw new Exception("Invalid or not supported download URL : ${downloadUrl}")
+        throw new AddonsManagerException("Invalid or not supported download URL : ${downloadUrl}")
       }
     }
     this.installedLibraries = MiscUtils.flatExtractFromZip(localArchive, environmentSettings.platformSettings.librariesDirectory,
