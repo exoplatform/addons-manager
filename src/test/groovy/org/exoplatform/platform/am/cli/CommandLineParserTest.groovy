@@ -19,6 +19,7 @@
 package org.exoplatform.platform.am.cli
 
 import com.beust.jcommander.ParameterException
+import org.exoplatform.platform.am.utils.Logging
 import spock.lang.Specification
 
 /**
@@ -28,9 +29,12 @@ import spock.lang.Specification
 class CommandLineParserTest extends Specification {
   def clp = new CommandLineParser("FAKE.sh")
 
+  def setupSpec() {
+    Logging.verbose = true
+  }
+
   def "Test command line parameters to display help"(String[] args) {
     when:
-    println "Input parameters : $args"
     def cliArgs = clp.parse(args)
     then:
     cliArgs.help
@@ -43,7 +47,6 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to list all add-ons"(String[] args) {
     when:
-    println "Input parameters : $args"
     def cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
@@ -57,7 +60,6 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to list all add-ons including snapshots"(String[] args) {
     when:
-    println "Input parameters : $args"
     def cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
@@ -72,7 +74,6 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to install the latest version of an add-on"(String[] args) {
     when:
-    println "Input parameters : $args"
     def cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.INSTALL == cliArgs.command
@@ -90,7 +91,6 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to install a given version of an add-on"(String[] args) {
     when:
-    println "Input parameters : $args"
     def cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.INSTALL == cliArgs.command
@@ -108,7 +108,6 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to force to install an add-on"(String[] args) {
     when:
-    println "Input parameters : $args"
     def cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.INSTALL == cliArgs.command
@@ -126,7 +125,6 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to install a SNAPSHOT version of an add-on"(String[] args) {
     when:
-    println "Input parameters : $args"
     def cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.INSTALL == cliArgs.command
@@ -144,7 +142,6 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to uninstall an add-on"(String[] args) {
     when:
-    println "Input parameters : $args"
     def cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.UNINSTALL == cliArgs.command
@@ -159,7 +156,6 @@ class CommandLineParserTest extends Specification {
 
   def "Test invalid command line parameters"(String[] args) {
     when:
-    println "Input parameters : $args"
     clp.parse(args)
     then:
     thrown(ParameterException)
