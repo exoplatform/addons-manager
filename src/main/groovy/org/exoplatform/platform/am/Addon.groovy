@@ -26,7 +26,7 @@ import groovy.xml.XmlUtil
 import org.exoplatform.platform.am.settings.EnvironmentSettings
 import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.Logging
-import org.exoplatform.platform.am.utils.MiscUtils
+import org.exoplatform.platform.am.utils.FileUtils
 
 @groovy.transform.Canonical
 class Addon {
@@ -101,7 +101,7 @@ class Addon {
   File getLocalArchive() {
     File archivesDirectory = new File(environmentSettings.addonsDirectory, "archives")
     if (!archivesDirectory.exists()) {
-      MiscUtils.mkdirs(archivesDirectory)
+      FileUtils.mkdirs(archivesDirectory)
     }
     return new File(archivesDirectory, id + "-" + version + ".zip")
   }
@@ -109,7 +109,7 @@ class Addon {
   static File getAddonStatusFile(File addonsDir, String id) {
     File statusesDirectory = new File(addonsDir, "statuses")
     if (!statusesDirectory.exists()) {
-      MiscUtils.mkdirs(statusesDirectory)
+      FileUtils.mkdirs(statusesDirectory)
     }
     return new File(statusesDirectory, "${id}.status")
   }
@@ -141,20 +141,20 @@ class Addon {
       // Let's download it
       if (downloadUrl.startsWith("http")) {
         Logging.logWithStatus("Downloading add-on ${name} ${version} ...") {
-          MiscUtils.downloadFile(downloadUrl, localArchive)
+          FileUtils.downloadFile(downloadUrl, localArchive)
         }
       } else if (downloadUrl.startsWith("file://")) {
         Logging.logWithStatus("Copying add-on ${name} ${version} ...") {
-          MiscUtils.copyFile(new File(environmentSettings.addonsDirectory, downloadUrl.replaceAll("file://", "")),
+          FileUtils.copyFile(new File(environmentSettings.addonsDirectory, downloadUrl.replaceAll("file://", "")),
                              localArchive)
         }
       } else {
         throw new AddonsManagerException("Invalid or not supported download URL : ${downloadUrl}")
       }
     }
-    this.installedLibraries = MiscUtils.flatExtractFromZip(localArchive, environmentSettings.platformSettings.librariesDirectory,
+    this.installedLibraries = FileUtils.flatExtractFromZip(localArchive, environmentSettings.platformSettings.librariesDirectory,
                                                            '^.*jar$')
-    this.installedWebapps = MiscUtils.flatExtractFromZip(localArchive, environmentSettings.platformSettings.webappsDirectory,
+    this.installedWebapps = FileUtils.flatExtractFromZip(localArchive, environmentSettings.platformSettings.webappsDirectory,
                                                          '^.*war$')
     // Update application.xml if it exists
     def applicationDescriptorFile = new File(environmentSettings.platformSettings.webappsDirectory, "META-INF/application.xml")

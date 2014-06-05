@@ -24,7 +24,7 @@ import java.util.zip.ZipInputStream
 /**
  * Miscellaneous utilities
  */
-class MiscUtils {
+class FileUtils {
   /**
    * Downloads a file following redirects if required
    * @param url The URL from which to download

@@ -20,7 +20,7 @@ package org.exoplatform.platform.am.settings
 
 import org.exoplatform.platform.am.cli.CommandLineParameters
 import org.exoplatform.platform.am.utils.Logging
-import org.exoplatform.platform.am.utils.MiscUtils
+import org.exoplatform.platform.am.utils.FileUtils
 
 /**
  * This class exposes environment settings about the Add-ons Manager, the PLF server, the system, ...
@@ -42,7 +42,7 @@ class EnvironmentSettings {
   public File getAddonsDirectory() {
     File directory = new File(platformSettings.homeDirectory, managerSettings.addonsDirectoryPath)
     if (!directory.exists()) {
-      MiscUtils.mkdirs(directory)
+      FileUtils.mkdirs(directory)
     }
     return directory
   }
