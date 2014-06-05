@@ -29,21 +29,19 @@ class AddonsManagerSettings extends Properties {
 
   AddonsManagerSettings() {
     super()
-    if (isEmpty()) {
-      InputStream inputStream = getClass().getClassLoader().
-          getResourceAsStream(ADDONS_MANAGER_PROPERTIES)
+    InputStream inputStream = getClass().getClassLoader().
+        getResourceAsStream(ADDONS_MANAGER_PROPERTIES)
 
-      if (inputStream == null) {
-        throw new AddonsManagerException(
-            "Erroneous packaging, Property file \"${ADDONS_MANAGER_PROPERTIES}\" not found in the classpath")
-      }
+    if (inputStream == null) {
+      throw new AddonsManagerException(
+          "Erroneous packaging, Property file \"${ADDONS_MANAGER_PROPERTIES}\" not found in the classpath")
+    }
+    try {
+      load(inputStream)
+    } finally {
       try {
-        load(inputStream)
-      } finally {
-        try {
-          inputStream.close()
-        } catch (Exception e) {
-        }
+        inputStream.close()
+      } catch (Exception e) {
       }
     }
   }
