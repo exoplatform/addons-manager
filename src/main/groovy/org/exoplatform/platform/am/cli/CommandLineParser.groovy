@@ -50,6 +50,7 @@ class CommandLineParser {
    * @return a EnvironmentSettings instance or null if something went wrong
    */
   CommandLineParameters parse(String[] args) {
+    Logging.displayMsgVerbose("Parameters to parse : ${args}")
     _jCommander.parse(args);
 
     if (_cliArgs.verbose) {
