@@ -26,9 +26,9 @@ class EnvironmentSettings {
   def ManagerSettings managerSettings
   def CommandLineParameters commandLineArgs
 
-  EnvironmentSettings() {
-    managerSettings = new ManagerSettings()
-    platformSettings = new PlatformSettings()
+  EnvironmentSettings(ManagerSettings managerSettings, PlatformSettings platformSettings) {
+    this.managerSettings = managerSettings
+    this.platformSettings = platformSettings
   }
 
   /**

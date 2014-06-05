@@ -27,16 +27,16 @@ import static org.fusesource.jansi.Ansi.ansi
  */
 
 def clp
-def environmentSettings
 
 try {
-
 // Initialize logging system
   Logging.initialize()
-  environmentSettings = new EnvironmentSettings()
-  clp = new CommandLineParser(environmentSettings.managerSettings.getScriptName())
-// And display header
-  Logging.displayHeader(environmentSettings.managerSettings.version)
+  def managerSettings = new ManagerSettings()
+// display header
+  Logging.displayHeader(managerSettings.version)
+  clp = new CommandLineParser(managerSettings.getScriptName())
+  def platformSettings = new PlatformSettings()
+  def environmentSettings = new EnvironmentSettings(managerSettings, platformSettings)
 // Parse command line parameters and fill settings with user inputs
   environmentSettings.commandLineArgs = clp.parse(args)
 
@@ -91,7 +91,7 @@ try {
       }
       println ansi().render("""
   To install an add-on:
-    ${environmentSettings.managerSettings.getScriptName()} --install @|yellow addon|@
+    ${managerSettings.getScriptName()} --install @|yellow addon|@
   """).toString()
       break
     case CommandLineParameters.Command.INSTALL:
@@ -124,7 +124,8 @@ try {
       addon.install()
       break
     case CommandLineParameters.Command.UNINSTALL:
-      def statusFile = Addon.getAddonStatusFile(environmentSettings.addonsDirectory, environmentSettings.commandLineArgs.commandUninstall.addonId)
+      def statusFile = Addon.getAddonStatusFile(environmentSettings.addonsDirectory,
+                                                environmentSettings.commandLineArgs.commandUninstall.addonId)
       if (statusFile.exists()) {
         def addon
         Logging.logWithStatus("Loading add-on details...") {
