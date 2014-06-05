@@ -147,8 +147,13 @@ try {
   Logging.displayMsgError("Invalid command line parameter(s) : " + pe.message)
   clp.usage()
   System.exit CommandLineParser.RETURN_CODE_KO
+} catch (AddonsManagerException ame) {
+  Logging.displayMsgError "${ame.message}"
+  println()
+  System.exit CommandLineParser.RETURN_CODE_KO
 } catch (Exception e) {
-  Logging.displayException(e)
+  Logging.displayThrowable(e)
+  println()
   System.exit CommandLineParser.RETURN_CODE_KO
 } finally {
   Logging.dispose()

@@ -69,10 +69,12 @@ class Logging {
     displayStatusKO()
   }
 
-  static displayException(Exception e) {
-    displayMsgError("Error : " + e.getMessage() + " <" + e.getClass() + ">")
+  static displayThrowable(Throwable t) {
+    displayMsgError "Unknown Error : ${t.getMessage()} <${t.getClass()}>"
+    println()
     if (verbose) {
-      e.printStackTrace()
+      t.printStackTrace()
+      println()
     }
   }
 
@@ -113,7 +115,7 @@ class Logging {
 
   private static displayStatusKO(Exception e) {
     displayStatusKO()
-    displayException(e)
+    displayThrowable(e)
   }
 
 }

@@ -32,7 +32,7 @@ class ManagerSettings extends Properties {
           getResourceAsStream(ADDONS_MANAGER_PROPERTIES)
 
       if (inputStream == null) {
-        throw new RuntimeException("Property file settings.properties not found in the classpath")
+        throw new AddonsManagerException("Erroneous packaging, Property file \"${ADDONS_MANAGER_PROPERTIES}\" not found in the classpath")
       }
       try {
         load(inputStream)

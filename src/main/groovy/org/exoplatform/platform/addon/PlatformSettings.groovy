@@ -40,7 +40,7 @@ class PlatformSettings {
   PlatformSettings() {
     // Platform settings initialization
     if (!System.getProperty(PLATFORM_HOME_SYS_PROP)) {
-      throw new RuntimeException('error: Erroneous setup, system property ${PLATFORM_HOME_SYS_PROP} not defined.')
+      throw new AddonsManagerException("Erroneous setup, system property \"${PLATFORM_HOME_SYS_PROP}\" not defined.")
     }
     this.homeDirectory = new File(System.getProperty(PLATFORM_HOME_SYS_PROP))
   }
