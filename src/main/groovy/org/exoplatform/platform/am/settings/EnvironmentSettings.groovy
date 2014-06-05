@@ -18,9 +18,9 @@
  */
 package org.exoplatform.platform.am.settings
 
+import org.exoplatform.platform.am.cli.CommandLineParameters
 import org.exoplatform.platform.am.utils.Logging
 import org.exoplatform.platform.am.utils.MiscUtils
-import org.exoplatform.platform.am.cli.CommandLineParameters
 
 /**
  * This class exposes environment settings about the Add-ons Manager, the PLF server, the system, ...
@@ -86,6 +86,13 @@ class EnvironmentSettings {
       result = false
     }
     return platformSettings.validate() & result
+  }
+
+  public String describe() {
+    return this.properties.sort { it.key }.collect { it }.findAll {
+      !['class', 'platformSettings', 'managerSettings', 'commandLineArgs', 'centralCatalog', 'localAddonsCatalog'].contains(
+          it.key)
+    }.join('\n')
   }
 
 }

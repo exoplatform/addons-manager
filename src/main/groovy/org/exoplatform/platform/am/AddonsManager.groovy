@@ -47,6 +47,10 @@ try {
 // Parse command line parameters and fill settings with user inputs
   environmentSettings.commandLineArgs = clp.parse(args)
 
+  Logging.displayMsgVerbose("Manager Settings :\n${managerSettings.describe()}\n")
+  Logging.displayMsgVerbose("Platform Settings :\n${platformSettings.describe()}\n")
+  Logging.displayMsgVerbose("Environment Settings :\n${environmentSettings.describe()}\n")
+
   // Show usage text when -h or --help option is used.
   if (environmentSettings.commandLineArgs.help) {
     clp.usage()

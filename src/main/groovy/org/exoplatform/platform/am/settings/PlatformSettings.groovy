@@ -127,4 +127,8 @@ class PlatformSettings {
     return result
   }
 
+  public String describe() {
+    return this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')
+  }
+
 }

@@ -34,7 +34,8 @@ class AddonsManagerSettings extends Properties {
           getResourceAsStream(ADDONS_MANAGER_PROPERTIES)
 
       if (inputStream == null) {
-        throw new AddonsManagerException("Erroneous packaging, Property file \"${ADDONS_MANAGER_PROPERTIES}\" not found in the classpath")
+        throw new AddonsManagerException(
+            "Erroneous packaging, Property file \"${ADDONS_MANAGER_PROPERTIES}\" not found in the classpath")
       }
       try {
         load(inputStream)
@@ -55,5 +56,9 @@ class AddonsManagerSettings extends Properties {
       scriptName = "${scriptBaseName}.bat"
     }
     return scriptName
+  }
+
+  public String describe() {
+    return this.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')
   }
 }
