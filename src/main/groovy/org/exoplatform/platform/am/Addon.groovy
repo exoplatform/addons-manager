@@ -16,13 +16,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.platform.addon
+package org.exoplatform.platform.am
 
 import groovy.json.JsonSlurper
 import groovy.json.StreamingJsonBuilder
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
+import org.exoplatform.platform.am.settings.EnvironmentSettings
+import org.exoplatform.platform.am.utils.Logging
+import org.exoplatform.platform.am.utils.MiscUtils
 
 @groovy.transform.Canonical
 class Addon {

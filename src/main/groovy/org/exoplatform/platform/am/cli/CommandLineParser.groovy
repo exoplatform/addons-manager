@@ -16,10 +16,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.platform.addon
+package org.exoplatform.platform.am.cli
 
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.ParameterException
+import org.exoplatform.platform.am.utils.Logging
 
 class CommandLineParser {
 
@@ -88,6 +89,8 @@ class CommandLineParser {
             "Command ${CommandLineParameters.Command.UNINSTALL} must have one and only one value (found : ${_cliArgs?.commandUninstall?.addon})");
       }
       _cliArgs.commandUninstall.addonId = _cliArgs.commandUninstall.addon[0]
+    } else {
+      throw new ParameterException("No command defined")
     }
     return _cliArgs
   }

@@ -16,17 +16,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.platform.addon
+package org.exoplatform.platform.am.settings
+
+import org.exoplatform.platform.am.utils.Logging
+import org.exoplatform.platform.am.utils.MiscUtils
+import org.exoplatform.platform.am.cli.CommandLineParameters
 
 /**
  * This class exposes environment settings about the Add-ons Manager, the PLF server, the system, ...
  */
 class EnvironmentSettings {
   def PlatformSettings platformSettings
-  def ManagerSettings managerSettings
+  def AddonsManagerSettings managerSettings
   def CommandLineParameters commandLineArgs
 
-  EnvironmentSettings(ManagerSettings managerSettings, PlatformSettings platformSettings) {
+  EnvironmentSettings(AddonsManagerSettings managerSettings, PlatformSettings platformSettings) {
     this.managerSettings = managerSettings
     this.platformSettings = platformSettings
   }

@@ -16,7 +16,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.platform.addon
+package org.exoplatform.platform.am.settings
+
+import org.exoplatform.platform.am.utils.AddonsManagerException
+import org.exoplatform.platform.am.utils.Logging
 
 import java.util.jar.JarEntry
 import java.util.jar.JarFile

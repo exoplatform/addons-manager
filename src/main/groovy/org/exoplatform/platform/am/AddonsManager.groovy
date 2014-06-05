@@ -16,9 +16,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.platform.addon
+package org.exoplatform.platform.am
 
 import com.beust.jcommander.ParameterException
+import org.exoplatform.platform.am.cli.CommandLineParameters
+import org.exoplatform.platform.am.cli.CommandLineParser
+import org.exoplatform.platform.am.settings.AddonsManagerSettings
+import org.exoplatform.platform.am.settings.EnvironmentSettings
+import org.exoplatform.platform.am.settings.PlatformSettings
+import org.exoplatform.platform.am.utils.AddonsManagerException
+import org.exoplatform.platform.am.utils.Logging
 
 import static org.fusesource.jansi.Ansi.ansi
 
@@ -31,7 +38,7 @@ def clp
 try {
 // Initialize logging system
   Logging.initialize()
-  def managerSettings = new ManagerSettings()
+  def managerSettings = new AddonsManagerSettings()
 // display header
   Logging.displayHeader(managerSettings.version)
   clp = new CommandLineParser(managerSettings.getScriptName())
@@ -138,14 +145,10 @@ try {
         System.exit CommandLineParser.RETURN_CODE_KO
       }
       break
-    default:
-      Logging.displayMsgError("Invalid command.")
-      clp.usage()
-      Logging.dispose()
-      System.exit CommandLineParser.RETURN_CODE_KO
   }
 } catch (ParameterException pe) {
   Logging.displayMsgError("Invalid command line parameter(s) : " + pe.message)
+  println()
   clp.usage()
   System.exit CommandLineParser.RETURN_CODE_KO
 } catch (AddonsManagerException ame) {

@@ -16,16 +16,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.platform.addon
+package org.exoplatform.platform.am.settings
+
+import org.exoplatform.platform.am.utils.AddonsManagerException
 
 /**
  * This class store the add-ons manager settings
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class ManagerSettings extends Properties {
-  private static final String ADDONS_MANAGER_PROPERTIES = "org/exoplatform/platform/addon/settings.properties"
+class AddonsManagerSettings extends Properties {
+  private static final String ADDONS_MANAGER_PROPERTIES = "org/exoplatform/platform/am/settings/am.properties"
 
-  ManagerSettings() {
+  AddonsManagerSettings() {
     super()
     if (isEmpty()) {
       InputStream inputStream = getClass().getClassLoader().
