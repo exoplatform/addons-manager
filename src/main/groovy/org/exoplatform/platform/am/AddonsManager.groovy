@@ -168,5 +168,5 @@ try {
 } finally {
   Logging.dispose()
 }
-
+println()
 System.exit CommandLineParser.RETURN_CODE_OK
