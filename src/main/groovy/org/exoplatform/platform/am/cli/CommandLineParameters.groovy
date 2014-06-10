@@ -22,6 +22,7 @@ package org.exoplatform.platform.am.cli
 
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
+import org.exoplatform.platform.am.utils.Logging
 
 /**
  * Command line parameters
@@ -43,15 +44,15 @@ class CommandLineParameters {
   /**
    * The command name used to list add-ons
    */
-  public static final String LIST_COMMAND = "list"
+  static final String LIST_COMMAND = "list"
   /**
    * The command name used to install an add-on
    */
-  public static final String INSTALL_COMMAND = "install"
+  static final String INSTALL_COMMAND = "install"
   /**
    * The command name used to uninstall an add-on
    */
-  public static final String UNINSTALL_COMMAND = "uninstall"
+  static final String UNINSTALL_COMMAND = "uninstall"
 
   /**
    * List command parameters
@@ -84,7 +85,7 @@ class CommandLineParameters {
    * Verifies if is the verbose option is activated as main parameter or command parameter
    * @return true if the verbose option is activated as main parameter or command parameter
    */
-  public boolean isVerbose() {
+  boolean isVerbose() {
     return verbose || commandList.verbose || commandInstall.verbose || commandUninstall.verbose
   }
 
@@ -92,7 +93,7 @@ class CommandLineParameters {
    * Verifies if is the help option is activated as main parameter or command parameter
    * @return true if the help option is activated as main parameter or command parameter
    */
-  public boolean isHelp() {
+  boolean isHelp() {
     return help || commandList.help || commandInstall.help || commandUninstall.help
   }
 
@@ -107,6 +108,11 @@ class CommandLineParameters {
     def boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
     def boolean help
+
+    void describe() {
+      Logging.displayMsgVerbose(
+          "List Command Parameters :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')}\n")
+    }
   }
 
   /**
@@ -126,6 +132,11 @@ class CommandLineParameters {
     def boolean help
     def String addonId
     def String addonVersion
+
+    void describe() {
+      Logging.displayMsgVerbose(
+          "Install Command Parameters :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')}\n")
+    }
   }
 
   /**
@@ -140,6 +151,19 @@ class CommandLineParameters {
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
     def boolean help
     def String addonId
+
+    void describe() {
+      Logging.displayMsgVerbose(
+          "Uninstall Command Parameters :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')}\n")
+    }
+  }
+
+  void describe() {
+    Logging.displayMsgVerbose(
+        "Command Line Parameters :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class', 'commandList', 'commandInstall', 'commandUninstall'].contains(it.key) }.join('\n')}\n")
+    commandList.describe()
+    commandInstall.describe()
+    commandUninstall.describe()
   }
 
 }

@@ -26,19 +26,19 @@ import org.exoplatform.platform.am.utils.AddonsManagerException;
  * When something goes wrong while parsing command line parameters
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-public class CommandLineParsingException extends AddonsManagerException {
-  public CommandLineParsingException() {
+class CommandLineParsingException extends AddonsManagerException {
+  CommandLineParsingException() {
   }
 
-  public CommandLineParsingException(String s) {
+  CommandLineParsingException(String s) {
     super(s);
   }
 
-  public CommandLineParsingException(String s, Throwable throwable) {
+  CommandLineParsingException(String s, Throwable throwable) {
     super(s, throwable);
   }
 
-  public CommandLineParsingException(Throwable throwable) {
+  CommandLineParsingException(Throwable throwable) {
     super(throwable);
   }
 

@@ -46,8 +46,8 @@ done
 # Get standard environment variables
 PRGDIR=`dirname "$PRG"`
 
-# Only set PRODUCT_HOME if not already set
-[ -z "$PRODUCT_HOME" ] && PRODUCT_HOME=`cd "$PRGDIR" >/dev/null; pwd`
+# Only set PLF_HOME if not already set
+[ -z "$PLF_HOME" ] && PLF_HOME=`cd "$PRGDIR" >/dev/null; pwd`
 
 # -----------------------------------------------------------------------------
 #  Set JAVA_HOME or JRE_HOME if not already set, ensure any provided settings
@@ -94,4 +94,4 @@ if [ "$os400" != "true" ]; then
   _RUNJDB="$JAVA_HOME"/bin/jdb
 fi
 
-eval exec \"$_RUNJAVA\" -Dproduct.home=\"$PRODUCT_HOME\" -jar \"$PRODUCT_HOME/addons/addons-manager.jar\" "$@"
+eval exec \"$_RUNJAVA\" -Dplf.home=\"$PLF_HOME\" -jar \"$PLF_HOME/addons/addons-manager.jar\" "$@"

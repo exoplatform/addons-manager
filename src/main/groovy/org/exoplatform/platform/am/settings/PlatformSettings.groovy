@@ -30,107 +30,153 @@ import java.util.jar.JarFile
  * Platform instance settings
  */
 class PlatformSettings {
-  public static final String PLATFORM_HOME_SYS_PROP = "product.home"
+  /**
+   * The system property key used to pass the PLF home directory
+   */
+  static final String PLATFORM_HOME_SYS_PROP = "plf.home"
 
+  /**
+   * Application Server types on which PLF add-ons can be managed
+   */
   enum AppServerType {
     TOMCAT, JBOSSEAP, UNKNOWN
   }
 
+  /**
+   * Distribution types on which PLF add-ons can be managed
+   */
   enum DistributionType {
     COMMUNITY, ENTERPRISE, UNKNOWN
   }
 
-  File homeDirectory
+  private File _homeDirectory
+  private AppServerType _appServerType
+  private DistributionType _distributionType
+  private String _version
+  private File _librariesDirectory
+  private File _webappsDirectory
 
+  /**
+   * Platform Settings for the instance located with PLATFORM_HOME_SYS_PROP system property
+   */
   PlatformSettings() {
-    // Platform settings initialization
+    // Take the PLF_HOME from system properties
     if (!System.getProperty(PLATFORM_HOME_SYS_PROP)) {
       throw new AddonsManagerException("Erroneous setup, system property \"${PLATFORM_HOME_SYS_PROP}\" not defined.")
     }
-    this.homeDirectory = new File(System.getProperty(PLATFORM_HOME_SYS_PROP))
+    // Let's set the homeDir
+    this._homeDirectory = new File(System.getProperty(PLATFORM_HOME_SYS_PROP))
+    // Let's validate few things
+    validate()
   }
 
+/**
+ * Platform Settings for the instance located with PLATFORM_HOME_SYS_PROP system property
+ * @param homeDirectory the path to the PLF instance to analyze
+ */
   PlatformSettings(File homeDirectory) {
-    this.homeDirectory = homeDirectory
+    this._homeDirectory = homeDirectory
+    // Let's validate few things
+    validate()
   }
 
   AppServerType getAppServerType() {
-    if (new File(homeDirectory, "bin/catalina.sh").exists()) return AppServerType.TOMCAT
-    if (new File(homeDirectory, "bin/standalone.sh").exists()) return AppServerType.JBOSSEAP
-    return AppServerType.UNKNOWN
+    if (!_appServerType) {
+      if (new File(_homeDirectory, "bin/catalina.sh").exists()) {
+        _appServerType = AppServerType.TOMCAT
+      } else if (new File(_homeDirectory, "bin/standalone.sh").exists()) {
+        _appServerType = AppServerType.JBOSSEAP
+      } else {
+        _appServerType = AppServerType.UNKNOWN
+      }
+    }
+    return _appServerType
   }
 
   DistributionType getDistributionType() {
-    if (new File(homeDirectory, "eXo_Subscription_Agreement_US.pdf").exists()) return DistributionType.ENTERPRISE
-    return DistributionType.COMMUNITY
+    if (!_distributionType) {
+      if (new File(_homeDirectory, "eXo_Subscription_Agreement_US.pdf").exists()) {
+        _distributionType = DistributionType.ENTERPRISE
+      } else {
+        _distributionType = DistributionType.COMMUNITY
+      }
+    }
+    return _distributionType
   }
 
   String getVersion() {
-    def filePattern = ~/platform-component-upgrade-plugins.*jar/
-    def fileFound
-    def findFilenameClosure = {
-      if (filePattern.matcher(it.name).find()) {
-        fileFound = it
+    if (!_version) {
+      def filePattern = ~/platform-component-upgrade-plugins.*jar/
+      def fileFound
+      def findFilenameClosure = {
+        if (filePattern.matcher(it.name).find()) {
+          fileFound = it
+        }
+      }
+      librariesDirectory.eachFile(findFilenameClosure)
+      if (fileFound == null) {
+        throw new AddonsManagerException("Unable to find platform-component-upgrade-plugins jar in ${librariesDirectory}")
+      } else {
+        JarFile jarFile = new JarFile(fileFound)
+        JarEntry jarEntry = jarFile.getJarEntry("conf/platform.properties")
+        InputStream inputStream = jarFile.getInputStream(jarEntry)
+        Properties platformProperties = new Properties()
+        platformProperties.load(inputStream)
+        _version = platformProperties.getProperty("org.exoplatform.platform")
       }
     }
-    librariesDirectory.eachFile(findFilenameClosure)
-    if (fileFound == null) {
-      throw new AddonsManagerException("Unable to find platform-component-upgrade-plugins jar in ${librariesDirectory}")
-    } else {
-      JarFile jarFile = new JarFile(fileFound)
-      JarEntry jarEntry = jarFile.getJarEntry("conf/platform.properties")
-      InputStream inputStream = jarFile.getInputStream(jarEntry)
-      Properties platformProperties = new Properties()
-      platformProperties.load(inputStream)
-      return platformProperties.getProperty("org.exoplatform.platform")
-    }
+    return _version
   }
 
   File getLibrariesDirectory() {
-    switch (appServerType) {
-      case AppServerType.TOMCAT:
-        return new File(homeDirectory, "lib")
-      case AppServerType.JBOSSEAP:
-        return new File(homeDirectory, "standalone/deployments/platform.ear/lib")
+    if (!_librariesDirectory) {
+      switch (appServerType) {
+        case AppServerType.TOMCAT:
+          _librariesDirectory = new File(_homeDirectory, "lib")
+          break
+        case AppServerType.JBOSSEAP:
+          _librariesDirectory = new File(_homeDirectory, "standalone/deployments/platform.ear/lib")
+          break
+      }
     }
+    return _librariesDirectory
   }
 
   File getWebappsDirectory() {
-    switch (appServerType) {
-      case AppServerType.TOMCAT:
-        return new File(homeDirectory, "webapps")
-      case AppServerType.JBOSSEAP:
-        return new File(homeDirectory, "standalone/deployments/platform.ear")
+    if (!_webappsDirectory) {
+      switch (appServerType) {
+        case AppServerType.TOMCAT:
+          _webappsDirectory = new File(_homeDirectory, "webapps")
+          break
+        case AppServerType.JBOSSEAP:
+          _webappsDirectory = new File(_homeDirectory, "standalone/deployments/platform.ear")
+          break
+      }
     }
+    return _webappsDirectory
   }
 
-  boolean validate() {
-    def result = true;
-    if (!homeDirectory.isDirectory()) {
-      Logging.displayMsgError("Erroneous setup, product home directory (${homeDirectory}) is invalid.")
-      result = false
+  private void validate() {
+    if (!_homeDirectory.isDirectory()) {
+      throw new AddonsManagerException("Erroneous setup, product home directory (${_homeDirectory}) is invalid.")
     }
     if (!librariesDirectory.isDirectory()) {
-      Logging.displayMsgError("Erroneous setup, platform libraries directory (${librariesDirectory}) is invalid.")
-      result = false
+      throw new AddonsManagerException("Erroneous setup, platform libraries directory (${librariesDirectory}) is invalid.")
     }
     if (!webappsDirectory.isDirectory()) {
-      Logging.displayMsgError("Erroneous setup, platform web applications directory (${webappsDirectory}) is invalid.")
-      result = false
+      throw new AddonsManagerException("Erroneous setup, platform web applications directory (${webappsDirectory}) is invalid.")
     }
     if (AppServerType.UNKNOWN.equals(appServerType)) {
-      Logging.displayMsgError("Erroneous setup, cannot computes the application server type.")
-      result = false
+      throw new AddonsManagerException("Erroneous setup, cannot computes the application server type.")
     }
     if (DistributionType.UNKNOWN.equals(distributionType)) {
-      Logging.displayMsgError("Erroneous setup, cannot computes the distribution type.")
-      result = false
+      throw new AddonsManagerException("Erroneous setup, cannot computes the distribution type.")
     }
-    return result
   }
 
-  public String describe() {
-    return this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')
+  void describe() {
+    Logging.displayMsgVerbose(
+        "Platform Settings :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')}\n")
   }
 
 }

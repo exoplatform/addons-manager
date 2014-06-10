@@ -33,7 +33,7 @@ class PlatformSettingsTest extends Specification {
     Logging.verbose = true
   }
 
-  def "No product.home defined"() {
+  def "No plf.home property defined"() {
     when:
     new PlatformSettings()
     then:

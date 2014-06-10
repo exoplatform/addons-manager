@@ -55,6 +55,6 @@ class AddonsManagerSettingsTest extends Specification {
 
   def "scriptName is defined"() {
     expect:
-    managerSettings.getScriptName()
+    managerSettings.scriptName
   }
 }

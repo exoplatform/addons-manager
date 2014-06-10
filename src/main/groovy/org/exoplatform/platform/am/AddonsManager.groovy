@@ -40,29 +40,33 @@ def clp
 try {
 // Initialize logging system
   Logging.initialize()
+
+// Initialize Add-ons manager settings
   def managerSettings = new AddonsManagerSettings()
+
 // display header
   Logging.displayHeader(managerSettings.version)
-  clp = new CommandLineParser(managerSettings.getScriptName(), Logging.CONSOLE_WIDTH)
-  def platformSettings = new PlatformSettings()
-  def environmentSettings = new EnvironmentSettings(managerSettings, platformSettings)
-// Parse command line parameters and fill settings with user inputs
-  environmentSettings.commandLineArgs = clp.parse(args)
 
-  Logging.displayMsgVerbose("Manager Settings :\n${managerSettings.describe()}\n")
-  Logging.displayMsgVerbose("Platform Settings :\n${platformSettings.describe()}\n")
-  Logging.displayMsgVerbose("Environment Settings :\n${environmentSettings.describe()}\n")
+// Initialize Add-ons manager settings
+  clp = new CommandLineParser(managerSettings.scriptName, Logging.CONSOLE_WIDTH)
+
+// Initialize PLF settings
+  def platformSettings = new PlatformSettings()
+
+// Parse command line parameters and fill settings with user inputs
+  def commandLineParameters = clp.parse(args)
+
+// Initialize environment settings
+  def environmentSettings = new EnvironmentSettings(managerSettings, platformSettings, commandLineParameters)
+
+// Display verbose details
+  environmentSettings.describe()
 
   // Show usage text when -h or --help option is used.
   if (environmentSettings.commandLineArgs.help) {
     clp.usage()
     Logging.dispose()
     System.exit AddonsManagerConstants.RETURN_CODE_OK
-  }
-
-  if (!environmentSettings.validate()) {
-    Logging.dispose()
-    System.exit AddonsManagerConstants.RETURN_CODE_KO
   }
 
   def List<Addon> addons = new ArrayList<Addon>()
@@ -89,6 +93,7 @@ try {
       Logging.logWithStatus("Loading add-ons...") {
         addons.addAll(Addon.parseJSONAddonsList(catalog, environmentSettings))
       }
+      break
   }
 
   //
@@ -104,7 +109,7 @@ try {
       }
       println ansi().render("""
   To install an add-on:
-    ${managerSettings.getScriptName()} --install @|yellow addon|@
+    ${managerSettings.scriptName} --install @|yellow addon|@
   """).toString()
       break
     case CommandLineParameters.Command.INSTALL:
@@ -161,8 +166,8 @@ try {
   Logging.displayMsgError "${ame.message}"
   println()
   System.exit AddonsManagerConstants.RETURN_CODE_KO
-} catch (Exception e) {
-  Logging.displayThrowable(e)
+} catch (Throwable t) {
+  Logging.displayThrowable(t)
   println()
   System.exit AddonsManagerConstants.RETURN_CODE_KO
 } finally {

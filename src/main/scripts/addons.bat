@@ -23,17 +23,17 @@
 
 if "%OS%" == "Windows_NT" setlocal
 
-rem Guess PRODUCT_HOME if not defined
+rem Guess PLF_HOME if not defined
 set "CURRENT_DIR=%cd%"
-if not "%PRODUCT_HOME%" == "" goto gotHome
-set "PRODUCT_HOME=%CURRENT_DIR%"
-if exist "%PRODUCT_HOME%\addons" goto okHome
-set "PRODUCT_HOME=%cd%"
+if not "%PLF_HOME%" == "" goto gotHome
+set "PLF_HOME=%CURRENT_DIR%"
+if exist "%PLF_HOME%\addons" goto okHome
+set "PLF_HOME=%cd%"
 cd "%CURRENT_DIR%"
 :gotHome
 
-if exist "%PRODUCT_HOME%\addons" goto okHome
-echo The PRODUCT_HOME environment variable is not defined correctly
+if exist "%PLF_HOME%\addons" goto okHome
+echo The PLF_HOME environment variable is not defined correctly
 echo This environment variable is needed to run this program
 goto end
 :okHome
@@ -103,7 +103,7 @@ goto setArgs
 :doneSetArgs
 
 :execCmd
-%_RUNJAVA% -Dproduct.home="%PRODUCT_HOME%" -jar "%PRODUCT_HOME%\addons\addons-manager.jar" %CMD_LINE_ARGS%
+%_RUNJAVA% -Dplf.home="%PLF_HOME%" -jar "%PLF_HOME%\addons\addons-manager.jar" %CMD_LINE_ARGS%
 goto end
 
 :exit

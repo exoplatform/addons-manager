@@ -28,9 +28,9 @@ class AddonsManagerConstants {
   /**
    * Command line return code when the program succeeded
    */
-  public static final int RETURN_CODE_OK = 0
+  static final int RETURN_CODE_OK = 0
   /**
    * Command line return code when the program failed
    */
-  public static final int RETURN_CODE_KO = 1
+  static final int RETURN_CODE_KO = 1
 }

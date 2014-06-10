@@ -21,8 +21,9 @@
 package org.exoplatform.platform.am.settings
 
 import org.exoplatform.platform.am.cli.CommandLineParameters
-import org.exoplatform.platform.am.utils.Logging
+import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.FileUtils
+import org.exoplatform.platform.am.utils.Logging
 
 /**
  * This class exposes environment settings about the Add-ons Manager, the PLF server, the system, ...
@@ -32,17 +33,20 @@ class EnvironmentSettings {
   def AddonsManagerSettings managerSettings
   def CommandLineParameters commandLineArgs
 
-  EnvironmentSettings(AddonsManagerSettings managerSettings, PlatformSettings platformSettings) {
+  EnvironmentSettings(AddonsManagerSettings managerSettings, PlatformSettings platformSettings, CommandLineParameters commandLineArgs) {
     this.managerSettings = managerSettings
     this.platformSettings = platformSettings
+    this.commandLineArgs = commandLineArgs
+    // Let's validate few things
+    validate()
   }
 
   /**
    * Returns the path where add-ons are stored
    * @return a directory path
    */
-  public File getAddonsDirectory() {
-    File directory = new File(platformSettings.homeDirectory, managerSettings.addonsDirectoryPath)
+  File getAddonsDirectory() {
+    File directory = new File(platformSettings._homeDirectory, managerSettings.addonsDirectoryPath)
     if (!directory.exists()) {
       FileUtils.mkdirs(directory)
     }
@@ -53,7 +57,7 @@ class EnvironmentSettings {
    * Returns the path to the local catalog
    * @return a file path
    */
-  public File getLocalAddonsCatalogFile() {
+  File getLocalAddonsCatalogFile() {
     return new File(addonsDirectory, managerSettings.localAddonsCatalogFilename)
   }
 
@@ -61,7 +65,7 @@ class EnvironmentSettings {
    * Returns the content of the local catalog
    * @return a JSON formatted text
    */
-  public String getLocalAddonsCatalog() {
+  String getLocalAddonsCatalog() {
     return localAddonsCatalogFile.text
   }
 
@@ -69,7 +73,7 @@ class EnvironmentSettings {
    * Returns the URL to the remote catalog
    * @return the URL of the central catalog
    */
-  public URL getCentralCatalogUrl() {
+  URL getCentralCatalogUrl() {
     return new URL(managerSettings.centralCatalogUrl)
   }
 
@@ -77,24 +81,22 @@ class EnvironmentSettings {
    * Returns the content of the remote catalog
    * @return a JSON formatted text
    */
-  public String getCentralCatalog() {
+  String getCentralCatalog() {
     return centralCatalogUrl.text
   }
 
-  boolean validate() {
-    def result = true;
+  private void validate() {
     if (!addonsDirectory.isDirectory()) {
-      Logging.displayMsgError("Erroneous setup, add-ons directory (${addonsDirectory}) is invalid.")
-      result = false
+      throw new AddonsManagerException("Erroneous setup, add-ons directory (${addonsDirectory}) is invalid.")
     }
-    return platformSettings.validate() & result
   }
 
-  public String describe() {
-    return this.properties.sort { it.key }.collect { it }.findAll {
-      !['class', 'platformSettings', 'managerSettings', 'commandLineArgs', 'centralCatalog', 'localAddonsCatalog'].contains(
-          it.key)
-    }.join('\n')
+  void describe() {
+    Logging.displayMsgVerbose(
+        "Environment Settings :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class', 'platformSettings', 'managerSettings', 'commandLineArgs', 'centralCatalog', 'localAddonsCatalog'].contains(it.key) }.join('\n')}\n")
+    managerSettings.describe()
+    platformSettings.describe()
+    commandLineArgs.describe()
   }
 
 }

@@ -21,9 +21,10 @@
 package org.exoplatform.platform.am.settings
 
 import org.exoplatform.platform.am.utils.AddonsManagerException
+import org.exoplatform.platform.am.utils.Logging
 
 /**
- * This class store the add-ons manager settings
+ * This class stores the add-ons manager settings
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class AddonsManagerSettings extends Properties {
@@ -40,24 +41,25 @@ class AddonsManagerSettings extends Properties {
     }
     try {
       load(inputStream)
+    } catch (IOException ioe) {
+      throw new AddonsManagerException("Error while reading \"${ADDONS_MANAGER_PROPERTIES}\" : ${ioe.message}", ioe)
     } finally {
       try {
         inputStream.close()
       } catch (Exception e) {
+        Logging.displayMsgWarn("Error while closing \"${ADDONS_MANAGER_PROPERTIES}\" : ${e.message}")
       }
     }
-  }
-
-  public String getScriptName() {
-    // Computes the script addon from the OS
-    def scriptName = "${scriptBaseName}.sh"
+    // Computes the script name from the OS
     if (System.properties['os.name'].toLowerCase().contains('windows')) {
-      scriptName = "${scriptBaseName}.bat"
+      setProperty("scriptName", "${scriptBaseName}.bat")
+    } else {
+      setProperty("scriptName", "${scriptBaseName}.sh")
     }
-    return scriptName
   }
 
-  public String describe() {
-    return this.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')
+  void describe() {
+    Logging.displayMsgVerbose(
+        "Manager Settings :\n${this.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')}\n")
   }
 }

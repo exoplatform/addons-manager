@@ -20,6 +20,7 @@
  */
 package org.exoplatform.platform.am
 
+import org.exoplatform.platform.am.settings.PlatformSettings
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -40,7 +41,7 @@ class AddonsManagerIT {
   @Parameter(2)
   public int exitCode;
 
-  @Parameters(name = "{index}: exitValue(productHome={0},params={1})={2}")
+  @Parameters(name = "{index}: exitValue(plfHome={0},params={1})={2}")
   static Collection<Object[]> data() {
     def testedArtifactPath = System.getProperty("testedArtifactPath")
     assertNotNull("Tested artifact path mustn't be null", testedArtifactPath)
@@ -90,7 +91,7 @@ class AddonsManagerIT {
     if (System.getProperty('jacocoAgent') != null) {
       commandToExecute << "${System.getProperty('jacocoAgent')}"
     }
-    commandToExecute << "-Dproduct.home=${productHome.absolutePath}"
+    commandToExecute << "-D${PlatformSettings.PLATFORM_HOME_SYS_PROP}=${productHome.absolutePath}"
     commandToExecute << "-jar"
     commandToExecute << "${testedArtifactPath}"
     commandToExecute << "-v"
