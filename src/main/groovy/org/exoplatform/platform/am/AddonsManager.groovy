@@ -20,9 +20,9 @@
  */
 package org.exoplatform.platform.am
 
-import com.beust.jcommander.ParameterException
 import org.exoplatform.platform.am.cli.CommandLineParameters
 import org.exoplatform.platform.am.cli.CommandLineParser
+import org.exoplatform.platform.am.cli.CommandLineParsingException
 import org.exoplatform.platform.am.settings.AddonsManagerSettings
 import org.exoplatform.platform.am.settings.EnvironmentSettings
 import org.exoplatform.platform.am.settings.PlatformSettings
@@ -43,7 +43,7 @@ try {
   def managerSettings = new AddonsManagerSettings()
 // display header
   Logging.displayHeader(managerSettings.version)
-  clp = new CommandLineParser(managerSettings.getScriptName())
+  clp = new CommandLineParser(managerSettings.getScriptName(), Logging.CONSOLE_WIDTH)
   def platformSettings = new PlatformSettings()
   def environmentSettings = new EnvironmentSettings(managerSettings, platformSettings)
 // Parse command line parameters and fill settings with user inputs
@@ -57,12 +57,12 @@ try {
   if (environmentSettings.commandLineArgs.help) {
     clp.usage()
     Logging.dispose()
-    System.exit CommandLineParser.RETURN_CODE_OK
+    System.exit AddonsManagerConstants.RETURN_CODE_OK
   }
 
   if (!environmentSettings.validate()) {
     Logging.dispose()
-    System.exit CommandLineParser.RETURN_CODE_KO
+    System.exit AddonsManagerConstants.RETURN_CODE_KO
   }
 
   def List<Addon> addons = new ArrayList<Addon>()
@@ -118,7 +118,7 @@ try {
         if (addon == null) {
           Logging.displayMsgError("No add-on with identifier ${environmentSettings.commandLineArgs.commandInstall.addonId} found")
           Logging.dispose()
-          System.exit CommandLineParser.RETURN_CODE_KO
+          System.exit AddonsManagerConstants.RETURN_CODE_KO
         }
       } else {
         // Let's find the add-on with the given id and version
@@ -131,7 +131,7 @@ try {
           Logging.displayMsgError(
               "No add-on with identifier ${environmentSettings.commandLineArgs.commandInstall.addonId} and version ${environmentSettings.commandLineArgs.commandInstall.addonVersion} found")
           Logging.dispose()
-          System.exit CommandLineParser.RETURN_CODE_KO
+          System.exit AddonsManagerConstants.RETURN_CODE_KO
         }
       }
       addon.install()
@@ -148,25 +148,25 @@ try {
       } else {
         Logging.logWithStatusKO("Add-on not installed. Exiting.")
         Logging.dispose()
-        System.exit CommandLineParser.RETURN_CODE_KO
+        System.exit AddonsManagerConstants.RETURN_CODE_KO
       }
       break
   }
-} catch (ParameterException pe) {
-  Logging.displayMsgError("Invalid command line parameter(s) : " + pe.message)
+} catch (CommandLineParsingException clpe) {
+  Logging.displayMsgError("Invalid command line parameter(s) : " + clpe.message)
   println()
   clp.usage()
-  System.exit CommandLineParser.RETURN_CODE_KO
+  System.exit AddonsManagerConstants.RETURN_CODE_KO
 } catch (AddonsManagerException ame) {
   Logging.displayMsgError "${ame.message}"
   println()
-  System.exit CommandLineParser.RETURN_CODE_KO
+  System.exit AddonsManagerConstants.RETURN_CODE_KO
 } catch (Exception e) {
   Logging.displayThrowable(e)
   println()
-  System.exit CommandLineParser.RETURN_CODE_KO
+  System.exit AddonsManagerConstants.RETURN_CODE_KO
 } finally {
   Logging.dispose()
 }
 println()
-System.exit CommandLineParser.RETURN_CODE_OK
+System.exit AddonsManagerConstants.RETURN_CODE_OK

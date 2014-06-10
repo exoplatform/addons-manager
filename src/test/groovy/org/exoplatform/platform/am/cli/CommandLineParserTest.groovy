@@ -20,16 +20,14 @@
  */
 package org.exoplatform.platform.am.cli
 
-import com.beust.jcommander.ParameterException
 import org.exoplatform.platform.am.utils.Logging
 import spock.lang.Specification
-
 /**
  * Command line parameters parsing
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class CommandLineParserTest extends Specification {
-  def clp = new CommandLineParser("FAKE.sh")
+  def clp = new CommandLineParser("FAKE.sh", Logging.CONSOLE_WIDTH)
 
   def setupSpec() {
     Logging.verbose = true
@@ -160,7 +158,7 @@ class CommandLineParserTest extends Specification {
     when:
     clp.parse(args)
     then:
-    thrown(ParameterException)
+    thrown(CommandLineParsingException)
     where:
     args << [
         // Missing params

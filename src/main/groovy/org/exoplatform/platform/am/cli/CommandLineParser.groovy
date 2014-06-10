@@ -24,37 +24,57 @@ import com.beust.jcommander.JCommander
 import com.beust.jcommander.ParameterException
 import org.exoplatform.platform.am.utils.Logging
 
+/**
+ * Parser for command line arguments
+ */
 class CommandLineParser {
 
-  final static int RETURN_CODE_OK = 0
-  final static int RETURN_CODE_KO = 1
-
+  /**
+   * JCommander instance used to process args
+   */
   private JCommander _jCommander
+
+  /**
+   * Object to populate from CL args
+   */
   private CommandLineParameters _cliArgs
 
-  CommandLineParser(String scriptName) {
+  /**
+   * Default Constructor
+   * @param scriptName The name of the script (used to display usage message)
+   * @param columnSize The number of characters to in an output line  (used to display usage message)
+   */
+  CommandLineParser(String scriptName, int columnSize) {
+    // Output
     _cliArgs = new CommandLineParameters()
     _jCommander = new JCommander(_cliArgs);
     _jCommander.addCommand(_cliArgs.commandList)
     _jCommander.addCommand(_cliArgs.commandInstall)
     _jCommander.addCommand(_cliArgs.commandUninstall)
-    _jCommander.setColumnSize(Logging.CONSOLE_WIDTH)
+    _jCommander.setColumnSize(columnSize)
     _jCommander.setProgramName(scriptName)
   }
 
+  /**
+   * Display in the output the usage message to explain how to use the program and its parameters
+   */
   void usage() {
     _jCommander.usage();
   }
 
   /**
    * Initialize settings from command line parameters
-   * @param args Command line parameters
-   * @return a EnvironmentSettings instance or null if something went wrong
+   * @param args Command line parameters to analyze
+   * @return a CommandLineParameters instance populated with data coming from the command line
+   * @thows CommandLineParsingException if something goes wrong while analyzing CL parameters
    */
   CommandLineParameters parse(String[] args) {
     Logging.displayMsgVerbose("Parameters to parse : ${args}")
-    _jCommander.parse(args);
-
+    try {
+      _jCommander.parse(args);
+    } catch (ParameterException pe) {
+      throw new CommandLineParsingException(pe.message, pe);
+    }
     if (_cliArgs.verbose) {
       Logging.activateVerboseMessages()
     }
@@ -69,7 +89,7 @@ class CommandLineParser {
     } else if (CommandLineParameters.INSTALL_COMMAND.equals(_jCommander.getParsedCommand())) {
       _cliArgs.command = CommandLineParameters.Command.INSTALL
       if (_cliArgs?.commandInstall?.addon?.size() != 1) {
-        throw new ParameterException(
+        throw new CommandLineParsingException(
             "Command ${CommandLineParameters.Command.INSTALL} must have one and only one value (found : ${_cliArgs?.commandInstall?.addon})");
       }
       if (_cliArgs.commandInstall.addon[0].indexOf(':') > 0) {
@@ -88,12 +108,12 @@ class CommandLineParser {
     } else if (CommandLineParameters.UNINSTALL_COMMAND.equals(_jCommander.getParsedCommand())) {
       _cliArgs.command = CommandLineParameters.Command.UNINSTALL
       if (_cliArgs?.commandUninstall?.addon?.size() != 1) {
-        throw new ParameterException(
+        throw new CommandLineParsingException(
             "Command ${CommandLineParameters.Command.UNINSTALL} must have one and only one value (found : ${_cliArgs?.commandUninstall?.addon})");
       }
       _cliArgs.commandUninstall.addonId = _cliArgs.commandUninstall.addon[0]
     } else {
-      throw new ParameterException("No command defined")
+      throw new CommandLineParsingException("No command defined")
     }
     return _cliArgs
   }

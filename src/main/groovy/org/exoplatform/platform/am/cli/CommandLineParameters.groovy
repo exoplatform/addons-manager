@@ -24,40 +24,13 @@ import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
 
 /**
- * CommandLineParser Arguments passed to the manager
+ * Command line parameters
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class CommandLineParameters {
-  public static final String LIST_COMMAND = "list"
-  public static final String INSTALL_COMMAND = "install"
-  public static final String UNINSTALL_COMMAND = "uninstall"
-
-  def ListCommandParameters commandList = new ListCommandParameters()
-  def InstallCommandParameters commandInstall = new InstallCommandParameters()
-  def UninstallCommandParameters commandUninstall = new UninstallCommandParameters()
-  def Command command
-
-  @Parameter(names = ["-v", "--verbose"], description = "Show verbose logs")
-  private def boolean verbose
-  @Parameter(names = ["-h", "--help"], description = "Show usage information", help = true)
-  private def boolean help
-
   /**
-   * Verify if is the verbose option is activated as main parameter or command parameter
-   * @return true if the verbose option is activated as main parameter or command parameter
+   * The enumeration of all possible commands
    */
-  public boolean isVerbose() {
-    return verbose || commandList.verbose || commandInstall.verbose || commandUninstall.verbose
-  }
-
-  /**
-   * Verify if is the help option is activated as main parameter or command parameter
-   * @return true if the help option is activated as main parameter or command parameter
-   */
-  public boolean isHelp() {
-    return help || commandList.help || commandInstall.help || commandUninstall.help
-  }
-
   enum Command {
     LIST(LIST_COMMAND), INSTALL(INSTALL_COMMAND), UNINSTALL(UNINSTALL_COMMAND)
     final String name
@@ -67,6 +40,65 @@ class CommandLineParameters {
     }
   }
 
+  /**
+   * The command name used to list add-ons
+   */
+  public static final String LIST_COMMAND = "list"
+  /**
+   * The command name used to install an add-on
+   */
+  public static final String INSTALL_COMMAND = "install"
+  /**
+   * The command name used to uninstall an add-on
+   */
+  public static final String UNINSTALL_COMMAND = "uninstall"
+
+  /**
+   * List command parameters
+   */
+  def ListCommandParameters commandList = new ListCommandParameters()
+  /**
+   * Install command parameters
+   */
+  def InstallCommandParameters commandInstall = new InstallCommandParameters()
+  /**
+   * Uninstall command parameters
+   */
+  def UninstallCommandParameters commandUninstall = new UninstallCommandParameters()
+  /**
+   * The command asked by the user
+   */
+  def Command command
+  /**
+   * To activate verbose logs
+   */
+  @Parameter(names = ["-v", "--verbose"], description = "Show verbose logs")
+  private def boolean verbose
+  /**
+   * To display the help message
+   */
+  @Parameter(names = ["-h", "--help"], description = "Show usage information", help = true)
+  private def boolean help
+
+  /**
+   * Verifies if is the verbose option is activated as main parameter or command parameter
+   * @return true if the verbose option is activated as main parameter or command parameter
+   */
+  public boolean isVerbose() {
+    return verbose || commandList.verbose || commandInstall.verbose || commandUninstall.verbose
+  }
+
+  /**
+   * Verifies if is the help option is activated as main parameter or command parameter
+   * @return true if the help option is activated as main parameter or command parameter
+   */
+  public boolean isHelp() {
+    return help || commandList.help || commandInstall.help || commandUninstall.help
+  }
+
+  /**
+   * Specific parameters to list add-ons
+   */
   @Parameters(commandDescription = "List add-ons", commandNames = CommandLineParameters.LIST_COMMAND)
   class ListCommandParameters {
     @Parameter(names = ["-s", "--snapshots"], description = "List also add-ons SNAPSHOTs")
@@ -77,6 +109,9 @@ class CommandLineParameters {
     def boolean help
   }
 
+  /**
+   * Specific parameters to install an add-on
+   */
   @Parameters(commandDescription = "Install an add-on", commandNames = CommandLineParameters.INSTALL_COMMAND)
   class InstallCommandParameters {
     @Parameter(names = ["-f", "--force"], description = "Enforce to download again and reinstall an add-on already deployed")
@@ -93,6 +128,9 @@ class CommandLineParameters {
     def String addonVersion
   }
 
+  /**
+   * Specific parameters to uninstall an add-on
+   */
   @Parameters(commandDescription = "Uninstall an add-on", commandNames = CommandLineParameters.UNINSTALL_COMMAND)
   class UninstallCommandParameters {
     @Parameter(description = "addon ", arity = 1, required = true)
