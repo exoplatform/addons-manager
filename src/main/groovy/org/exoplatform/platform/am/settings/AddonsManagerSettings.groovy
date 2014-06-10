@@ -46,8 +46,8 @@ class AddonsManagerSettings extends Properties {
     } finally {
       try {
         inputStream.close()
-      } catch (Exception e) {
-        Logging.displayMsgWarn("Error while closing \"${ADDONS_MANAGER_PROPERTIES}\" : ${e.message}")
+      } catch (IOException ioe) {
+        Logging.displayMsgWarn("Error while closing \"${ADDONS_MANAGER_PROPERTIES}\" : ${ioe.message}")
       }
     }
     // Computes the script name from the OS
