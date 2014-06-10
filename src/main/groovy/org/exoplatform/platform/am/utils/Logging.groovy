@@ -55,9 +55,9 @@ class Logging {
       def result = closure.call(args)
       displayStatusOK()
       return result
-    } catch (Exception e) {
+    } catch (Throwable t) {
       displayStatusKO()
-      throw e
+      throw t
     }
   }
 
