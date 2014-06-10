@@ -112,7 +112,7 @@ try {
       }
       println ansi().render("""
   To install an add-on:
-    ${managerSettings.scriptName} --install @|yellow addon|@
+    ${managerSettings.scriptName} install @|yellow addon|@
   """).toString()
       break
     case CommandLineParameters.Command.INSTALL:

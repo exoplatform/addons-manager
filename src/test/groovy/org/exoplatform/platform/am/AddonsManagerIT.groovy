@@ -55,13 +55,13 @@ class AddonsManagerIT {
       data.add([directory, [""] as String[], AddonsManagerConstants.RETURN_CODE_KO] as Object[])
       // With --help param the program must display the help return 0
       data.add([directory, ["--help"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // With --list param the program must display the list of available add-ons and return 0
+      // With list param the program must display the list of available add-ons and return 0
       data.add([directory, ["list"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
       // Install an extension
       data.add([directory, ["install", "exo-chat-extension"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
       // Uninstall an extension
       data.add([directory, ["uninstall", "exo-chat-extension"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // With --list --snapshots param the program must display the list of available add-ons and return 0
+      // With list --snapshots param the program must display the list of available add-ons and return 0
       data.add([directory, ["list", "--snapshots"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
       // Install another extension with a given version
       data.add([directory, ["install", "exo-sirona:1.0.0"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])

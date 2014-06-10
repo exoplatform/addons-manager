@@ -41,31 +41,31 @@ We are using ```addons.sh``` in our samples. If you are on a windows system, jus
 
 Display all available addons :
 
-    addons.sh --list
+    addons.sh list
 
 Display all available addons including development versions (snapshots) :
 
-    addons.sh --list --snapshots
+    addons.sh list --snapshots
 
 Install the latest stable version of the add-on ```foo```
 
-    addons.sh --install foo
+    addons.sh install foo
 
 Install the latest stable or development version of the add-on ```foo```
 
-    addons.sh --install foo --snapshots
+    addons.sh install foo --snapshots
 
 Install the version ```42.0``` of the add-on ```foo```
 
-    addons.sh --install foo:42.0
+    addons.sh install foo:42.0
 
 Enforce to reinstall the latest stable version of the add-on ```foo```
 
-    addons.sh --install foo --force
+    addons.sh install foo --force
 
 Uninstall the add-on ```foo```
 
-    addons.sh --uninstall foo
+    addons.sh uninstall foo
 
 ## BUILD (AND AUTOMATED TESTS)
 
