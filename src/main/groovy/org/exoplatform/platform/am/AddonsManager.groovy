@@ -158,12 +158,12 @@ try {
       break
   }
 } catch (CommandLineParsingException clpe) {
-  Logging.displayMsgError("Invalid command line parameter(s) : " + clpe.message)
+  Logging.displayMsgError("Invalid command line parameter(s) : ${clpe.message}")
   println()
   clp.usage()
   System.exit AddonsManagerConstants.RETURN_CODE_KO
 } catch (AddonsManagerException ame) {
-  Logging.displayMsgError "${ame.message}"
+  Logging.displayMsgError ame.message
   println()
   System.exit AddonsManagerConstants.RETURN_CODE_KO
 } catch (Throwable t) {
