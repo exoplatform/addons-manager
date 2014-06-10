@@ -20,7 +20,6 @@
  */
 package org.exoplatform.platform.am.settings
 
-import org.exoplatform.platform.am.cli.CommandLineParameters
 import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.FileUtils
 import org.exoplatform.platform.am.utils.Logging
@@ -29,14 +28,16 @@ import org.exoplatform.platform.am.utils.Logging
  * This class exposes environment settings about the Add-ons Manager, the PLF server, the system, ...
  */
 class EnvironmentSettings {
-  def PlatformSettings platformSettings
-  def AddonsManagerSettings managerSettings
-  def CommandLineParameters commandLineArgs
+  private PlatformSettings _platformSettings
+  private AddonsManagerSettings _managerSettings
+  private File _addonsDirectory
+  private File _archivesDirectory
+  private File _statusesDirectory
+  private File _localAddonsCatalogFile
 
-  EnvironmentSettings(AddonsManagerSettings managerSettings, PlatformSettings platformSettings, CommandLineParameters commandLineArgs) {
-    this.managerSettings = managerSettings
-    this.platformSettings = platformSettings
-    this.commandLineArgs = commandLineArgs
+  EnvironmentSettings(AddonsManagerSettings managerSettings, PlatformSettings platformSettings) {
+    this._managerSettings = managerSettings
+    this._platformSettings = platformSettings
     // Let's validate few things
     validate()
   }
@@ -46,11 +47,41 @@ class EnvironmentSettings {
    * @return a directory path
    */
   File getAddonsDirectory() {
-    File directory = new File(platformSettings._homeDirectory, managerSettings.addonsDirectoryPath)
-    if (!directory.exists()) {
-      FileUtils.mkdirs(directory)
+    if (!this._addonsDirectory) {
+      this._addonsDirectory = new File(this._platformSettings.homeDirectory, this._managerSettings.addonsDirectoryPath)
+      if (!this._addonsDirectory.exists()) {
+        FileUtils.mkdirs(this._addonsDirectory)
+      }
     }
-    return directory
+    return this._addonsDirectory
+  }
+
+  /**
+   * Returns the path where add-ons archives are stored
+   * @return a directory path
+   */
+  File getArchivesDirectory() {
+    if (!this._archivesDirectory) {
+      this._archivesDirectory = new File(addonsDirectory, this._managerSettings.archivesDirectoryName)
+      if (!this._archivesDirectory.exists()) {
+        FileUtils.mkdirs(this._archivesDirectory)
+      }
+    }
+    return this._archivesDirectory
+  }
+
+  /**
+   * Returns the path where add-ons statuses are stored
+   * @return a directory path
+   */
+  File getStatusesDirectory() {
+    if (!this._statusesDirectory) {
+      this._statusesDirectory = new File(addonsDirectory, _managerSettings.archivesDirectoryName)
+      if (!_statusesDirectory.exists()) {
+        FileUtils.mkdirs(_statusesDirectory)
+      }
+    }
+    return _statusesDirectory
   }
 
   /**
@@ -58,7 +89,10 @@ class EnvironmentSettings {
    * @return a file path
    */
   File getLocalAddonsCatalogFile() {
-    return new File(addonsDirectory, managerSettings.localAddonsCatalogFilename)
+    if (!this._localAddonsCatalogFile) {
+      this._localAddonsCatalogFile = new File(addonsDirectory, _managerSettings.localAddonsCatalogFilename)
+    }
+    return this._localAddonsCatalogFile
   }
 
   /**
@@ -74,7 +108,7 @@ class EnvironmentSettings {
    * @return the URL of the central catalog
    */
   URL getCentralCatalogUrl() {
-    return new URL(managerSettings.centralCatalogUrl)
+    return new URL(_managerSettings.centralCatalogUrl)
   }
 
   /**
@@ -93,10 +127,7 @@ class EnvironmentSettings {
 
   void describe() {
     Logging.displayMsgVerbose(
-        "Environment Settings :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class', 'platformSettings', 'managerSettings', 'commandLineArgs', 'centralCatalog', 'localAddonsCatalog'].contains(it.key) }.join('\n')}\n")
-    managerSettings.describe()
-    platformSettings.describe()
-    commandLineArgs.describe()
+        "Environment Settings :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class', '_platformSettings', '_managerSettings', 'commandLineArgs', 'centralCatalog', 'localAddonsCatalog'].contains(it.key) }.join('\n')}\n")
   }
 
 }

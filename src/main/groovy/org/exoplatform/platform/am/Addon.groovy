@@ -25,15 +25,13 @@ import groovy.json.StreamingJsonBuilder
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
-import org.exoplatform.platform.am.settings.EnvironmentSettings
 import org.exoplatform.platform.am.utils.AddonsManagerException
-import org.exoplatform.platform.am.utils.Logging
 import org.exoplatform.platform.am.utils.FileUtils
+import org.exoplatform.platform.am.utils.Logging
 
 @groovy.transform.Canonical
 class Addon {
 
-  def EnvironmentSettings environmentSettings
   def String id
   def String version
   def String name
@@ -51,11 +49,10 @@ class Addon {
   def List<String> installedLibraries
   def List<String> installedWebapps
 
-  static Addon fromJSON(anAddon, EnvironmentSettings environmentSettings) {
+  static Addon fromJSON(anAddon) {
     def addonObj = new Addon(
         anAddon.id ? anAddon.id : 'N/A',
-        anAddon.version ? anAddon.version : 'N/A',
-        environmentSettings);
+        anAddon.version ? anAddon.version : 'N/A');
     addonObj.name = anAddon.name ? anAddon.name : 'N/A'
     addonObj.description = anAddon.description ? anAddon.description : 'N/A'
     addonObj.releaseDate = anAddon.releaseDate ? anAddon.releaseDate : 'N/A'
@@ -82,84 +79,74 @@ class Addon {
     return addonObj
   }
 
-  static List<Addon> parseJSONAddonsList(String text, EnvironmentSettings environmentSettings) {
+  static List<Addon> parseJSONAddonsList(String text) {
     List<Addon> addonsList = new ArrayList<Addon>();
     new JsonSlurper().parseText(text).each { anAddon ->
-      addonsList.add(fromJSON(anAddon, environmentSettings))
+      addonsList.add(fromJSON(anAddon))
     }
     return addonsList
   }
 
-  static Addon parseJSONAddon(String text, EnvironmentSettings environmentSettings) {
-    return fromJSON(new JsonSlurper().parseText(text), environmentSettings)
+  static Addon parseJSONAddon(String text) {
+    return fromJSON(new JsonSlurper().parseText(text))
   }
 
-  Addon(String id, String version, EnvironmentSettings environmentSettings) {
+  Addon(String id, String version) {
     this.id = id
     this.version = version
-    this.environmentSettings = environmentSettings
   }
 
-  File getLocalArchive() {
-    File archivesDirectory = new File(environmentSettings.addonsDirectory, "archives")
-    if (!archivesDirectory.exists()) {
-      FileUtils.mkdirs(archivesDirectory)
-    }
-    return new File(archivesDirectory, id + "-" + version + ".zip")
+  File getLocalArchive(File archivesDirectory) {
+    return new File(archivesDirectory, "${id}-${version}.zip")
   }
 
-  static File getAddonStatusFile(File addonsDir, String id) {
-    File statusesDirectory = new File(addonsDir, "statuses")
-    if (!statusesDirectory.exists()) {
-      FileUtils.mkdirs(statusesDirectory)
-    }
+  File getAddonStatusFile(File statusesDirectory) {
+    return Addon.getAddonStatusFile(statusesDirectory, id)
+  }
+
+  static File getAddonStatusFile(File statusesDirectory, String id) {
     return new File(statusesDirectory, "${id}.status")
   }
 
 
-  File getAddonStatusFile() {
-    getAddonStatusFile(environmentSettings.addonsDirectory, id)
-  }
-
-  boolean isInstalled() {
-    return addonStatusFile.exists()
+  boolean isInstalled(File statusesDirectory) {
+    return getAddonStatusFile(statusesDirectory).exists()
   }
 
   boolean isStable() {
     return !(this.version =~ '.*SNAPSHOT$')
   }
 
-  def install() {
-    if (installed) {
-      if (!environmentSettings.commandLineArgs.commandInstall.force) {
+  def install(File addonsDirectory, File archivesDirectory, File statusesDirectory, File librariesDirectory,
+              File webappsDirectory, boolean force) {
+    if (isInstalled(statusesDirectory)) {
+      if (!force) {
         throw new AddonsManagerException("Add-on already installed. Use --force to enforce to override it")
       } else {
-        Addon oldAddon = Addon.parseJSONAddon(addonStatusFile.text, environmentSettings);
-        oldAddon.uninstall()
+        Addon oldAddon = Addon.parseJSONAddon(getAddonStatusFile(statusesDirectory).text);
+        oldAddon.uninstall(statusesDirectory, librariesDirectory, webappsDirectory)
       }
     }
     Logging.displayMsgInfo("Installing @|yellow ${name} ${version}|@ ...")
-    if (!localArchive.exists() || environmentSettings.commandLineArgs.commandInstall.force) {
+    if (!getLocalArchive(archivesDirectory).exists() || force) {
       // Let's download it
       if (downloadUrl.startsWith("http")) {
         Logging.logWithStatus("Downloading add-on ${name} ${version} ...") {
-          FileUtils.downloadFile(downloadUrl, localArchive)
+          FileUtils.downloadFile(downloadUrl, getLocalArchive(archivesDirectory))
         }
       } else if (downloadUrl.startsWith("file://")) {
         Logging.logWithStatus("Copying add-on ${name} ${version} ...") {
-          FileUtils.copyFile(new File(environmentSettings.addonsDirectory, downloadUrl.replaceAll("file://", "")),
-                             localArchive)
+          FileUtils.copyFile(new File(addonsDirectory, downloadUrl.replaceAll("file://", "")),
+                             getLocalArchive(archivesDirectory))
         }
       } else {
         throw new AddonsManagerException("Invalid or not supported download URL : ${downloadUrl}")
       }
     }
-    this.installedLibraries = FileUtils.flatExtractFromZip(localArchive, environmentSettings.platformSettings.librariesDirectory,
-                                                           '^.*jar$')
-    this.installedWebapps = FileUtils.flatExtractFromZip(localArchive, environmentSettings.platformSettings.webappsDirectory,
-                                                         '^.*war$')
+    this.installedLibraries = FileUtils.flatExtractFromZip(getLocalArchive(archivesDirectory), librariesDirectory, '^.*jar$')
+    this.installedWebapps = FileUtils.flatExtractFromZip(getLocalArchive(archivesDirectory), webappsDirectory, '^.*war$')
     // Update application.xml if it exists
-    def applicationDescriptorFile = new File(environmentSettings.platformSettings.webappsDirectory, "META-INF/application.xml")
+    def applicationDescriptorFile = new File(webappsDirectory, "META-INF/application.xml")
     if (applicationDescriptorFile.exists()) {
       processFileInplace(applicationDescriptorFile) { text ->
         def applicationXmlContent = new XmlSlurper(false, false).parseText(text)
@@ -185,8 +172,8 @@ class Addon {
         serializeXml(applicationXmlContent)
       }
     }
-    Logging.logWithStatus("Recording installation details into ${addonStatusFile.name} ... ") {
-      new FileWriter(addonStatusFile).withWriter { w ->
+    Logging.logWithStatus("Recording installation details into ${getAddonStatusFile(statusesDirectory).name} ... ") {
+      new FileWriter(getAddonStatusFile(statusesDirectory)).withWriter { w ->
         def builder = new StreamingJsonBuilder(w)
         builder(
             id: id,
@@ -211,12 +198,12 @@ class Addon {
     Logging.logWithStatusOK("Add-on ${name} ${version} installed.")
   }
 
-  void uninstall() {
+  void uninstall(File statusesDirectory, File librariesDirectory, File webappsDirectory) {
     Logging.displayMsgInfo("Uninstalling @|yellow ${name} ${version}|@ ...")
 
     installedLibraries.each {
       library ->
-        def File fileToDelete = new File(environmentSettings.platformSettings.librariesDirectory, library)
+        def File fileToDelete = new File(librariesDirectory, library)
         if (!fileToDelete.exists()) {
           Logging.displayMsgWarn("No library ${library} to delete")
         } else {
@@ -228,11 +215,11 @@ class Addon {
     }
 
     // Update application.xml if it exists
-    def applicationDescriptorFile = new File(environmentSettings.platformSettings.webappsDirectory, "META-INF/application.xml")
+    def applicationDescriptorFile = new File(webappsDirectory, "META-INF/application.xml")
 
     installedWebapps.each {
       webapp ->
-        def File fileToDelete = new File(environmentSettings.platformSettings.webappsDirectory, webapp)
+        def File fileToDelete = new File(webappsDirectory, webapp)
         def webContext = webapp.substring(0, webapp.length() - 4)
         if (!fileToDelete.exists()) {
           Logging.displayMsgWarn("No web application ${webapp} to delete")
@@ -257,9 +244,9 @@ class Addon {
           }
         }
     }
-    Logging.logWithStatus("Deleting installation details ${addonStatusFile.name} ... ") {
-      addonStatusFile.delete()
-      assert !addonStatusFile.exists()
+    Logging.logWithStatus("Deleting installation details ${getAddonStatusFile(statusesDirectory).name} ... ") {
+      getAddonStatusFile(statusesDirectory).delete()
+      assert !getAddonStatusFile(statusesDirectory).exists()
     }
     Logging.logWithStatusOK("Add-on ${name} ${version} uninstalled.")
   }

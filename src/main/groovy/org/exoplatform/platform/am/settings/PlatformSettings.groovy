@@ -81,31 +81,31 @@ class PlatformSettings {
   }
 
   AppServerType getAppServerType() {
-    if (!_appServerType) {
+    if (!this._appServerType) {
       if (new File(_homeDirectory, "bin/catalina.sh").exists()) {
-        _appServerType = AppServerType.TOMCAT
+        this._appServerType = AppServerType.TOMCAT
       } else if (new File(_homeDirectory, "bin/standalone.sh").exists()) {
-        _appServerType = AppServerType.JBOSSEAP
+        this._appServerType = AppServerType.JBOSSEAP
       } else {
-        _appServerType = AppServerType.UNKNOWN
+        this._appServerType = AppServerType.UNKNOWN
       }
     }
-    return _appServerType
+    return this._appServerType
   }
 
   DistributionType getDistributionType() {
-    if (!_distributionType) {
+    if (!this._distributionType) {
       if (new File(_homeDirectory, "eXo_Subscription_Agreement_US.pdf").exists()) {
-        _distributionType = DistributionType.ENTERPRISE
+        this._distributionType = DistributionType.ENTERPRISE
       } else {
-        _distributionType = DistributionType.COMMUNITY
+        this._distributionType = DistributionType.COMMUNITY
       }
     }
-    return _distributionType
+    return this._distributionType
   }
 
   String getVersion() {
-    if (!_version) {
+    if (!this._version) {
       def filePattern = ~/platform-component-upgrade-plugins.*jar/
       def fileFound
       def findFilenameClosure = {
@@ -122,54 +122,58 @@ class PlatformSettings {
         InputStream inputStream = jarFile.getInputStream(jarEntry)
         Properties platformProperties = new Properties()
         platformProperties.load(inputStream)
-        _version = platformProperties.getProperty("org.exoplatform.platform")
+        this._version = platformProperties.getProperty("org.exoplatform.platform")
       }
     }
-    return _version
+    return this._version
+  }
+
+  File getHomeDirectory() {
+    return this._homeDirectory
   }
 
   File getLibrariesDirectory() {
-    if (!_librariesDirectory) {
+    if (!this._librariesDirectory) {
       switch (appServerType) {
         case AppServerType.TOMCAT:
-          _librariesDirectory = new File(_homeDirectory, "lib")
+          this._librariesDirectory = new File(_homeDirectory, "lib")
           break
         case AppServerType.JBOSSEAP:
-          _librariesDirectory = new File(_homeDirectory, "standalone/deployments/platform.ear/lib")
+          this._librariesDirectory = new File(_homeDirectory, "standalone/deployments/platform.ear/lib")
           break
       }
     }
-    return _librariesDirectory
+    return this._librariesDirectory
   }
 
   File getWebappsDirectory() {
-    if (!_webappsDirectory) {
+    if (!this._webappsDirectory) {
       switch (appServerType) {
         case AppServerType.TOMCAT:
-          _webappsDirectory = new File(_homeDirectory, "webapps")
+          this._webappsDirectory = new File(_homeDirectory, "webapps")
           break
         case AppServerType.JBOSSEAP:
-          _webappsDirectory = new File(_homeDirectory, "standalone/deployments/platform.ear")
+          this._webappsDirectory = new File(_homeDirectory, "standalone/deployments/platform.ear")
           break
       }
     }
-    return _webappsDirectory
+    return this._webappsDirectory
   }
 
   private void validate() {
-    if (!_homeDirectory.isDirectory()) {
+    if (!this._homeDirectory.isDirectory()) {
       throw new AddonsManagerException("Erroneous setup, product home directory (${_homeDirectory}) is invalid.")
     }
-    if (!librariesDirectory.isDirectory()) {
+    if (!this.librariesDirectory.isDirectory()) {
       throw new AddonsManagerException("Erroneous setup, platform libraries directory (${librariesDirectory}) is invalid.")
     }
-    if (!webappsDirectory.isDirectory()) {
+    if (!this.webappsDirectory.isDirectory()) {
       throw new AddonsManagerException("Erroneous setup, platform web applications directory (${webappsDirectory}) is invalid.")
     }
-    if (AppServerType.UNKNOWN.equals(appServerType)) {
+    if (AppServerType.UNKNOWN.equals(this.appServerType)) {
       throw new AddonsManagerException("Erroneous setup, cannot computes the application server type.")
     }
-    if (DistributionType.UNKNOWN.equals(distributionType)) {
+    if (DistributionType.UNKNOWN.equals(this.distributionType)) {
       throw new AddonsManagerException("Erroneous setup, cannot computes the distribution type.")
     }
   }

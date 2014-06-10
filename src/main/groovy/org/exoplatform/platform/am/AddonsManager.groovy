@@ -57,13 +57,16 @@ try {
   def commandLineParameters = clp.parse(args)
 
 // Initialize environment settings
-  def environmentSettings = new EnvironmentSettings(managerSettings, platformSettings, commandLineParameters)
+  def environmentSettings = new EnvironmentSettings(managerSettings, platformSettings)
 
 // Display verbose details
   environmentSettings.describe()
+  managerSettings.describe()
+  platformSettings.describe()
+  commandLineParameters.describe()
 
   // Show usage text when -h or --help option is used.
-  if (environmentSettings.commandLineArgs.help) {
+  if (commandLineParameters.help) {
     clp.usage()
     Logging.dispose()
     System.exit AddonsManagerConstants.RETURN_CODE_OK
@@ -71,7 +74,7 @@ try {
 
   def List<Addon> addons = new ArrayList<Addon>()
   // Load add-ons list when listing them or installing one
-  switch (environmentSettings.commandLineArgs.command) {
+  switch (commandLineParameters.command) {
     case [CommandLineParameters.Command.LIST, CommandLineParameters.Command.INSTALL]:
       // Let's load the list of available add-ons
       def catalog
@@ -81,7 +84,7 @@ try {
           catalog = environmentSettings.localAddonsCatalog
         }
         Logging.logWithStatus("Loading add-ons...") {
-          addons.addAll(Addon.parseJSONAddonsList(catalog, environmentSettings))
+          addons.addAll(Addon.parseJSONAddonsList(catalog))
         }
       } else {
         Logging.displayMsgVerbose("No local catalog to load")
@@ -91,16 +94,16 @@ try {
         catalog = environmentSettings.centralCatalog
       }
       Logging.logWithStatus("Loading add-ons...") {
-        addons.addAll(Addon.parseJSONAddonsList(catalog, environmentSettings))
+        addons.addAll(Addon.parseJSONAddonsList(catalog))
       }
       break
   }
 
   //
-  switch (environmentSettings.commandLineArgs.command) {
+  switch (commandLineParameters.command) {
     case CommandLineParameters.Command.LIST:
       println ansi().render("\n@|bold Available add-ons:|@\n")
-      addons.findAll { it.isStable() || environmentSettings.commandLineArgs.commandList.snapshots }.groupBy { it.id }.each {
+      addons.findAll { it.isStable() || commandLineParameters.commandList.snapshots }.groupBy { it.id }.each {
         Addon anAddon = it.value.first()
         printf(ansi().render("+ @|bold,yellow %-${addons.id*.size().max()}s|@ : @|bold %s|@, %s\n").toString(), anAddon.id,
                anAddon.name, anAddon.description)
@@ -114,42 +117,47 @@ try {
       break
     case CommandLineParameters.Command.INSTALL:
       def addon
-      if (environmentSettings.commandLineArgs.commandInstall.addonVersion == null) {
+      if (commandLineParameters.commandInstall.addonVersion == null) {
         // Let's find the first add-on with the given id (including or not snapshots depending of the option)
         addon = addons.find {
-          (it.isStable() || environmentSettings.commandLineArgs.commandInstall.snapshots) && environmentSettings.commandLineArgs.commandInstall.addonId.equals(
+          (it.isStable() || commandLineParameters.commandInstall.snapshots) && commandLineParameters.commandInstall.addonId.equals(
               it.id)
         }
         if (addon == null) {
-          Logging.displayMsgError("No add-on with identifier ${environmentSettings.commandLineArgs.commandInstall.addonId} found")
+          Logging.displayMsgError("No add-on with identifier ${commandLineParameters.commandInstall.addonId} found")
           Logging.dispose()
           System.exit AddonsManagerConstants.RETURN_CODE_KO
         }
       } else {
         // Let's find the add-on with the given id and version
         addon = addons.find {
-          environmentSettings.commandLineArgs.commandInstall.addonId.equals(
-              it.id) && environmentSettings.commandLineArgs.commandInstall.addonVersion.equalsIgnoreCase(
+          commandLineParameters.commandInstall.addonId.equals(
+              it.id) && commandLineParameters.commandInstall.addonVersion.equalsIgnoreCase(
               it.version)
         }
         if (addon == null) {
           Logging.displayMsgError(
-              "No add-on with identifier ${environmentSettings.commandLineArgs.commandInstall.addonId} and version ${environmentSettings.commandLineArgs.commandInstall.addonVersion} found")
+              "No add-on with identifier ${commandLineParameters.commandInstall.addonId} and version ${commandLineParameters.commandInstall.addonVersion} found")
           Logging.dispose()
           System.exit AddonsManagerConstants.RETURN_CODE_KO
         }
       }
-      addon.install()
+      addon.install(environmentSettings.addonsDirectory, environmentSettings.archivesDirectory,
+                    environmentSettings.statusesDirectory,
+                    platformSettings.librariesDirectory,
+                    platformSettings.webappsDirectory, commandLineParameters.commandInstall.force)
       break
     case CommandLineParameters.Command.UNINSTALL:
-      def statusFile = Addon.getAddonStatusFile(environmentSettings.addonsDirectory,
-                                                environmentSettings.commandLineArgs.commandUninstall.addonId)
+      def statusFile = Addon.getAddonStatusFile(environmentSettings.statusesDirectory,
+                                                commandLineParameters.commandUninstall.addonId)
       if (statusFile.exists()) {
         def addon
         Logging.logWithStatus("Loading add-on details...") {
-          addon = Addon.parseJSONAddon(statusFile.text, environmentSettings);
+          addon = Addon.parseJSONAddon(statusFile.text);
         }
-        addon.uninstall()
+        addon.uninstall(environmentSettings.statusesDirectory,
+                        platformSettings.librariesDirectory,
+                        platformSettings.webappsDirectory)
       } else {
         Logging.logWithStatusKO("Add-on not installed. Exiting.")
         Logging.dispose()
