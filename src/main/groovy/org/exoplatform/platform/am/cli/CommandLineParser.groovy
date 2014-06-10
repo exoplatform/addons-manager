@@ -26,6 +26,7 @@ import org.exoplatform.platform.am.utils.Logging
 
 /**
  * Parser for command line arguments
+ * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class CommandLineParser {
 

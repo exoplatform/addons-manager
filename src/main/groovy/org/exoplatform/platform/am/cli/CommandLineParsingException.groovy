@@ -23,6 +23,7 @@ package org.exoplatform.platform.am.cli;
 import org.exoplatform.platform.am.utils.AddonsManagerException;
 
 /**
+ * When something goes wrong while parsing command line parameters
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 public class CommandLineParsingException extends AddonsManagerException {
