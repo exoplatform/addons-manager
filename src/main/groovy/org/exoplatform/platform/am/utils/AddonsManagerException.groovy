@@ -39,8 +39,4 @@ class AddonsManagerException extends RuntimeException {
   AddonsManagerException(Throwable throwable) {
     super(throwable)
   }
-
-  AddonsManagerException(String s, Throwable throwable, boolean b, boolean b1) {
-    super(s, throwable, b, b1)
-  }
 }
