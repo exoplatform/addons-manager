@@ -62,36 +62,11 @@ try {
     System.exit AddonsManagerConstants.RETURN_CODE_OK
   }
 
-  List<Addon> addons = new ArrayList<Addon>()
-  // Load add-ons list when listing them or installing one
-  switch (commandLineParameters.command) {
-    case [CommandLineParameters.Command.LIST, CommandLineParameters.Command.INSTALL]:
-      // Let's load the list of available add-ons
-      String catalog
-      // Load the optional local list
-      if (env.localAddonsCatalogFile.exists()) {
-        Logging.logWithStatus("Reading local add-ons list...") {
-          catalog = env.localAddonsCatalogFile.text
-        }
-        Logging.logWithStatus("Loading add-ons...") {
-          addons.addAll(Addon.parseJSONAddonsList(catalog))
-        }
-      } else {
-        Logging.displayMsgVerbose("No local catalog to load")
-      }
-      // Load the central list
-      Logging.logWithStatus("Downloading central add-ons list...") {
-        catalog = env.centralCatalogUrl.text
-      }
-      Logging.logWithStatus("Loading add-ons...") {
-        addons.addAll(Addon.parseJSONAddonsList(catalog))
-      }
-      break
-  }
+  AddonService addonService = new AddonService(env)
 
-  //
   switch (commandLineParameters.command) {
     case CommandLineParameters.Command.LIST:
+      List<Addon> addons = addonService.loadAddons()
       println ansi().render("\n@|bold Available add-ons:|@\n")
       addons.findAll { it.isStable() || commandLineParameters.commandList.snapshots }.groupBy { it.id }.each {
         Addon anAddon = it.value.first()
@@ -107,6 +82,7 @@ try {
       break
     case CommandLineParameters.Command.INSTALL:
       Addon addon
+      List<Addon> addons = addonService.loadAddons()
       if (commandLineParameters.commandInstall.addonVersion == null) {
         // Let's find the first add-on with the given id (including or not snapshots depending of the option)
         addon = addons.find {
@@ -132,22 +108,16 @@ try {
           System.exit AddonsManagerConstants.RETURN_CODE_KO
         }
       }
-      addon.install(env.addonsDirectory, env.archivesDirectory,
-                    env.statusesDirectory,
-                    env.platform.librariesDirectory,
-                    env.platform.webappsDirectory, commandLineParameters.commandInstall.force)
+      addonService.install(addon, commandLineParameters.commandInstall.force)
       break
     case CommandLineParameters.Command.UNINSTALL:
-      File statusFile = Addon.getAddonStatusFile(env.statusesDirectory,
-                                                commandLineParameters.commandUninstall.addonId)
+      File statusFile = addonService.getAddonStatusFile(commandLineParameters.commandUninstall.addonId)
       if (statusFile.exists()) {
         Addon addon
         Logging.logWithStatus("Loading add-on details...") {
-          addon = Addon.parseJSONAddon(statusFile.text);
+          addon = addonService.parseJSONAddon(statusFile.text);
         }
-        addon.uninstall(env.statusesDirectory,
-                        env.platform.librariesDirectory,
-                        env.platform.webappsDirectory)
+        addonService.uninstall(addon)
       } else {
         Logging.logWithStatusKO("Add-on not installed. Exiting.")
         Logging.dispose()
