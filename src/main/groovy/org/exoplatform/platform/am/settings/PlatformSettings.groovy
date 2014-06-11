@@ -20,6 +20,7 @@
  */
 package org.exoplatform.platform.am.settings
 
+import groovy.transform.Canonical
 import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.Logging
 
@@ -30,6 +31,7 @@ import java.util.regex.Pattern
 /**
  * Platform instance settings
  */
+@Canonical
 class PlatformSettings {
   /**
    * The system property key used to pass the PLF home directory

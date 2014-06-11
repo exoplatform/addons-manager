@@ -20,6 +20,7 @@
  */
 package org.exoplatform.platform.am.settings
 
+import groovy.transform.Canonical
 import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.FileUtils
 import org.exoplatform.platform.am.utils.Logging
@@ -27,6 +28,7 @@ import org.exoplatform.platform.am.utils.Logging
 /**
  * This class exposes environment settings about the Add-ons Manager, the PLF server, the system, ...
  */
+@Canonical
 class EnvironmentSettings {
   PlatformSettings platform
   AddonsManagerSettings manager

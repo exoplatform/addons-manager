@@ -22,6 +22,7 @@ package org.exoplatform.platform.am
 
 import groovy.json.JsonSlurper
 import groovy.json.StreamingJsonBuilder
+import groovy.transform.Canonical
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
@@ -29,7 +30,7 @@ import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.FileUtils
 import org.exoplatform.platform.am.utils.Logging
 
-@groovy.transform.Canonical
+@Canonical
 class Addon {
 
   String id

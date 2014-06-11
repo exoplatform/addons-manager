@@ -20,6 +20,7 @@
  */
 package org.exoplatform.platform.am.settings
 
+import groovy.transform.Canonical
 import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.Logging
 
@@ -27,6 +28,7 @@ import org.exoplatform.platform.am.utils.Logging
  * This class stores the add-ons manager settings
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
+@Canonical
 class AddonsManagerSettings extends Properties {
   private static final String ADDONS_MANAGER_PROPERTIES = "org/exoplatform/platform/am/settings/am.properties"
 
