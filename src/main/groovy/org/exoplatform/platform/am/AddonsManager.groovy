@@ -69,7 +69,7 @@ try {
       // Load the optional local list
       if (env.localAddonsCatalogFile.exists()) {
         Logging.logWithStatus("Reading local add-ons list...") {
-          catalog = env.localAddonsCatalog
+          catalog = env.localAddonsCatalogFile.text
         }
         Logging.logWithStatus("Loading add-ons...") {
           addons.addAll(Addon.parseJSONAddonsList(catalog))
@@ -79,7 +79,7 @@ try {
       }
       // Load the central list
       Logging.logWithStatus("Downloading central add-ons list...") {
-        catalog = env.centralCatalog
+        catalog = env.centralCatalogUrl.text
       }
       Logging.logWithStatus("Loading add-ons...") {
         addons.addAll(Addon.parseJSONAddonsList(catalog))

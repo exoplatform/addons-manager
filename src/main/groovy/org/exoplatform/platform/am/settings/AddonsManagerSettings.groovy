@@ -60,6 +60,6 @@ class AddonsManagerSettings extends Properties {
 
   void describe() {
     Logging.displayMsgVerbose(
-        "Manager Settings :\n${this.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')}\n")
+        "Manager Settings : ${this.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
   }
 }

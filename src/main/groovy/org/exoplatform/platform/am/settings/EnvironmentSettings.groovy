@@ -96,27 +96,11 @@ class EnvironmentSettings {
   }
 
   /**
-   * Returns the content of the local catalog
-   * @return a JSON formatted text
-   */
-  String getLocalAddonsCatalog() {
-    return localAddonsCatalogFile.text
-  }
-
-  /**
    * Returns the URL to the remote catalog
    * @return the URL of the central catalog
    */
   URL getCentralCatalogUrl() {
     return new URL(manager.centralCatalogUrl)
-  }
-
-  /**
-   * Returns the content of the remote catalog
-   * @return a JSON formatted text
-   */
-  String getCentralCatalog() {
-    return centralCatalogUrl.text
   }
 
   private void validate() {
@@ -127,7 +111,7 @@ class EnvironmentSettings {
 
   void describe() {
     Logging.displayMsgVerbose(
-        "Environment Settings :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class', 'platform', 'manager', 'commandLineArgs', 'centralCatalog', 'localAddonsCatalog'].contains(it.key) }.join('\n')}\n")
+        "Environment Settings : ${this.properties.sort { it.key }.collect { it }.findAll { !['class', 'platform', 'manager'].contains(it.key) }.join(' , ')}")
     manager.describe()
     platform.describe()
   }

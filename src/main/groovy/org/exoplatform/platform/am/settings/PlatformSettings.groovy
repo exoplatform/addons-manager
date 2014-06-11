@@ -180,7 +180,7 @@ class PlatformSettings {
 
   void describe() {
     Logging.displayMsgVerbose(
-        "Platform Settings :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')}\n")
+        "Platform Settings : ${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
   }
 
 }

@@ -111,7 +111,7 @@ class CommandLineParameters {
 
     void describe() {
       Logging.displayMsgVerbose(
-          "List Command Parameters :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')}\n")
+          "List Command Parameters : ${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
     }
   }
 
@@ -135,7 +135,7 @@ class CommandLineParameters {
 
     void describe() {
       Logging.displayMsgVerbose(
-          "Install Command Parameters :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')}\n")
+          "Install Command Parameters : ${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
     }
   }
 
@@ -154,13 +154,13 @@ class CommandLineParameters {
 
     void describe() {
       Logging.displayMsgVerbose(
-          "Uninstall Command Parameters :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join('\n')}\n")
+          "Uninstall Command Parameters : ${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
     }
   }
 
   void describe() {
     Logging.displayMsgVerbose(
-        "Command Line Parameters :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class', 'commandList', 'commandInstall', 'commandUninstall'].contains(it.key) }.join('\n')}\n")
+        "Command Line Parameters : ${this.properties.sort { it.key }.collect { it }.findAll { !['class', 'commandList', 'commandInstall', 'commandUninstall'].contains(it.key) }.join(' , ')}")
     commandList.describe()
     commandInstall.describe()
     commandUninstall.describe()
