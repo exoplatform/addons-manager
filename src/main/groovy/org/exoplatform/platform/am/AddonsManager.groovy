@@ -52,8 +52,8 @@ try {
   CommandLineParameters commandLineParameters = clp.parse(args)
 
 // Display verbose details
-  env.describe()
-  commandLineParameters.describe()
+  Logging.displayMsgVerbose("Environment Settings : ${env}")
+  Logging.displayMsgVerbose("Command Line Settings : ${commandLineParameters}")
 
   // Show usage text when -h or --help option is used.
   if (commandLineParameters.help) {

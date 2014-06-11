@@ -20,7 +20,7 @@
  */
 package org.exoplatform.platform.am.settings
 
-import groovy.transform.Canonical
+import groovy.transform.ToString
 import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.Logging
 
@@ -28,7 +28,7 @@ import org.exoplatform.platform.am.utils.Logging
  * This class stores the add-ons manager settings
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-@Canonical
+@ToString(includeNames = true, includeFields = true)
 class AddonsManagerSettings extends Properties {
   private static final String ADDONS_MANAGER_PROPERTIES = "org/exoplatform/platform/am/settings/am.properties"
 
@@ -58,10 +58,5 @@ class AddonsManagerSettings extends Properties {
     } else {
       setProperty("scriptName", "${scriptBaseName}.sh")
     }
-  }
-
-  void describe() {
-    Logging.displayMsgVerbose(
-        "Manager Settings : ${sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
   }
 }

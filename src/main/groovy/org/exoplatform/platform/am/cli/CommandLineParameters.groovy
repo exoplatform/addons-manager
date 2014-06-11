@@ -19,15 +19,14 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.cli
-
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
-import org.exoplatform.platform.am.utils.Logging
-
+import groovy.transform.ToString
 /**
  * Command line parameters
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
+@ToString(includeNames = true, includeFields=true)
 class CommandLineParameters {
   /**
    * The enumeration of all possible commands
@@ -100,6 +99,7 @@ class CommandLineParameters {
   /**
    * Specific parameters to list add-ons
    */
+  @ToString(includeNames = true, includeFields=true)
   @Parameters(commandDescription = "List add-ons", commandNames = CommandLineParameters.LIST_COMMAND)
   class ListCommandParameters {
     @Parameter(names = ["-s", "--snapshots"], description = "List also add-ons SNAPSHOTs")
@@ -108,16 +108,12 @@ class CommandLineParameters {
      boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
      boolean help
-
-    void describe() {
-      Logging.displayMsgVerbose(
-          "List Command Parameters : ${properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
-    }
   }
 
   /**
    * Specific parameters to install an add-on
    */
+  @ToString(includeNames = true, includeFields=true)
   @Parameters(commandDescription = "Install an add-on", commandNames = CommandLineParameters.INSTALL_COMMAND)
   class InstallCommandParameters {
     @Parameter(names = ["-f", "--force"], description = "Enforce to download again and reinstall an add-on already deployed")
@@ -132,16 +128,12 @@ class CommandLineParameters {
      boolean help
      String addonId
      String addonVersion
-
-    void describe() {
-      Logging.displayMsgVerbose(
-          "Install Command Parameters : ${properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
-    }
   }
 
   /**
    * Specific parameters to uninstall an add-on
    */
+  @ToString(includeNames = true, includeFields=true)
   @Parameters(commandDescription = "Uninstall an add-on", commandNames = CommandLineParameters.UNINSTALL_COMMAND)
   class UninstallCommandParameters {
     @Parameter(description = "addon ", arity = 1, required = true)
@@ -151,19 +143,5 @@ class CommandLineParameters {
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
      boolean help
      String addonId
-
-    void describe() {
-      Logging.displayMsgVerbose(
-          "Uninstall Command Parameters : ${properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
-    }
   }
-
-  void describe() {
-    Logging.displayMsgVerbose(
-        "Command Line Parameters : ${properties.sort { it.key }.collect { it }.findAll { !['class', 'commandList', 'commandInstall', 'commandUninstall'].contains(it.key) }.join(' , ')}")
-    commandList.describe()
-    commandInstall.describe()
-    commandUninstall.describe()
-  }
-
 }

@@ -20,18 +20,16 @@
  */
 package org.exoplatform.platform.am.settings
 
-import groovy.transform.Canonical
+import groovy.transform.ToString
 import org.exoplatform.platform.am.utils.AddonsManagerException
-import org.exoplatform.platform.am.utils.Logging
 
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.regex.Pattern
-
 /**
  * Platform instance settings
  */
-@Canonical
+@ToString(includeNames = true, includeFields=true)
 class PlatformSettings {
   /**
    * The system property key used to pass the PLF home directory
@@ -180,10 +178,4 @@ class PlatformSettings {
       throw new AddonsManagerException("Erroneous setup, cannot computes the distribution type.")
     }
   }
-
-  void describe() {
-    Logging.displayMsgVerbose(
-        "Platform Settings : ${properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
-  }
-
 }
