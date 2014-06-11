@@ -28,16 +28,16 @@ import org.exoplatform.platform.am.utils.Logging
  * This class exposes environment settings about the Add-ons Manager, the PLF server, the system, ...
  */
 class EnvironmentSettings {
-  private PlatformSettings _platformSettings
-  private AddonsManagerSettings _managerSettings
+  PlatformSettings platform
+  AddonsManagerSettings manager
   private File _addonsDirectory
   private File _archivesDirectory
   private File _statusesDirectory
   private File _localAddonsCatalogFile
 
-  EnvironmentSettings(AddonsManagerSettings managerSettings, PlatformSettings platformSettings) {
-    this._managerSettings = managerSettings
-    this._platformSettings = platformSettings
+  EnvironmentSettings() {
+    this.manager = new AddonsManagerSettings()
+    this.platform = new PlatformSettings()
     // Let's validate few things
     validate()
   }
@@ -48,7 +48,7 @@ class EnvironmentSettings {
    */
   File getAddonsDirectory() {
     if (!this._addonsDirectory) {
-      this._addonsDirectory = new File(this._platformSettings.homeDirectory, this._managerSettings.addonsDirectoryPath)
+      this._addonsDirectory = new File(this.platform.homeDirectory, this.manager.addonsDirectoryPath)
       if (!this._addonsDirectory.exists()) {
         FileUtils.mkdirs(this._addonsDirectory)
       }
@@ -62,7 +62,7 @@ class EnvironmentSettings {
    */
   File getArchivesDirectory() {
     if (!this._archivesDirectory) {
-      this._archivesDirectory = new File(addonsDirectory, this._managerSettings.archivesDirectoryName)
+      this._archivesDirectory = new File(addonsDirectory, this.manager.archivesDirectoryName)
       if (!this._archivesDirectory.exists()) {
         FileUtils.mkdirs(this._archivesDirectory)
       }
@@ -76,7 +76,7 @@ class EnvironmentSettings {
    */
   File getStatusesDirectory() {
     if (!this._statusesDirectory) {
-      this._statusesDirectory = new File(addonsDirectory, _managerSettings.archivesDirectoryName)
+      this._statusesDirectory = new File(addonsDirectory, manager.archivesDirectoryName)
       if (!_statusesDirectory.exists()) {
         FileUtils.mkdirs(_statusesDirectory)
       }
@@ -90,7 +90,7 @@ class EnvironmentSettings {
    */
   File getLocalAddonsCatalogFile() {
     if (!this._localAddonsCatalogFile) {
-      this._localAddonsCatalogFile = new File(addonsDirectory, _managerSettings.localAddonsCatalogFilename)
+      this._localAddonsCatalogFile = new File(addonsDirectory, manager.localAddonsCatalogFilename)
     }
     return this._localAddonsCatalogFile
   }
@@ -108,7 +108,7 @@ class EnvironmentSettings {
    * @return the URL of the central catalog
    */
   URL getCentralCatalogUrl() {
-    return new URL(_managerSettings.centralCatalogUrl)
+    return new URL(manager.centralCatalogUrl)
   }
 
   /**
@@ -127,7 +127,9 @@ class EnvironmentSettings {
 
   void describe() {
     Logging.displayMsgVerbose(
-        "Environment Settings :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class', '_platformSettings', '_managerSettings', 'commandLineArgs', 'centralCatalog', 'localAddonsCatalog'].contains(it.key) }.join('\n')}\n")
+        "Environment Settings :\n${this.properties.sort { it.key }.collect { it }.findAll { !['class', 'platform', 'manager', 'commandLineArgs', 'centralCatalog', 'localAddonsCatalog'].contains(it.key) }.join('\n')}\n")
+    manager.describe()
+    platform.describe()
   }
 
 }

@@ -19,18 +19,14 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
-
 import org.exoplatform.platform.am.cli.CommandLineParameters
 import org.exoplatform.platform.am.cli.CommandLineParser
 import org.exoplatform.platform.am.cli.CommandLineParsingException
-import org.exoplatform.platform.am.settings.AddonsManagerSettings
 import org.exoplatform.platform.am.settings.EnvironmentSettings
-import org.exoplatform.platform.am.settings.PlatformSettings
 import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.Logging
 
 import static org.fusesource.jansi.Ansi.ansi
-
 /**
  * Command line utility to manage Platform addons.
  */
@@ -41,28 +37,20 @@ try {
 // Initialize logging system
   Logging.initialize()
 
-// Initialize Add-ons manager settings
-  def managerSettings = new AddonsManagerSettings()
+// Initialize environment settings
+  EnvironmentSettings env = new EnvironmentSettings()
 
 // display header
-  Logging.displayHeader(managerSettings.version)
+  Logging.displayHeader(env.manager.version)
 
 // Initialize Add-ons manager settings
-  clp = new CommandLineParser(managerSettings.scriptName, Logging.CONSOLE_WIDTH)
-
-// Initialize PLF settings
-  def platformSettings = new PlatformSettings()
+  clp = new CommandLineParser(env.manager.scriptName, Logging.CONSOLE_WIDTH)
 
 // Parse command line parameters and fill settings with user inputs
   def commandLineParameters = clp.parse(args)
 
-// Initialize environment settings
-  def environmentSettings = new EnvironmentSettings(managerSettings, platformSettings)
-
 // Display verbose details
-  environmentSettings.describe()
-  managerSettings.describe()
-  platformSettings.describe()
+  env.describe()
   commandLineParameters.describe()
 
   // Show usage text when -h or --help option is used.
@@ -79,9 +67,9 @@ try {
       // Let's load the list of available add-ons
       def catalog
       // Load the optional local list
-      if (environmentSettings.localAddonsCatalogFile.exists()) {
+      if (env.localAddonsCatalogFile.exists()) {
         Logging.logWithStatus("Reading local add-ons list...") {
-          catalog = environmentSettings.localAddonsCatalog
+          catalog = env.localAddonsCatalog
         }
         Logging.logWithStatus("Loading add-ons...") {
           addons.addAll(Addon.parseJSONAddonsList(catalog))
@@ -91,7 +79,7 @@ try {
       }
       // Load the central list
       Logging.logWithStatus("Downloading central add-ons list...") {
-        catalog = environmentSettings.centralCatalog
+        catalog = env.centralCatalog
       }
       Logging.logWithStatus("Loading add-ons...") {
         addons.addAll(Addon.parseJSONAddonsList(catalog))
@@ -112,7 +100,7 @@ try {
       }
       println ansi().render("""
   To install an add-on:
-    ${managerSettings.scriptName} install @|yellow addon|@
+    ${env.manager.scriptName} install @|yellow addon|@
   """).toString()
       break
     case CommandLineParameters.Command.INSTALL:
@@ -142,22 +130,22 @@ try {
           System.exit AddonsManagerConstants.RETURN_CODE_KO
         }
       }
-      addon.install(environmentSettings.addonsDirectory, environmentSettings.archivesDirectory,
-                    environmentSettings.statusesDirectory,
-                    platformSettings.librariesDirectory,
-                    platformSettings.webappsDirectory, commandLineParameters.commandInstall.force)
+      addon.install(env.addonsDirectory, env.archivesDirectory,
+                    env.statusesDirectory,
+                    env.platform.librariesDirectory,
+                    env.platform.webappsDirectory, commandLineParameters.commandInstall.force)
       break
     case CommandLineParameters.Command.UNINSTALL:
-      def statusFile = Addon.getAddonStatusFile(environmentSettings.statusesDirectory,
+      def statusFile = Addon.getAddonStatusFile(env.statusesDirectory,
                                                 commandLineParameters.commandUninstall.addonId)
       if (statusFile.exists()) {
         def addon
         Logging.logWithStatus("Loading add-on details...") {
           addon = Addon.parseJSONAddon(statusFile.text);
         }
-        addon.uninstall(environmentSettings.statusesDirectory,
-                        platformSettings.librariesDirectory,
-                        platformSettings.webappsDirectory)
+        addon.uninstall(env.statusesDirectory,
+                        env.platform.librariesDirectory,
+                        env.platform.webappsDirectory)
       } else {
         Logging.logWithStatusKO("Add-on not installed. Exiting.")
         Logging.dispose()
