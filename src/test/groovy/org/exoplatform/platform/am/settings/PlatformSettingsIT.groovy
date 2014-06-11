@@ -34,9 +34,9 @@ class PlatformSettingsIT {
 
   @Parameterized.Parameters(name = "{index}: plfHome={0}")
   static Collection<Object[]> data() {
-    def integrationTestsDirPath = System.getProperty("integrationTestsDirPath")
+    String integrationTestsDirPath = System.getProperty("integrationTestsDirPath")
     assertNotNull("Integration tests directory path mustn't be null", integrationTestsDirPath)
-    def File integrationTestsDir = new File(integrationTestsDirPath);
+    File integrationTestsDir = new File(integrationTestsDirPath);
     assertTrue("Integration tests directory must be a directory", integrationTestsDir.isDirectory())
     def data = new ArrayList<Object[]>()
     integrationTestsDir.eachDir { directory ->

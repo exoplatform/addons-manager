@@ -36,8 +36,8 @@ class EnvironmentSettings {
   private File _localAddonsCatalogFile
 
   EnvironmentSettings() {
-    this.manager = new AddonsManagerSettings()
-    this.platform = new PlatformSettings()
+    manager = new AddonsManagerSettings()
+    platform = new PlatformSettings()
     // Let's validate few things
     validate()
   }
@@ -47,13 +47,13 @@ class EnvironmentSettings {
    * @return a directory path
    */
   File getAddonsDirectory() {
-    if (!this._addonsDirectory) {
-      this._addonsDirectory = new File(this.platform.homeDirectory, this.manager.addonsDirectoryPath)
-      if (!this._addonsDirectory.exists()) {
-        FileUtils.mkdirs(this._addonsDirectory)
+    if (!_addonsDirectory) {
+      _addonsDirectory = new File(platform.homeDirectory, manager.addonsDirectoryPath)
+      if (!_addonsDirectory.exists()) {
+        FileUtils.mkdirs(_addonsDirectory)
       }
     }
-    return this._addonsDirectory
+    return _addonsDirectory
   }
 
   /**
@@ -61,13 +61,13 @@ class EnvironmentSettings {
    * @return a directory path
    */
   File getArchivesDirectory() {
-    if (!this._archivesDirectory) {
-      this._archivesDirectory = new File(addonsDirectory, this.manager.archivesDirectoryName)
-      if (!this._archivesDirectory.exists()) {
-        FileUtils.mkdirs(this._archivesDirectory)
+    if (!_archivesDirectory) {
+      _archivesDirectory = new File(addonsDirectory, manager.archivesDirectoryName)
+      if (!_archivesDirectory.exists()) {
+        FileUtils.mkdirs(_archivesDirectory)
       }
     }
-    return this._archivesDirectory
+    return _archivesDirectory
   }
 
   /**
@@ -75,8 +75,8 @@ class EnvironmentSettings {
    * @return a directory path
    */
   File getStatusesDirectory() {
-    if (!this._statusesDirectory) {
-      this._statusesDirectory = new File(addonsDirectory, manager.archivesDirectoryName)
+    if (!_statusesDirectory) {
+      _statusesDirectory = new File(addonsDirectory, manager.archivesDirectoryName)
       if (!_statusesDirectory.exists()) {
         FileUtils.mkdirs(_statusesDirectory)
       }
@@ -89,10 +89,10 @@ class EnvironmentSettings {
    * @return a file path
    */
   File getLocalAddonsCatalogFile() {
-    if (!this._localAddonsCatalogFile) {
-      this._localAddonsCatalogFile = new File(addonsDirectory, manager.localAddonsCatalogFilename)
+    if (!_localAddonsCatalogFile) {
+      _localAddonsCatalogFile = new File(addonsDirectory, manager.localAddonsCatalogFilename)
     }
-    return this._localAddonsCatalogFile
+    return _localAddonsCatalogFile
   }
 
   /**
@@ -111,7 +111,7 @@ class EnvironmentSettings {
 
   void describe() {
     Logging.displayMsgVerbose(
-        "Environment Settings : ${this.properties.sort { it.key }.collect { it }.findAll { !['class', 'platform', 'manager'].contains(it.key) }.join(' , ')}")
+        "Environment Settings : ${properties.sort { it.key }.collect { it }.findAll { !['class', 'platform', 'manager'].contains(it.key) }.join(' , ')}")
     manager.describe()
     platform.describe()
   }

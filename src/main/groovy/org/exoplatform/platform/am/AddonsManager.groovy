@@ -19,6 +19,7 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
+
 import org.exoplatform.platform.am.cli.CommandLineParameters
 import org.exoplatform.platform.am.cli.CommandLineParser
 import org.exoplatform.platform.am.cli.CommandLineParsingException
@@ -27,11 +28,12 @@ import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.Logging
 
 import static org.fusesource.jansi.Ansi.ansi
+
 /**
  * Command line utility to manage Platform addons.
  */
 
-def clp
+CommandLineParser clp
 
 try {
 // Initialize logging system
@@ -47,7 +49,7 @@ try {
   clp = new CommandLineParser(env.manager.scriptName, Logging.CONSOLE_WIDTH)
 
 // Parse command line parameters and fill settings with user inputs
-  def commandLineParameters = clp.parse(args)
+  CommandLineParameters commandLineParameters = clp.parse(args)
 
 // Display verbose details
   env.describe()
@@ -60,12 +62,12 @@ try {
     System.exit AddonsManagerConstants.RETURN_CODE_OK
   }
 
-  def List<Addon> addons = new ArrayList<Addon>()
+  List<Addon> addons = new ArrayList<Addon>()
   // Load add-ons list when listing them or installing one
   switch (commandLineParameters.command) {
     case [CommandLineParameters.Command.LIST, CommandLineParameters.Command.INSTALL]:
       // Let's load the list of available add-ons
-      def catalog
+      String catalog
       // Load the optional local list
       if (env.localAddonsCatalogFile.exists()) {
         Logging.logWithStatus("Reading local add-ons list...") {
@@ -104,7 +106,7 @@ try {
   """).toString()
       break
     case CommandLineParameters.Command.INSTALL:
-      def addon
+      Addon addon
       if (commandLineParameters.commandInstall.addonVersion == null) {
         // Let's find the first add-on with the given id (including or not snapshots depending of the option)
         addon = addons.find {
@@ -136,10 +138,10 @@ try {
                     env.platform.webappsDirectory, commandLineParameters.commandInstall.force)
       break
     case CommandLineParameters.Command.UNINSTALL:
-      def statusFile = Addon.getAddonStatusFile(env.statusesDirectory,
+      File statusFile = Addon.getAddonStatusFile(env.statusesDirectory,
                                                 commandLineParameters.commandUninstall.addonId)
       if (statusFile.exists()) {
-        def addon
+        Addon addon
         Logging.logWithStatus("Loading add-on details...") {
           addon = Addon.parseJSONAddon(statusFile.text);
         }

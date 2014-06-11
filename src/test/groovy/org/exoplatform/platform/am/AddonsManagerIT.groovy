@@ -43,11 +43,11 @@ class AddonsManagerIT {
 
   @Parameters(name = "{index}: exitValue(plfHome={0},params={1})={2}")
   static Collection<Object[]> data() {
-    def testedArtifactPath = System.getProperty("testedArtifactPath")
+    String testedArtifactPath = System.getProperty("testedArtifactPath")
     assertNotNull("Tested artifact path mustn't be null", testedArtifactPath)
-    def integrationTestsDirPath = System.getProperty("integrationTestsDirPath")
+    String integrationTestsDirPath = System.getProperty("integrationTestsDirPath")
     assertNotNull("Integration tests directory path mustn't be null", integrationTestsDirPath)
-    def File integrationTestsDir = new File(integrationTestsDirPath);
+    File integrationTestsDir = new File(integrationTestsDirPath);
     assertTrue("Integration tests directory must be a directory", integrationTestsDir.isDirectory())
     def data = new ArrayList<Object[]>()
     integrationTestsDir.eachDir { directory ->
@@ -83,7 +83,7 @@ class AddonsManagerIT {
 
   @Test
   void testExitValue() {
-    def testedArtifactPath = System.getProperty("testedArtifactPath")
+    String testedArtifactPath = System.getProperty("testedArtifactPath")
     assertNotNull("Tested artifact path mustn't be null", testedArtifactPath)
     println "Testing on ${productHome.name}, expecting return code ${exitCode} with params ${params.join(" ")}"
     def commandToExecute = ["${System.getProperty('java.home')}/bin/java"]
@@ -97,7 +97,7 @@ class AddonsManagerIT {
     commandToExecute << "-v"
     commandToExecute.addAll(params)
     println "Command launched : ${commandToExecute.join(' ')}"
-    def process = commandToExecute.execute()
+    Process process = commandToExecute.execute()
     process.waitFor() // Wait for the command to finish
     // Obtain status and output
     println "return code: ${process.exitValue()}"

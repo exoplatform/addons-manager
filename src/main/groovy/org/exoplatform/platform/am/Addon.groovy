@@ -32,27 +32,27 @@ import org.exoplatform.platform.am.utils.Logging
 @groovy.transform.Canonical
 class Addon {
 
-  def String id
-  def String version
-  def String name
-  def String description
-  def String releaseDate
-  def String sourceUrl
-  def String screenshotUrl
-  def String thumbnailUrl
-  def String documentationUrl
-  def String downloadUrl
-  def String vendor
-  def String license
-  def List<String> supportedDistributions
-  def List<String> supportedApplicationServers
-  def List<String> installedLibraries
-  def List<String> installedWebapps
+  String id
+  String version
+  String name
+  String description
+  String releaseDate
+  String sourceUrl
+  String screenshotUrl
+  String thumbnailUrl
+  String documentationUrl
+  String downloadUrl
+  String vendor
+  String license
+  List<String> supportedDistributions
+  List<String> supportedApplicationServers
+  List<String> installedLibraries
+  List<String> installedWebapps
 
   static Addon fromJSON(anAddon) {
-    def addonObj = new Addon(
-        anAddon.id ? anAddon.id : 'N/A',
-        anAddon.version ? anAddon.version : 'N/A');
+    Addon addonObj = new Addon(
+        id: anAddon.id ? anAddon.id : 'N/A',
+        version: anAddon.version ? anAddon.version : 'N/A');
     addonObj.name = anAddon.name ? anAddon.name : 'N/A'
     addonObj.description = anAddon.description ? anAddon.description : 'N/A'
     addonObj.releaseDate = anAddon.releaseDate ? anAddon.releaseDate : 'N/A'
@@ -91,11 +91,6 @@ class Addon {
     return fromJSON(new JsonSlurper().parseText(text))
   }
 
-  Addon(String id, String version) {
-    this.id = id
-    this.version = version
-  }
-
   File getLocalArchive(File archivesDirectory) {
     return new File(archivesDirectory, "${id}-${version}.zip")
   }
@@ -114,11 +109,11 @@ class Addon {
   }
 
   boolean isStable() {
-    return !(this.version =~ '.*SNAPSHOT$')
+    return !(version =~ '.*SNAPSHOT$')
   }
 
-  def install(File addonsDirectory, File archivesDirectory, File statusesDirectory, File librariesDirectory,
-              File webappsDirectory, boolean force) {
+  void install(File addonsDirectory, File archivesDirectory, File statusesDirectory, File librariesDirectory,
+               File webappsDirectory, boolean force) {
     if (isInstalled(statusesDirectory)) {
       if (!force) {
         throw new AddonsManagerException("Add-on already installed. Use --force to enforce to override it")
@@ -143,15 +138,15 @@ class Addon {
         throw new AddonsManagerException("Invalid or not supported download URL : ${downloadUrl}")
       }
     }
-    this.installedLibraries = FileUtils.flatExtractFromZip(getLocalArchive(archivesDirectory), librariesDirectory, '^.*jar$')
-    this.installedWebapps = FileUtils.flatExtractFromZip(getLocalArchive(archivesDirectory), webappsDirectory, '^.*war$')
+    installedLibraries = FileUtils.flatExtractFromZip(getLocalArchive(archivesDirectory), librariesDirectory, '^.*jar$')
+    installedWebapps = FileUtils.flatExtractFromZip(getLocalArchive(archivesDirectory), webappsDirectory, '^.*war$')
     // Update application.xml if it exists
-    def applicationDescriptorFile = new File(webappsDirectory, "META-INF/application.xml")
+    File applicationDescriptorFile = new File(webappsDirectory, "META-INF/application.xml")
     if (applicationDescriptorFile.exists()) {
       processFileInplace(applicationDescriptorFile) { text ->
-        def applicationXmlContent = new XmlSlurper(false, false).parseText(text)
+        GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(text)
         installedWebapps.each { file ->
-          def webContext = file.substring(0, file.length() - 4)
+          String webContext = file.substring(0, file.length() - 4)
           Logging.logWithStatus("Adding context declaration /${webContext} for ${file} in application.xml ... ") {
             applicationXmlContent.depthFirst().findAll {
               (it.name() == 'module') && (it.'web'.'web-uri'.text() == file)
@@ -174,7 +169,7 @@ class Addon {
     }
     Logging.logWithStatus("Recording installation details into ${getAddonStatusFile(statusesDirectory).name} ... ") {
       new FileWriter(getAddonStatusFile(statusesDirectory)).withWriter { w ->
-        def builder = new StreamingJsonBuilder(w)
+        StreamingJsonBuilder builder = new StreamingJsonBuilder(w)
         builder(
             id: id,
             version: version,
@@ -203,7 +198,7 @@ class Addon {
 
     installedLibraries.each {
       library ->
-        def File fileToDelete = new File(librariesDirectory, library)
+        File fileToDelete = new File(librariesDirectory, library)
         if (!fileToDelete.exists()) {
           Logging.displayMsgWarn("No library ${library} to delete")
         } else {
@@ -215,12 +210,12 @@ class Addon {
     }
 
     // Update application.xml if it exists
-    def applicationDescriptorFile = new File(webappsDirectory, "META-INF/application.xml")
+    File applicationDescriptorFile = new File(webappsDirectory, "META-INF/application.xml")
 
     installedWebapps.each {
       webapp ->
-        def File fileToDelete = new File(webappsDirectory, webapp)
-        def webContext = webapp.substring(0, webapp.length() - 4)
+        File fileToDelete = new File(webappsDirectory, webapp)
+        String webContext = webapp.substring(0, webapp.length() - 4)
         if (!fileToDelete.exists()) {
           Logging.displayMsgWarn("No web application ${webapp} to delete")
         } else {
@@ -232,7 +227,7 @@ class Addon {
         if (applicationDescriptorFile.exists()) {
           Logging.logWithStatus("Adding context declaration /${webContext} for ${webapp} in application.xml ...") {
             processFileInplace(applicationDescriptorFile) { text ->
-              def applicationXmlContent = new XmlSlurper(false, false).parseText(text)
+              GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(text)
               applicationXmlContent.depthFirst().findAll {
                 (it.name() == 'module') && (it.'web'.'web-uri'.text() == webapp)
               }.each { node ->
@@ -258,7 +253,7 @@ class Addon {
   }
 
   private processFileInplace(File file, Closure processText) {
-    def text = file.text
+    String text = file.text
     file.write(processText(text))
   }
 

@@ -27,7 +27,7 @@ import spock.lang.Specification
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class AddonsManagerSettingsTest extends Specification {
-  def managerSettings = new AddonsManagerSettings()
+  AddonsManagerSettings managerSettings = new AddonsManagerSettings()
 
   def setupSpec() {
     Logging.verbose = true

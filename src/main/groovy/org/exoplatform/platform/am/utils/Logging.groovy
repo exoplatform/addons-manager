@@ -25,8 +25,8 @@ import org.fusesource.jansi.AnsiConsole
 import static org.fusesource.jansi.Ansi.ansi
 
 class Logging {
-  def static final CONSOLE_WIDTH = 120
-  def static boolean verbose
+  static final CONSOLE_WIDTH = 120
+  static boolean verbose
 
   static initialize() {
     AnsiConsole.systemInstall()

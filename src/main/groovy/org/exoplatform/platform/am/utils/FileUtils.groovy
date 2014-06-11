@@ -21,6 +21,7 @@
 package org.exoplatform.platform.am.utils
 
 import java.nio.channels.FileChannel
+import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 /**
@@ -100,18 +101,18 @@ class FileUtils {
    * @throws IOException
    */
   static List<String> flatExtractFromZip(File zipToExtract, File destinationDir, String pattern) throws IOException {
-    def result = new ArrayList<String>()
-    def zipInputStream = new ZipInputStream(new FileInputStream(zipToExtract))
+    ArrayList<String> result = new ArrayList<String>()
+    ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zipToExtract))
     if (!destinationDir.exists()) {
       mkdirs(destinationDir)
     }
     zipInputStream.withStream {
-      def entry
+      ZipEntry entry
       while (entry = zipInputStream.nextEntry) {
         if (!entry.isDirectory() && entry.name =~ pattern) {
           String filename = extractFilename(entry.name)
           Logging.logWithStatus("Installing file ${filename} ...") {
-            def output = new FileOutputStream(new File(destinationDir, filename))
+            FileOutputStream output = new FileOutputStream(new File(destinationDir, filename))
             output.withStream {
               int len = 0;
               byte[] buffer = new byte[4096]

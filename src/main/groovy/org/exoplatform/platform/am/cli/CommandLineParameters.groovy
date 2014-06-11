@@ -37,7 +37,7 @@ class CommandLineParameters {
     final String name
 
     Command(String name) {
-      this.name = name
+      name = name
     }
   }
 
@@ -57,29 +57,29 @@ class CommandLineParameters {
   /**
    * List command parameters
    */
-  def ListCommandParameters commandList = new ListCommandParameters()
+  ListCommandParameters commandList = new ListCommandParameters()
   /**
    * Install command parameters
    */
-  def InstallCommandParameters commandInstall = new InstallCommandParameters()
+  InstallCommandParameters commandInstall = new InstallCommandParameters()
   /**
    * Uninstall command parameters
    */
-  def UninstallCommandParameters commandUninstall = new UninstallCommandParameters()
+  UninstallCommandParameters commandUninstall = new UninstallCommandParameters()
   /**
    * The command asked by the user
    */
-  def Command command
+  Command command
   /**
    * To activate verbose logs
    */
   @Parameter(names = ["-v", "--verbose"], description = "Show verbose logs")
-  private def boolean verbose
+  private boolean verbose
   /**
    * To display the help message
    */
   @Parameter(names = ["-h", "--help"], description = "Show usage information", help = true)
-  private def boolean help
+  private boolean help
 
   /**
    * Verifies if is the verbose option is activated as main parameter or command parameter
@@ -103,15 +103,15 @@ class CommandLineParameters {
   @Parameters(commandDescription = "List add-ons", commandNames = CommandLineParameters.LIST_COMMAND)
   class ListCommandParameters {
     @Parameter(names = ["-s", "--snapshots"], description = "List also add-ons SNAPSHOTs")
-    def boolean snapshots
+     boolean snapshots
     @Parameter(names = ["-v", "--verbose"], hidden = true)
-    def boolean verbose
+     boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
-    def boolean help
+     boolean help
 
     void describe() {
       Logging.displayMsgVerbose(
-          "List Command Parameters : ${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
+          "List Command Parameters : ${properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
     }
   }
 
@@ -121,21 +121,21 @@ class CommandLineParameters {
   @Parameters(commandDescription = "Install an add-on", commandNames = CommandLineParameters.INSTALL_COMMAND)
   class InstallCommandParameters {
     @Parameter(names = ["-f", "--force"], description = "Enforce to download again and reinstall an add-on already deployed")
-    def boolean force
+     boolean force
     @Parameter(names = ["-s", "--snapshots"], description = "List also add-ons SNAPSHOTs")
-    def boolean snapshots
+     boolean snapshots
     @Parameter(description = "addon[:version]", arity = 1, required = true)
-    def List<String> addon;
+     List<String> addon;
     @Parameter(names = ["-v", "--verbose"], hidden = true)
-    def boolean verbose
+     boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
-    def boolean help
-    def String addonId
-    def String addonVersion
+     boolean help
+     String addonId
+     String addonVersion
 
     void describe() {
       Logging.displayMsgVerbose(
-          "Install Command Parameters : ${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
+          "Install Command Parameters : ${properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
     }
   }
 
@@ -145,22 +145,22 @@ class CommandLineParameters {
   @Parameters(commandDescription = "Uninstall an add-on", commandNames = CommandLineParameters.UNINSTALL_COMMAND)
   class UninstallCommandParameters {
     @Parameter(description = "addon ", arity = 1, required = true)
-    def List<String> addon;
+     List<String> addon;
     @Parameter(names = ["-v", "--verbose"], hidden = true)
-    def boolean verbose
+     boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
-    def boolean help
-    def String addonId
+     boolean help
+     String addonId
 
     void describe() {
       Logging.displayMsgVerbose(
-          "Uninstall Command Parameters : ${this.properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
+          "Uninstall Command Parameters : ${properties.sort { it.key }.collect { it }.findAll { !['class'].contains(it.key) }.join(' , ')}")
     }
   }
 
   void describe() {
     Logging.displayMsgVerbose(
-        "Command Line Parameters : ${this.properties.sort { it.key }.collect { it }.findAll { !['class', 'commandList', 'commandInstall', 'commandUninstall'].contains(it.key) }.join(' , ')}")
+        "Command Line Parameters : ${properties.sort { it.key }.collect { it }.findAll { !['class', 'commandList', 'commandInstall', 'commandUninstall'].contains(it.key) }.join(' , ')}")
     commandList.describe()
     commandInstall.describe()
     commandUninstall.describe()

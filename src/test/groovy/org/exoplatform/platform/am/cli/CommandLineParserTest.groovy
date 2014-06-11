@@ -27,7 +27,7 @@ import spock.lang.Specification
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class CommandLineParserTest extends Specification {
-  def clp = new CommandLineParser("FAKE.sh", Logging.CONSOLE_WIDTH)
+  CommandLineParser clp = new CommandLineParser("FAKE.sh", Logging.CONSOLE_WIDTH)
 
   def setupSpec() {
     Logging.verbose = true
@@ -35,7 +35,7 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to display help"(String[] args) {
     when:
-    def cliArgs = clp.parse(args)
+    CommandLineParameters cliArgs = clp.parse(args)
     then:
     cliArgs.help
     where:
@@ -47,7 +47,7 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to list all add-ons"(String[] args) {
     when:
-    def cliArgs = clp.parse(args)
+    CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
     !cliArgs.commandList.snapshots
@@ -60,7 +60,7 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to list all add-ons including snapshots"(String[] args) {
     when:
-    def cliArgs = clp.parse(args)
+    CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
     cliArgs.commandList.snapshots
@@ -74,7 +74,7 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to install the latest version of an add-on"(String[] args) {
     when:
-    def cliArgs = clp.parse(args)
+    CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.INSTALL == cliArgs.command
     !cliArgs.commandInstall.snapshots
@@ -91,7 +91,7 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to install a given version of an add-on"(String[] args) {
     when:
-    def cliArgs = clp.parse(args)
+    CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.INSTALL == cliArgs.command
     !cliArgs.commandInstall.snapshots
@@ -108,7 +108,7 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to force to install an add-on"(String[] args) {
     when:
-    def cliArgs = clp.parse(args)
+    CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.INSTALL == cliArgs.command
     !cliArgs.commandInstall.snapshots
@@ -125,7 +125,7 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to install a SNAPSHOT version of an add-on"(String[] args) {
     when:
-    def cliArgs = clp.parse(args)
+    CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.INSTALL == cliArgs.command
     cliArgs.commandInstall.snapshots
@@ -142,7 +142,7 @@ class CommandLineParserTest extends Specification {
 
   def "Test command line parameters to uninstall an add-on"(String[] args) {
     when:
-    def cliArgs = clp.parse(args)
+    CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.UNINSTALL == cliArgs.command
     "my-addon".equals(cliArgs.commandUninstall.addonId)
