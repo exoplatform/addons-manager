@@ -21,7 +21,6 @@
 package org.exoplatform.platform.am.settings
 
 import groovy.transform.Canonical
-import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.FileUtils
 import org.exoplatform.platform.am.utils.Logging
 
@@ -32,69 +31,39 @@ import org.exoplatform.platform.am.utils.Logging
 class EnvironmentSettings {
   PlatformSettings platform
   AddonsManagerSettings manager
-  private File _addonsDirectory
-  private File _archivesDirectory
-  private File _statusesDirectory
-  private File _localAddonsCatalogFile
+  /**
+   * The path where add-ons are stored
+   */
+  File addonsDirectory
+  /**
+   * The path where add-ons archives are stored
+   */
+  File archivesDirectory
+  /**
+   * The path where add-ons statuses are stored
+   */
+  File statusesDirectory
+  /**
+   * The path to the local catalog
+   */
+  File localAddonsCatalogFile
 
   EnvironmentSettings() {
     manager = new AddonsManagerSettings()
     platform = new PlatformSettings()
-    // Let's validate few things
-    validate()
-  }
-
-  /**
-   * Returns the path where add-ons are stored
-   * @return a directory path
-   */
-  File getAddonsDirectory() {
-    if (!_addonsDirectory) {
-      _addonsDirectory = new File(platform.homeDirectory, manager.addonsDirectoryPath)
-      if (!_addonsDirectory.exists()) {
-        FileUtils.mkdirs(_addonsDirectory)
-      }
+    addonsDirectory = new File(platform.homeDirectory, manager.addonsDirectoryPath)
+    if (!addonsDirectory.exists()) {
+      FileUtils.mkdirs(addonsDirectory)
     }
-    return _addonsDirectory
-  }
-
-  /**
-   * Returns the path where add-ons archives are stored
-   * @return a directory path
-   */
-  File getArchivesDirectory() {
-    if (!_archivesDirectory) {
-      _archivesDirectory = new File(addonsDirectory, manager.archivesDirectoryName)
-      if (!_archivesDirectory.exists()) {
-        FileUtils.mkdirs(_archivesDirectory)
-      }
+    archivesDirectory = new File(addonsDirectory, manager.archivesDirectoryName)
+    if (!archivesDirectory.exists()) {
+      FileUtils.mkdirs(archivesDirectory)
     }
-    return _archivesDirectory
-  }
-
-  /**
-   * Returns the path where add-ons statuses are stored
-   * @return a directory path
-   */
-  File getStatusesDirectory() {
-    if (!_statusesDirectory) {
-      _statusesDirectory = new File(addonsDirectory, manager.archivesDirectoryName)
-      if (!_statusesDirectory.exists()) {
-        FileUtils.mkdirs(_statusesDirectory)
-      }
+    statusesDirectory = new File(addonsDirectory, manager.archivesDirectoryName)
+    if (!statusesDirectory.exists()) {
+      FileUtils.mkdirs(statusesDirectory)
     }
-    return _statusesDirectory
-  }
-
-  /**
-   * Returns the path to the local catalog
-   * @return a file path
-   */
-  File getLocalAddonsCatalogFile() {
-    if (!_localAddonsCatalogFile) {
-      _localAddonsCatalogFile = new File(addonsDirectory, manager.localAddonsCatalogFilename)
-    }
-    return _localAddonsCatalogFile
+    localAddonsCatalogFile = new File(addonsDirectory, manager.localAddonsCatalogFilename)
   }
 
   /**
@@ -105,11 +74,6 @@ class EnvironmentSettings {
     return new URL(manager.centralCatalogUrl)
   }
 
-  private void validate() {
-    if (!addonsDirectory.isDirectory()) {
-      throw new AddonsManagerException("Erroneous setup, add-ons directory (${addonsDirectory}) is invalid.")
-    }
-  }
 
   void describe() {
     Logging.displayMsgVerbose(
