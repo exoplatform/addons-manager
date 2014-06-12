@@ -52,7 +52,7 @@
     <!-- **************************************** -->
     <!-- Project Dependencies -->
     <!-- **************************************** -->
-    <groovy.version>2.3.2</groovy.version>
+    <groovy.version>2.3.3</groovy.version>
     <jcommander.version>1.35</jcommander.version>
     <jansi.version>1.11</jansi.version>
     <!-- Tests dependencies -->
