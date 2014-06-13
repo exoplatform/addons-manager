@@ -33,4 +33,7 @@ class AddonsManagerConstants {
    * Command line return code when the program failed
    */
   static final int RETURN_CODE_KO = 1
+
+  static final String STATUS_OK = "OK"
+  static final String STATUS_KO = "KO"
 }

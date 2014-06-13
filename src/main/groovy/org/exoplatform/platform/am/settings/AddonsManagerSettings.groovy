@@ -22,13 +22,13 @@ package org.exoplatform.platform.am.settings
 
 import groovy.transform.ToString
 import org.exoplatform.platform.am.utils.AddonsManagerException
-import org.exoplatform.platform.am.utils.Logging
+import org.exoplatform.platform.am.utils.Logger
 
 /**
  * This class stores the add-ons manager settings
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-@ToString(includeNames = true, includeFields = true)
+@ToString(includeNames = true, includeFields = true, includePackage = false)
 class AddonsManagerSettings extends Properties {
   private static final String ADDONS_MANAGER_PROPERTIES = "org/exoplatform/platform/am/settings/am.properties"
 
@@ -49,7 +49,7 @@ class AddonsManagerSettings extends Properties {
       try {
         inputStream.close()
       } catch (IOException ioe) {
-        Logging.displayMsgWarn("Error while closing \"${ADDONS_MANAGER_PROPERTIES}\" : ${ioe.message}")
+        Logger.warn("Error while closing \"${ADDONS_MANAGER_PROPERTIES}\" : ${ioe.message}")
       }
     }
     // Computes the script name from the OS

@@ -19,14 +19,16 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.cli
+
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
 import groovy.transform.ToString
+
 /**
  * Command line parameters
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-@ToString(includeNames = true, includeFields=true)
+@ToString(includeNames = true, includeFields = true, includePackage = false)
 class CommandLineParameters {
   /**
    * The enumeration of all possible commands
@@ -36,7 +38,7 @@ class CommandLineParameters {
     final String name
 
     Command(String name) {
-      name = name
+      this.name = name
     }
   }
 
@@ -99,49 +101,49 @@ class CommandLineParameters {
   /**
    * Specific parameters to list add-ons
    */
-  @ToString(includeNames = true, includeFields=true)
+  @ToString(includeNames = true, includeFields = true, includePackage = false)
   @Parameters(commandDescription = "List add-ons", commandNames = CommandLineParameters.LIST_COMMAND)
   class ListCommandParameters {
     @Parameter(names = ["-s", "--snapshots"], description = "List also add-ons SNAPSHOTs")
-     boolean snapshots
+    boolean snapshots
     @Parameter(names = ["-v", "--verbose"], hidden = true)
-     boolean verbose
+    boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
-     boolean help
+    boolean help
   }
 
   /**
    * Specific parameters to install an add-on
    */
-  @ToString(includeNames = true, includeFields=true)
+  @ToString(includeNames = true, includeFields = true, includePackage = false)
   @Parameters(commandDescription = "Install an add-on", commandNames = CommandLineParameters.INSTALL_COMMAND)
   class InstallCommandParameters {
     @Parameter(names = ["-f", "--force"], description = "Enforce to download again and reinstall an add-on already deployed")
-     boolean force
+    boolean force
     @Parameter(names = ["-s", "--snapshots"], description = "List also add-ons SNAPSHOTs")
-     boolean snapshots
+    boolean snapshots
     @Parameter(description = "addon[:version]", arity = 1, required = true)
-     List<String> addon;
+    List<String> addon;
     @Parameter(names = ["-v", "--verbose"], hidden = true)
-     boolean verbose
+    boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
-     boolean help
-     String addonId
-     String addonVersion
+    boolean help
+    String addonId
+    String addonVersion
   }
 
   /**
    * Specific parameters to uninstall an add-on
    */
-  @ToString(includeNames = true, includeFields=true)
+  @ToString(includeNames = true, includeFields = true, includePackage = false)
   @Parameters(commandDescription = "Uninstall an add-on", commandNames = CommandLineParameters.UNINSTALL_COMMAND)
   class UninstallCommandParameters {
     @Parameter(description = "addon ", arity = 1, required = true)
-     List<String> addon;
+    List<String> addon;
     @Parameter(names = ["-v", "--verbose"], hidden = true)
-     boolean verbose
+    boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
-     boolean help
-     String addonId
+    boolean help
+    String addonId
   }
 }

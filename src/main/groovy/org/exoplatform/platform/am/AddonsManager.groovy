@@ -25,40 +25,32 @@ import org.exoplatform.platform.am.cli.CommandLineParser
 import org.exoplatform.platform.am.cli.CommandLineParsingException
 import org.exoplatform.platform.am.settings.EnvironmentSettings
 import org.exoplatform.platform.am.utils.AddonsManagerException
-import org.exoplatform.platform.am.utils.Logging
-
-import static org.fusesource.jansi.Ansi.ansi
+import org.exoplatform.platform.am.utils.Logger
 
 /**
  * Command line utility to manage Platform addons.
  */
 
 CommandLineParser clp
-
+EnvironmentSettings env
+CommandLineParameters commandLineParameters
+def returnCode = AddonsManagerConstants.RETURN_CODE_OK
 try {
-// Initialize logging system
-  Logging.initialize()
-
 // Initialize environment settings
-  EnvironmentSettings env = new EnvironmentSettings()
+  env = new EnvironmentSettings()
 
 // display header
-  Logging.displayHeader(env.manager.version)
+  Logger.displayHeader(env.manager.version)
 
 // Initialize Add-ons manager settings
-  clp = new CommandLineParser(env.manager.scriptName, Logging.CONSOLE_WIDTH)
+  clp = new CommandLineParser(env.manager.scriptName, Logger.console.width)
 
 // Parse command line parameters and fill settings with user inputs
-  CommandLineParameters commandLineParameters = clp.parse(args)
-
-// Display verbose details
-  Logging.displayMsgVerbose("Environment Settings : ${env}")
-  Logging.displayMsgVerbose("Command Line Settings : ${commandLineParameters}")
+  commandLineParameters = clp.parse(args)
 
   // Show usage text when -h or --help option is used.
   if (commandLineParameters.help) {
     clp.usage()
-    Logging.dispose()
     System.exit AddonsManagerConstants.RETURN_CODE_OK
   }
 
@@ -67,18 +59,17 @@ try {
   switch (commandLineParameters.command) {
     case CommandLineParameters.Command.LIST:
       List<Addon> addons = addonService.loadAddons()
-      println ansi().render("\n@|bold Available add-ons:|@\n")
+      Logger.info "\n@|bold Available add-ons:|@"
       addons.findAll { it.isStable() || commandLineParameters.commandList.snapshots }.groupBy { it.id }.each {
         Addon anAddon = it.value.first()
-        printf(ansi().render("+ @|bold,yellow %-${addons.id*.size().max()}s|@ : @|bold %s|@, %s\n").toString(), anAddon.id,
-               anAddon.name, anAddon.description)
-        printf(ansi().render("     Available Version(s) : @|bold,yellow %-${addons.version*.size().max()}s|@ \n\n").toString(),
-               ansi().render(it.value.collect { "@|yellow ${it.version}|@" }.join(', ')))
+        Logger.info String.format("\n+ @|bold,yellow %-${addons.id*.size().max()}s|@ : @|bold %s|@, %s", anAddon.id,
+                                  anAddon.name, anAddon.description)
+        Logger.info String.format("     Available Version(s) : %s",it.value.collect { "@|yellow ${it.version}|@" }.join(', '))
       }
-      println ansi().render("""
+      Logger.info String.format("""
   To install an add-on:
     ${env.manager.scriptName} install @|yellow addon|@
-  """).toString()
+  """)
       break
     case CommandLineParameters.Command.INSTALL:
       Addon addon
@@ -90,9 +81,9 @@ try {
               it.id)
         }
         if (addon == null) {
-          Logging.displayMsgError("No add-on with identifier ${commandLineParameters.commandInstall.addonId} found")
-          Logging.dispose()
-          System.exit AddonsManagerConstants.RETURN_CODE_KO
+          Logger.error("No add-on with identifier ${commandLineParameters.commandInstall.addonId} found")
+          returnCode = AddonsManagerConstants.RETURN_CODE_KO
+          break
         }
       } else {
         // Let's find the add-on with the given id and version
@@ -102,10 +93,10 @@ try {
               it.version)
         }
         if (addon == null) {
-          Logging.displayMsgError(
+          Logger.error(
               "No add-on with identifier ${commandLineParameters.commandInstall.addonId} and version ${commandLineParameters.commandInstall.addonVersion} found")
-          Logging.dispose()
-          System.exit AddonsManagerConstants.RETURN_CODE_KO
+          returnCode = AddonsManagerConstants.RETURN_CODE_KO
+          break
         }
       }
       addonService.install(addon, commandLineParameters.commandInstall.force)
@@ -114,32 +105,29 @@ try {
       File statusFile = addonService.getAddonStatusFile(commandLineParameters.commandUninstall.addonId)
       if (statusFile.exists()) {
         Addon addon
-        Logging.logWithStatus("Loading add-on details...") {
+        Logger.logWithStatus("Loading add-on details") {
           addon = addonService.parseJSONAddon(statusFile.text);
         }
         addonService.uninstall(addon)
       } else {
-        Logging.logWithStatusKO("Add-on not installed. Exiting.")
-        Logging.dispose()
-        System.exit AddonsManagerConstants.RETURN_CODE_KO
+        Logger.logWithStatusKO("Add-on not installed. Exiting.")
+        returnCode = AddonsManagerConstants.RETURN_CODE_KO
       }
       break
   }
 } catch (CommandLineParsingException clpe) {
-  Logging.displayMsgError("Invalid command line parameter(s) : ${clpe.message}")
-  println()
+  Logger.error("Invalid command line parameter(s) : ${clpe.message}")
   clp.usage()
-  System.exit AddonsManagerConstants.RETURN_CODE_KO
+  returnCode = AddonsManagerConstants.RETURN_CODE_KO
 } catch (AddonsManagerException ame) {
-  Logging.displayMsgError ame.message
-  println()
-  System.exit AddonsManagerConstants.RETURN_CODE_KO
+  Logger.error ame.message
+  returnCode = AddonsManagerConstants.RETURN_CODE_KO
 } catch (Throwable t) {
-  Logging.displayThrowable(t)
-  println()
-  System.exit AddonsManagerConstants.RETURN_CODE_KO
-} finally {
-  Logging.dispose()
+  Logger.error(t)
+  returnCode = AddonsManagerConstants.RETURN_CODE_KO
 }
-println()
-System.exit AddonsManagerConstants.RETURN_CODE_OK
+// Display details if verbose enabled
+Logger.debug("Console : ${Logger.console?.properties}")
+Logger.debug("Environment Settings : ${env}")
+Logger.debug("Command Line Settings : ${commandLineParameters}")
+System.exit returnCode

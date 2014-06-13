@@ -20,17 +20,18 @@
  */
 package org.exoplatform.platform.am.cli
 
-import org.exoplatform.platform.am.utils.Logging
+import org.exoplatform.platform.am.utils.Logger
 import spock.lang.Specification
+
 /**
  * Command line parameters parsing
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class CommandLineParserTest extends Specification {
-  CommandLineParser clp = new CommandLineParser("FAKE.sh", Logging.CONSOLE_WIDTH)
+  CommandLineParser clp = new CommandLineParser("FAKE.sh", Logger.console.width)
 
   def setupSpec() {
-    Logging.verbose = true
+    Logger.enableDebug()
   }
 
   def "Test command line parameters to display help"(String[] args) {

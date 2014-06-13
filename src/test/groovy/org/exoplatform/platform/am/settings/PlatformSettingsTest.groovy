@@ -21,7 +21,7 @@
 package org.exoplatform.platform.am.settings
 
 import org.exoplatform.platform.am.utils.AddonsManagerException
-import org.exoplatform.platform.am.utils.Logging
+import org.exoplatform.platform.am.utils.Logger
 import spock.lang.Specification
 
 /**
@@ -30,7 +30,7 @@ import spock.lang.Specification
 class PlatformSettingsTest extends Specification {
 
   def setupSpec() {
-    Logging.verbose = true
+    Logger.enableDebug()
   }
 
   def "No plf.home property defined"() {

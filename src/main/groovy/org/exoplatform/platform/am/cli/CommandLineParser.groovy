@@ -22,7 +22,7 @@ package org.exoplatform.platform.am.cli
 
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.ParameterException
-import org.exoplatform.platform.am.utils.Logging
+import org.exoplatform.platform.am.utils.Logger
 
 /**
  * Parser for command line arguments
@@ -70,14 +70,14 @@ class CommandLineParser {
    * @thows CommandLineParsingException if something goes wrong while analyzing CL parameters
    */
   CommandLineParameters parse(String[] args) {
-    Logging.displayMsgVerbose("Parameters to parse : ${args}")
+    Logger.debug("Parameters to parse : ${args}")
     try {
       _jCommander.parse(args);
     } catch (ParameterException pe) {
       throw new CommandLineParsingException(pe.message, pe);
     }
     if (_cliArgs.verbose) {
-      Logging.activateVerboseMessages()
+      Logger.enableDebug()
     }
 
     // Show usage text when -h or --help option is used.
@@ -104,7 +104,7 @@ class CommandLineParser {
         _cliArgs.commandInstall.addonId = _cliArgs.commandInstall.addon[0]
       }
       if (_cliArgs.commandInstall.force) {
-        Logging.displayMsgVerbose("Force mode activated")
+        Logger.debug("Force mode activated")
       }
     } else if (CommandLineParameters.UNINSTALL_COMMAND.equals(_jCommander.getParsedCommand())) {
       _cliArgs.command = CommandLineParameters.Command.UNINSTALL

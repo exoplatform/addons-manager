@@ -19,12 +19,14 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.settings
+
 import groovy.transform.ToString
 import org.exoplatform.platform.am.utils.FileUtils
+
 /**
  * This class exposes environment settings about the Add-ons Manager, the PLF server, the system, ...
  */
-@ToString(includeNames = true, includeFields=true)
+@ToString(includeNames = true, includeFields = true, includePackage = false)
 class EnvironmentSettings {
   PlatformSettings platform
   AddonsManagerSettings manager

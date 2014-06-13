@@ -20,7 +20,7 @@
  */
 package org.exoplatform.platform.am.settings
 
-import org.exoplatform.platform.am.utils.Logging
+import org.exoplatform.platform.am.utils.Logger
 import spock.lang.Specification
 
 /**
@@ -30,7 +30,7 @@ class AddonsManagerSettingsTest extends Specification {
   AddonsManagerSettings managerSettings = new AddonsManagerSettings()
 
   def setupSpec() {
-    Logging.verbose = true
+    Logger.enableDebug()
   }
 
   def "version is defined"() {

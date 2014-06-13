@@ -26,10 +26,11 @@ import org.exoplatform.platform.am.utils.AddonsManagerException
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.regex.Pattern
+
 /**
  * Platform instance settings
  */
-@ToString(includeNames = true, includeFields=true)
+@ToString(includeNames = true, includeFields = true, includePackage = false)
 class PlatformSettings {
   /**
    * The system property key used to pass the PLF home directory

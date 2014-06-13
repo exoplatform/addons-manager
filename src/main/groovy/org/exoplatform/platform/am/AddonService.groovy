@@ -28,7 +28,7 @@ import groovy.xml.XmlUtil
 import org.exoplatform.platform.am.settings.EnvironmentSettings
 import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.FileUtils
-import org.exoplatform.platform.am.utils.Logging
+import org.exoplatform.platform.am.utils.Logger
 
 /**
  * All services related to add-ons
@@ -48,20 +48,20 @@ class AddonService {
     String catalog
     // Load the optional local list
     if (env.localAddonsCatalogFile.exists()) {
-      Logging.logWithStatus("Reading local add-ons list...") {
+      Logger.logWithStatus("Reading local add-ons list") {
         catalog = env.localAddonsCatalogFile.text
       }
-      Logging.logWithStatus("Loading add-ons...") {
+      Logger.logWithStatus("Loading add-ons") {
         addons.addAll(parseJSONAddonsList(catalog))
       }
     } else {
-      Logging.displayMsgVerbose("No local catalog to load")
+      Logger.debug("No local catalog to load")
     }
     // Load the central list
-    Logging.logWithStatus("Downloading central add-ons list...") {
+    Logger.logWithStatus("Downloading central add-ons list") {
       catalog = env.centralCatalogUrl.text
     }
-    Logging.logWithStatus("Loading add-ons...") {
+    Logger.logWithStatus("Loading add-ons") {
       addons.addAll(parseJSONAddonsList(catalog))
     }
     return addons
@@ -135,15 +135,15 @@ class AddonService {
         uninstall(oldAddon)
       }
     }
-    Logging.displayMsgInfo("Installing @|yellow ${addon.name} ${addon.version}|@ ...")
+    Logger.info("Installing @|yellow ${addon.name} ${addon.version}|@")
     if (!getLocalArchive(addon).exists() || force) {
       // Let's download it
       if (addon.downloadUrl.startsWith("http")) {
-        Logging.logWithStatus("Downloading add-on ${addon.name} ${addon.version} ...") {
+        Logger.logWithStatus("Downloading add-on ${addon.name} ${addon.version}") {
           FileUtils.downloadFile(addon.downloadUrl, getLocalArchive(addon))
         }
       } else if (addon.downloadUrl.startsWith("file://")) {
-        Logging.logWithStatus("Copying add-on ${addon.name} ${addon.version} ...") {
+        Logger.logWithStatus("Copying add-on ${addon.name} ${addon.version}") {
           FileUtils.copyFile(new File(env.addonsDirectory, addon.downloadUrl.replaceAll("file://", "")),
                              getLocalArchive(addon))
         }
@@ -160,7 +160,7 @@ class AddonService {
         GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(text)
         addon.installedWebapps.each { file ->
           String webContext = file.substring(0, file.length() - 4)
-          Logging.logWithStatus("Adding context declaration /${webContext} for ${file} in application.xml ... ") {
+          Logger.logWithStatus("Adding context declaration /${webContext} for ${file} in application.xml") {
             applicationXmlContent.depthFirst().findAll {
               (it.name() == 'module') && (it.'web'.'web-uri'.text() == file)
             }.each { node ->
@@ -180,7 +180,7 @@ class AddonService {
         serializeXml(applicationXmlContent)
       }
     }
-    Logging.logWithStatus("Recording installation details into ${getAddonStatusFile(addon).name} ... ") {
+    Logger.logWithStatus("Recording installation details into ${getAddonStatusFile(addon).name}") {
       new FileWriter(getAddonStatusFile(addon)).withWriter { w ->
         StreamingJsonBuilder builder = new StreamingJsonBuilder(w)
         builder(
@@ -203,19 +203,19 @@ class AddonService {
         )
       }
     }
-    Logging.logWithStatusOK("Add-on ${addon.name} ${addon.version} installed.")
+    Logger.logWithStatusOK("Add-on ${addon.name} ${addon.version} installed.")
   }
 
   void uninstall(Addon addon) {
-    Logging.displayMsgInfo("Uninstalling @|yellow ${addon.name} ${addon.version}|@ ...")
+    Logger.info("Uninstalling @|yellow ${addon.name} ${addon.version}|@")
 
     addon.installedLibraries.each {
       library ->
         File fileToDelete = new File(env.platform.librariesDirectory, library)
         if (!fileToDelete.exists()) {
-          Logging.displayMsgWarn("No library ${library} to delete")
+          Logger.warn("No library ${library} to delete")
         } else {
-          Logging.logWithStatus("Deleting library ${library} ... ") {
+          Logger.logWithStatus("Deleting library ${library}") {
             fileToDelete.delete()
             assert !fileToDelete.exists()
           }
@@ -230,15 +230,15 @@ class AddonService {
         File fileToDelete = new File(env.platform.webappsDirectory, webapp)
         String webContext = webapp.substring(0, webapp.length() - 4)
         if (!fileToDelete.exists()) {
-          Logging.displayMsgWarn("No web application ${webapp} to delete")
+          Logger.warn("No web application ${webapp} to delete")
         } else {
-          Logging.logWithStatus("Deleting web application ${webapp} ... ") {
+          Logger.logWithStatus("Deleting web application ${webapp}") {
             fileToDelete.delete()
             assert !fileToDelete.exists()
           }
         }
         if (applicationDescriptorFile.exists()) {
-          Logging.logWithStatus("Adding context declaration /${webContext} for ${webapp} in application.xml ...") {
+          Logger.logWithStatus("Adding context declaration /${webContext} for ${webapp} in application.xml") {
             processFileInplace(applicationDescriptorFile) { text ->
               GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(text)
               applicationXmlContent.depthFirst().findAll {
@@ -252,11 +252,11 @@ class AddonService {
           }
         }
     }
-    Logging.logWithStatus("Deleting installation details ${getAddonStatusFile(addon).name} ... ") {
+    Logger.logWithStatus("Deleting installation details ${getAddonStatusFile(addon).name}") {
       getAddonStatusFile(addon).delete()
       assert !getAddonStatusFile(addon).exists()
     }
-    Logging.logWithStatusOK("Add-on ${addon.name} ${addon.version} uninstalled.")
+    Logger.logWithStatusOK("Add-on ${addon.name} ${addon.version} uninstalled")
   }
 
   private String serializeXml(GPathResult xml) {

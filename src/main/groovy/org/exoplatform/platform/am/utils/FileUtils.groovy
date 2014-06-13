@@ -61,7 +61,7 @@ class FileUtils {
     if (!destFile.exists()) {
       destFile.createNewFile();
     } else {
-      Logging.displayMsgWarn("${destFile.name} already exists. Replacing it.")
+      Logger.warn("${destFile.name} already exists. Replacing it.")
     }
 
     FileChannel source = null;
@@ -111,7 +111,7 @@ class FileUtils {
       while (entry = zipInputStream.nextEntry) {
         if (!entry.isDirectory() && entry.name =~ pattern) {
           String filename = extractFilename(entry.name)
-          Logging.logWithStatus("Installing file ${filename} ...") {
+          Logger.logWithStatus("Installing file ${filename}") {
             FileOutputStream output = new FileOutputStream(new File(destinationDir, filename))
             output.withStream {
               int len = 0;
