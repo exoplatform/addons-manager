@@ -34,7 +34,7 @@ import org.exoplatform.platform.am.utils.Logger
 CommandLineParser clp
 EnvironmentSettings env
 CommandLineParameters commandLineParameters
-def returnCode = AddonsManagerConstants.RETURN_CODE_OK
+int returnCode = AddonsManagerConstants.RETURN_CODE_OK
 try {
 // Initialize environment settings
   env = new EnvironmentSettings()
