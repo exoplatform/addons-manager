@@ -74,6 +74,12 @@
       <artifactId>jcommander</artifactId>
       <version>${jcommander.version}</version>
     </dependency>
+    <!-- Required for colorized console on windows (bundles jansi ) + terminal interaction -->
+    <dependency>
+      <groupId>jline</groupId>
+      <artifactId>jline</artifactId>
+      <version>${jline.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy</artifactId>
@@ -88,12 +94,6 @@
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-xml</artifactId>
       <version>${groovy.version}</version>
-    </dependency>
-    <!-- Required for colorized console on windows (bundles jansi ) + terminal interaction -->
-    <dependency>
-      <groupId>jline</groupId>
-      <artifactId>jline</artifactId>
-      <version>${jline.version}</version>
     </dependency>
     <!-- groovy-groovydoc is required for the site generation -->
     <!-- We don't want to bundle it -->
