@@ -21,7 +21,6 @@
 package org.exoplatform.platform.am.utils
 
 import groovy.transform.ToString
-import jline.Terminal
 import jline.TerminalFactory
 import org.fusesource.jansi.AnsiRenderWriter
 
@@ -31,17 +30,15 @@ import org.fusesource.jansi.AnsiRenderWriter
  */
 @ToString(includeNames = true, includeFields = true, includePackage = false)
 class Console {
-  /** JLine Terminal. */
-  private final Terminal _terminal
 
   /** Preferred input reader. */
-  private final Reader _in
+  private Reader _in
 
   /** Preferred output writer. */
-  private final PrintWriter _out
+  private PrintWriter _out
 
   /** Preferred error output writer. */
-  private final PrintWriter _err
+  private PrintWriter _err
 
   /** Raw input stream. */
   private final InputStream _inputStream
@@ -60,19 +57,17 @@ class Console {
     assert outputStream != null
     assert errorStream != null
 
-    this._terminal = TerminalFactory.create()
-
     this._inputStream = inputStream
     this._outputStream = outputStream
     this._errorStream = errorStream
 
-    this._in = new InputStreamReader(_terminal.wrapInIfNeeded(inputStream))
-    if (this._terminal.ansiSupported) {
-      this._out = new AnsiRenderWriter(_terminal.wrapOutIfNeeded(outputStream), true)
-      this._err = new AnsiRenderWriter(_terminal.wrapOutIfNeeded(errorStream), true)
+    this._in = new InputStreamReader(TerminalFactory.get().wrapInIfNeeded(inputStream))
+    if (TerminalFactory.get().ansiSupported) {
+      this._out = new AnsiRenderWriter(TerminalFactory.get().wrapOutIfNeeded(outputStream), true)
+      this._err = new AnsiRenderWriter(TerminalFactory.get().wrapOutIfNeeded(errorStream), true)
     } else {
-      this._out = new PrintWriter(_terminal.wrapOutIfNeeded(outputStream), true)
-      this._err = new PrintWriter(_terminal.wrapOutIfNeeded(errorStream), true)
+      this._out = new PrintWriter(TerminalFactory.get().wrapOutIfNeeded(outputStream), true)
+      this._err = new PrintWriter(TerminalFactory.get().wrapOutIfNeeded(errorStream), true)
     }
   }
 
@@ -96,17 +91,40 @@ class Console {
   }
 
   boolean isSupported() {
-    _terminal.supported
+    TerminalFactory.get().supported
   }
 
-  int getWidth() { _terminal.width }
+  int getWidth() { TerminalFactory.get().width }
 
-  int getHeight() { _terminal.height }
+  int getHeight() { TerminalFactory.get().height }
 
-  boolean isAnsiSupported() { _terminal.ansiSupported }
+  boolean isAnsiSupported() { TerminalFactory.get().ansiSupported }
 
-  boolean isEchoEnabled() { _terminal.echoEnabled }
+  boolean isEchoEnabled() { TerminalFactory.get().echoEnabled }
 
-  String getOutputEncoding() { _terminal.outputEncoding }
+  String getOutputEncoding() { TerminalFactory.get().outputEncoding }
+
+  void reset() {
+    TerminalFactory.get().restore()
+    this._in.close()
+    this._out.close()
+    this._err.close()
+    this._in = new InputStreamReader(TerminalFactory.get().wrapInIfNeeded(this._inputStream))
+    if (TerminalFactory.get().ansiSupported) {
+      this._out = new AnsiRenderWriter(TerminalFactory.get().wrapOutIfNeeded(this._outputStream), true)
+      this._err = new AnsiRenderWriter(TerminalFactory.get().wrapOutIfNeeded(this._errorStream), true)
+    } else {
+      this._out = new PrintWriter(TerminalFactory.get().wrapOutIfNeeded(this._outputStream), true)
+      this._err = new PrintWriter(TerminalFactory.get().wrapOutIfNeeded(this._errorStream), true)
+    }
+  }
+
+// Factory
+  private static Console instance = new Console()
+
+  static Console get() {
+    Console.instance
+  }
+
 
 }

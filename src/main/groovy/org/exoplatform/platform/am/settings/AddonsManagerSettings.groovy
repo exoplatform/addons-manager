@@ -30,6 +30,11 @@ import org.exoplatform.platform.am.utils.Logger
  */
 @ToString(includeNames = true, includeFields = true, includePackage = false)
 class AddonsManagerSettings extends Properties {
+  /**
+   * Logger
+   */
+  private static final Logger LOG = Logger.get()
+
   private static final String ADDONS_MANAGER_PROPERTIES = "org/exoplatform/platform/am/settings/am.properties"
 
   AddonsManagerSettings() {
@@ -49,7 +54,7 @@ class AddonsManagerSettings extends Properties {
       try {
         inputStream.close()
       } catch (IOException ioe) {
-        Logger.warn("Error while closing \"${ADDONS_MANAGER_PROPERTIES}\" : ${ioe.message}")
+        LOG.warn("Error while closing \"${ADDONS_MANAGER_PROPERTIES}\" : ${ioe.message}")
       }
     }
     // Computes the script name from the OS

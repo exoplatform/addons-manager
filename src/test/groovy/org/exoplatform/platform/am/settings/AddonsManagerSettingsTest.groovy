@@ -20,6 +20,7 @@
  */
 package org.exoplatform.platform.am.settings
 
+import org.exoplatform.platform.am.utils.Console
 import org.exoplatform.platform.am.utils.Logger
 import spock.lang.Specification
 
@@ -27,10 +28,20 @@ import spock.lang.Specification
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class AddonsManagerSettingsTest extends Specification {
+
+  /**
+   * Logger
+   */
+  private static final Logger LOG = Logger.get()
+
   AddonsManagerSettings managerSettings = new AddonsManagerSettings()
 
   def setupSpec() {
-    Logger.enableDebug()
+    LOG.enableDebug()
+  }
+
+  def cleanSpec() {
+    Console.get().reset()
   }
 
   def "version is defined"() {

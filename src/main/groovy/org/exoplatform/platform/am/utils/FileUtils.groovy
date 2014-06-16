@@ -28,6 +28,12 @@ import java.util.zip.ZipInputStream
  * Miscellaneous utilities
  */
 class FileUtils {
+
+  /**
+   * Logger
+   */
+  private static final Logger LOG = Logger.get()
+
   /**
    * Downloads a file following redirects if required
    * @param url The URL from which to download
@@ -61,7 +67,7 @@ class FileUtils {
     if (!destFile.exists()) {
       destFile.createNewFile();
     } else {
-      Logger.warn("${destFile.name} already exists. Replacing it.")
+      LOG.warn("${destFile.name} already exists. Replacing it.")
     }
 
     FileChannel source = null;
@@ -111,7 +117,7 @@ class FileUtils {
       while (entry = zipInputStream.nextEntry) {
         if (!entry.isDirectory() && entry.name =~ pattern) {
           String filename = extractFilename(entry.name)
-          Logger.logWithStatus("Installing file ${filename}") {
+          LOG.withStatus("Installing file ${filename}") {
             FileOutputStream output = new FileOutputStream(new File(destinationDir, filename))
             output.withStream {
               int len = 0;

@@ -31,6 +31,11 @@ import org.exoplatform.platform.am.utils.Logger
 class CommandLineParser {
 
   /**
+   * Logger
+   */
+  private static final Logger LOG = Logger.get()
+
+  /**
    * JCommander instance used to process args
    */
   private JCommander _jCommander
@@ -70,14 +75,14 @@ class CommandLineParser {
    * @thows CommandLineParsingException if something goes wrong while analyzing CL parameters
    */
   CommandLineParameters parse(String[] args) {
-    Logger.debug("Parameters to parse : ${args}")
+    LOG.debug("Parameters to parse : ${args}")
     try {
       _jCommander.parse(args);
     } catch (ParameterException pe) {
       throw new CommandLineParsingException(pe.message, pe);
     }
     if (_cliArgs.verbose) {
-      Logger.enableDebug()
+      LOG.enableDebug()
     }
 
     // Show usage text when -h or --help option is used.
@@ -104,7 +109,7 @@ class CommandLineParser {
         _cliArgs.commandInstall.addonId = _cliArgs.commandInstall.addon[0]
       }
       if (_cliArgs.commandInstall.force) {
-        Logger.debug("Force mode activated")
+        LOG.debug("Force mode activated")
       }
     } else if (CommandLineParameters.UNINSTALL_COMMAND.equals(_jCommander.getParsedCommand())) {
       _cliArgs.command = CommandLineParameters.Command.UNINSTALL

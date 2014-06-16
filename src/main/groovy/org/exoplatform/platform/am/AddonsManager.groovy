@@ -25,9 +25,10 @@ import org.exoplatform.platform.am.cli.CommandLineParser
 import org.exoplatform.platform.am.cli.CommandLineParsingException
 import org.exoplatform.platform.am.settings.EnvironmentSettings
 import org.exoplatform.platform.am.utils.AddonsManagerException
+import org.exoplatform.platform.am.utils.Console
 import org.exoplatform.platform.am.utils.Logger
 
-/**
+/*
  * Command line utility to manage Platform addons.
  */
 
@@ -35,15 +36,19 @@ CommandLineParser clp
 EnvironmentSettings env
 CommandLineParameters commandLineParameters
 int returnCode = AddonsManagerConstants.RETURN_CODE_OK
+/**
+ * Logger
+ */
+Logger log = Logger.get()
 try {
 // Initialize environment settings
   env = new EnvironmentSettings()
 
 // display header
-  Logger.displayHeader(env.manager.version)
+  log.displayHeader(env.manager.version)
 
 // Initialize Add-ons manager settings
-  clp = new CommandLineParser(env.manager.scriptName, Logger.console.width)
+  clp = new CommandLineParser(env.manager.scriptName, Console.get().width)
 
 // Parse command line parameters and fill settings with user inputs
   commandLineParameters = clp.parse(args)
@@ -59,14 +64,14 @@ try {
   switch (commandLineParameters.command) {
     case CommandLineParameters.Command.LIST:
       List<Addon> addons = addonService.loadAddons()
-      Logger.info "\n@|bold Available add-ons:|@"
+      log.info "\n@|bold Available add-ons:|@"
       addons.findAll { it.isStable() || commandLineParameters.commandList.snapshots }.groupBy { it.id }.each {
         Addon anAddon = it.value.first()
-        Logger.info String.format("\n+ @|bold,yellow %-${addons.id*.size().max()}s|@ : @|bold %s|@, %s", anAddon.id,
-                                  anAddon.name, anAddon.description)
-        Logger.info String.format("     Available Version(s) : %s",it.value.collect { "@|yellow ${it.version}|@" }.join(', '))
+        log.info String.format("\n+ @|bold,yellow %-${addons.id*.size().max()}s|@ : @|bold %s|@, %s", anAddon.id,
+                               anAddon.name, anAddon.description)
+        log.info String.format("     Available Version(s) : %s", it.value.collect { "@|yellow ${it.version}|@" }.join(', '))
       }
-      Logger.info String.format("""
+      log.info String.format("""
   To install an add-on:
     ${env.manager.scriptName} install @|yellow addon|@
   """)
@@ -81,7 +86,7 @@ try {
               it.id)
         }
         if (addon == null) {
-          Logger.error("No add-on with identifier ${commandLineParameters.commandInstall.addonId} found")
+          log.error("No add-on with identifier ${commandLineParameters.commandInstall.addonId} found")
           returnCode = AddonsManagerConstants.RETURN_CODE_KO
           break
         }
@@ -93,7 +98,7 @@ try {
               it.version)
         }
         if (addon == null) {
-          Logger.error(
+          log.error(
               "No add-on with identifier ${commandLineParameters.commandInstall.addonId} and version ${commandLineParameters.commandInstall.addonVersion} found")
           returnCode = AddonsManagerConstants.RETURN_CODE_KO
           break
@@ -105,29 +110,29 @@ try {
       File statusFile = addonService.getAddonStatusFile(commandLineParameters.commandUninstall.addonId)
       if (statusFile.exists()) {
         Addon addon
-        Logger.logWithStatus("Loading add-on details") {
+        log.withStatus("Loading add-on details") {
           addon = addonService.parseJSONAddon(statusFile.text);
         }
         addonService.uninstall(addon)
       } else {
-        Logger.error("Add-on not installed. It cannot be uninstalled.")
+        log.error("Add-on not installed. It cannot be uninstalled.")
         returnCode = AddonsManagerConstants.RETURN_CODE_KO
       }
       break
   }
 } catch (CommandLineParsingException clpe) {
-  Logger.error("Invalid command line parameter(s) : ${clpe.message}")
+  log.error("Invalid command line parameter(s) : ${clpe.message}")
   clp.usage()
   returnCode = AddonsManagerConstants.RETURN_CODE_KO
 } catch (AddonsManagerException ame) {
-  Logger.error ame.message
+  log.error ame.message
   returnCode = AddonsManagerConstants.RETURN_CODE_KO
 } catch (Throwable t) {
-  Logger.error(t)
+  log.error(t)
   returnCode = AddonsManagerConstants.RETURN_CODE_KO
 }
 // Display details if verbose enabled
-Logger.debug("Console : ${Logger.console?.properties}")
-Logger.debug("Environment Settings : ${env}")
-Logger.debug("Command Line Settings : ${commandLineParameters}")
+log.debug("Console : ${Console.get().properties}")
+log.debug("Environment Settings : ${env}")
+log.debug("Command Line Settings : ${commandLineParameters}")
 System.exit returnCode

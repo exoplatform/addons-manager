@@ -30,16 +30,16 @@ import org.fusesource.jansi.AnsiString
  */
 class Logger {
 
-  static final Console console = new Console()
+  private final Console console
 
   /**
    * The enumeration of all possible log levels
    */
-  private static enum Level {
-    DEBUG(Ansi.Color.CYAN, ". "),
+  private enum Level {
+    DEBUG(Ansi.Color.CYAN, "[DEBUG] "),
     INFO(Ansi.Color.DEFAULT, ""),
-    WARN(Ansi.Color.YELLOW, "! "),
-    ERROR(Ansi.Color.RED, "- ")
+    WARN(Ansi.Color.MAGENTA, "[WARN]  "),
+    ERROR(Ansi.Color.RED, "[ERROR] ")
     /**
      * Foreground color used for ascii supported console
      */
@@ -55,54 +55,62 @@ class Logger {
     }
   }
 
-  private static boolean _debug
+  Logger() {
+    this.console = Console.get()
+  }
 
-  static boolean isDebugEnabled() {
+  Logger(Console console) {
+    this.console = console
+  }
+
+  private boolean _debug
+
+  boolean isDebugEnabled() {
     return _debug
   }
 
-  static enableDebug() {
+  void enableDebug() {
     _debug = true
     debug("Verbose logs activated")
   }
 
-  static void debug(final Object msg) {
+  void debug(final Object msg) {
     if (isDebugEnabled()) {
       log(Level.DEBUG, msg, null);
     }
   }
 
-  static void debug(final Object msg, final Throwable cause) {
+  void debug(final Object msg, final Throwable cause) {
     if (isDebugEnabled()) {
       log(Level.DEBUG, msg, cause);
     }
   }
 
-  static void info(final Object msg) {
+  void info(final Object msg) {
     log(Level.INFO, msg, null);
   }
 
-  static void info(final Object msg, final Throwable cause) {
+  void info(final Object msg, final Throwable cause) {
     log(Level.INFO, msg, cause);
   }
 
-  static void warn(final Object msg) {
+  void warn(final Object msg) {
     log(Level.WARN, msg, null);
   }
 
-  static void warn(final Object msg, final Throwable cause) {
+  void warn(final Object msg, final Throwable cause) {
     log(Level.WARN, msg, cause);
   }
 
-  static void error(final Object msg) {
+  void error(final Object msg) {
     log(Level.ERROR, msg, null);
   }
 
-  static void error(final Object msg, final Throwable cause) {
+  void error(final Object msg, final Throwable cause) {
     log(Level.ERROR, msg, cause);
   }
 
-  static displayHeader(String managerVersion) {
+  def displayHeader(String managerVersion) {
     info("""
     @|yellow               xx      xx |@
     @|yellow                xx    xx  |@
@@ -115,7 +123,7 @@ class Logger {
     """)
   }
 
-  static logWithStatus(String text, Closure closure, Object... args) {
+  def withStatus(String text, Closure closure, Object... args) {
     if (console.ansiSupported) {
       console.out.print text
     } else {
@@ -131,7 +139,7 @@ class Logger {
     }
   }
 
-  static logWithStatusOK(String text) {
+  void withStatusOK(String text) {
     if (console.ansiSupported) {
       console.out.print text
     } else {
@@ -140,7 +148,7 @@ class Logger {
     displayStatus(text, AddonsManagerConstants.STATUS_OK, Ansi.Color.GREEN)
   }
 
-  static logWithStatusKO(String text) {
+  void withStatusKO(String text) {
     if (console.ansiSupported) {
       console.out.print text
     } else {
@@ -149,7 +157,7 @@ class Logger {
     displayStatus(text, AddonsManagerConstants.STATUS_KO, Ansi.Color.RED)
   }
 
-  private static void log(final Level level, Object msg, Throwable cause) {
+  void log(final Level level, Object msg, Throwable cause) {
     assert level != null
     assert msg != null
 
@@ -163,9 +171,9 @@ class Logger {
 
     if (console.ansiSupported) {
       if (Ansi.Color.DEFAULT != level.color) {
-        console.out.println "@|${level.color.name()} ${msg}|@"
+        console.out.println "@|${level.color.name()} ${level.prefix}${new AnsiString(AnsiRenderer.render(msg)).plain}|@"
       } else {
-        console.out.println msg
+        console.out.println "${level.prefix}${AnsiRenderer.render(msg)}"
       }
     } else {
       console.out.println "${level.prefix}${new AnsiString(AnsiRenderer.render(msg)).plain}"
@@ -176,7 +184,7 @@ class Logger {
     }
   }
 
-  private static displayStatus(String text, String status, Ansi.Color color) {
+  void displayStatus(String text, String status, Ansi.Color color) {
     String statusStr = " [@|${color.name()} ${status.toUpperCase()}|@]"
     String padding = " ".padRight(console.width - new AnsiString(AnsiRenderer.render("${text}${statusStr}")).length(), ".")
     if (console.ansiSupported) {
@@ -185,6 +193,13 @@ class Logger {
       console.out.println new AnsiString(AnsiRenderer.render("${padding}${statusStr}")).plain
     }
 
+  }
+
+  // Factory
+  private static Logger instance = new Logger()
+
+  static Logger get() {
+    Logger.instance
   }
 
 }
