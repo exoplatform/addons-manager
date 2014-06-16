@@ -46,6 +46,10 @@ class EnvironmentSettings {
    * The path to the local catalog
    */
   File localAddonsCatalogFile
+  /**
+   * The path to the central catalog local cache
+   */
+  File centralAddonsCatalogCacheFile
 
   EnvironmentSettings() {
     manager = new AddonsManagerSettings()
@@ -63,6 +67,7 @@ class EnvironmentSettings {
       FileUtils.mkdirs(statusesDirectory)
     }
     localAddonsCatalogFile = new File(addonsDirectory, manager.localAddonsCatalogFilename)
+    centralAddonsCatalogCacheFile = new File(addonsDirectory, manager.centralAddonsCatalogCacheFilename)
   }
 
   /**

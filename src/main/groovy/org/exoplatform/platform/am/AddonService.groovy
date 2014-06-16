@@ -22,6 +22,7 @@ package org.exoplatform.platform.am
 
 import groovy.json.JsonSlurper
 import groovy.json.StreamingJsonBuilder
+import groovy.time.TimeCategory
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
@@ -63,17 +64,46 @@ class AddonService {
     } else {
       LOG.debug("No local catalog to load from ${env.localAddonsCatalogFile}")
     }
-    LOG.debug("Loading central catalog from ${centralCatalogUrl}")
-    // Load the central list
-    LOG.withStatus("Downloading central add-ons list") {
-      try {
-        catalog = centralCatalogUrl.text
-      } catch (FileNotFoundException fne) {
-        throw new AddonsManagerException("Central catalog ${centralCatalogUrl} not found", fne)
+    // If there is no local cache of the central catalog or if it is older than 1h
+    use([TimeCategory]) {
+      if (!env.centralAddonsCatalogCacheFile.exists() ||
+          new Date(env.centralAddonsCatalogCacheFile.lastModified()) < 1.hours.ago) {
+        // Remove cache file if too old
+        if (env.centralAddonsCatalogCacheFile.exists()) {
+          env.centralAddonsCatalogCacheFile.delete()
+        }
+        LOG.debug("Loading central catalog from ${centralCatalogUrl}")
+        // Load the central list
+        File tempFile
+        LOG.withStatus("Downloading central catalog") {
+          try {
+            // Create a temporary file in which we will download the central catalog
+            tempFile = File.createTempFile("addons-manager-central-catalog", ".json", env.addonsDirectory)
+            // Don't forget to always delete it even in case of error
+            tempFile.deleteOnExit()
+            // Download the central catalog
+            FileUtils.downloadFile(centralCatalogUrl, tempFile)
+            // Read the catalog content
+            catalog = tempFile.text
+          } catch (FileNotFoundException fne) {
+            throw new AddonsManagerException("Central catalog ${centralCatalogUrl} not found", fne)
+          }
+        }
+        LOG.withStatus("Loading add-ons list from central catalog") {
+          addons.addAll(parseJSONAddonsList(catalog))
+        }
+        // Everything was ok, let's store the cache
+        LOG.withStatus("Updating local cache of central catalog") {
+          FileUtils.copyFile(tempFile, env.centralAddonsCatalogCacheFile)
+        }
+      } else {
+        // Let's load add-ons from the cache
+        LOG.debug("Loading central catalog from cache ${env.centralAddonsCatalogCacheFile}")
+        LOG.withStatus("Loading add-ons list from central catalog cache") {
+          catalog = env.centralAddonsCatalogCacheFile.text
+          addons.addAll(parseJSONAddonsList(catalog))
+        }
       }
-    }
-    LOG.withStatus("Loading add-ons") {
-      addons.addAll(parseJSONAddonsList(catalog))
     }
     return addons
   }

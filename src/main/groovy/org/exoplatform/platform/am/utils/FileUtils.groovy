@@ -40,6 +40,16 @@ class FileUtils {
    * @param destFile The file to populate
    * @throws IOException If there is an IO error
    */
+  static downloadFile(URL url, File destFile) throws IOException {
+    downloadFile(url.toString(), destFile)
+  }
+
+  /**
+   * Downloads a file following redirects if required
+   * @param url The URL from which to download
+   * @param destFile The file to populate
+   * @throws IOException If there is an IO error
+   */
   static downloadFile(String url, File destFile) throws IOException {
     while (url) {
       new URL(url).openConnection().with { URLConnection conn ->
