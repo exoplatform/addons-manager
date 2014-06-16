@@ -110,7 +110,7 @@ try {
         }
         addonService.uninstall(addon)
       } else {
-        Logger.logWithStatusKO("Add-on not installed. Exiting.")
+        Logger.error("Add-on not installed. It cannot be uninstalled.")
         returnCode = AddonsManagerConstants.RETURN_CODE_KO
       }
       break
