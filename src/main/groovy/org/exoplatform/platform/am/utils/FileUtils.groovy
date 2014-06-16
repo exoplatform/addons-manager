@@ -42,8 +42,10 @@ class FileUtils {
    */
   static downloadFile(String url, File destFile) throws IOException {
     while (url) {
-      new URL(url).openConnection().with { conn ->
-        conn.instanceFollowRedirects = false
+      new URL(url).openConnection().with { URLConnection conn ->
+        if (conn instanceof HttpURLConnection) {
+          conn.instanceFollowRedirects = true
+        }
         url = conn.getHeaderField("Location")
         if (!url) {
           destFile.withOutputStream { out ->
