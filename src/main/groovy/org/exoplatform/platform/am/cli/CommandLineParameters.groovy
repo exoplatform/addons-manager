@@ -19,11 +19,9 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.cli
-
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
 import groovy.transform.ToString
-
 /**
  * Command line parameters
  * @author Arnaud Héritier <aheritier@exoplatform.com>
@@ -102,10 +100,13 @@ class CommandLineParameters {
    * Specific parameters to list add-ons
    */
   @ToString(includeNames = true, includeFields = true, includePackage = false)
-  @Parameters(commandDescription = "List add-ons", commandNames = CommandLineParameters.LIST_COMMAND)
+  @Parameters(commandDescription = "List add-ons", commandNames = CommandLineParameters.LIST_COMMAND, separators = "=")
   class ListCommandParameters {
     @Parameter(names = ["-s", "--snapshots"], description = "List also add-ons SNAPSHOTs")
     boolean snapshots
+    @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
+        converter = URLConverter.class)
+    URL catalog
     @Parameter(names = ["-v", "--verbose"], hidden = true)
     boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
@@ -116,12 +117,15 @@ class CommandLineParameters {
    * Specific parameters to install an add-on
    */
   @ToString(includeNames = true, includeFields = true, includePackage = false)
-  @Parameters(commandDescription = "Install an add-on", commandNames = CommandLineParameters.INSTALL_COMMAND)
+  @Parameters(commandDescription = "Install an add-on", commandNames = CommandLineParameters.INSTALL_COMMAND, separators = "=")
   class InstallCommandParameters {
     @Parameter(names = ["-f", "--force"], description = "Enforce to download again and reinstall an add-on already deployed")
     boolean force
     @Parameter(names = ["-s", "--snapshots"], description = "List also add-ons SNAPSHOTs")
     boolean snapshots
+    @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
+        converter = URLConverter.class)
+    URL catalog
     @Parameter(description = "addon[:version]", arity = 1, required = true)
     List<String> addon;
     @Parameter(names = ["-v", "--verbose"], hidden = true)
@@ -136,7 +140,7 @@ class CommandLineParameters {
    * Specific parameters to uninstall an add-on
    */
   @ToString(includeNames = true, includeFields = true, includePackage = false)
-  @Parameters(commandDescription = "Uninstall an add-on", commandNames = CommandLineParameters.UNINSTALL_COMMAND)
+  @Parameters(commandDescription = "Uninstall an add-on", commandNames = CommandLineParameters.UNINSTALL_COMMAND, separators = "=")
   class UninstallCommandParameters {
     @Parameter(description = "addon ", arity = 1, required = true)
     List<String> addon;
@@ -146,4 +150,5 @@ class CommandLineParameters {
     boolean help
     String addonId
   }
+
 }

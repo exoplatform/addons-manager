@@ -47,12 +47,13 @@ class AddonService {
     this.env = env
   }
 
-  List<Addon> loadAddons() {
+  List<Addon> loadAddons(URL centralCatalogUrl) {
     List<Addon> addons = new ArrayList<Addon>()
     // Let's load the list of available add-ons
     String catalog
     // Load the optional local list
     if (env.localAddonsCatalogFile.exists()) {
+      LOG.debug("Loading local catalog from ${env.localAddonsCatalogFile}")
       LOG.withStatus("Reading local add-ons list") {
         catalog = env.localAddonsCatalogFile.text
       }
@@ -60,11 +61,16 @@ class AddonService {
         addons.addAll(parseJSONAddonsList(catalog))
       }
     } else {
-      LOG.debug("No local catalog to load")
+      LOG.debug("No local catalog to load from ${env.localAddonsCatalogFile}")
     }
+    LOG.debug("Loading central catalog from ${centralCatalogUrl}")
     // Load the central list
     LOG.withStatus("Downloading central add-ons list") {
-      catalog = env.centralCatalogUrl.text
+      try {
+        catalog = centralCatalogUrl.text
+      } catch (FileNotFoundException fne) {
+        throw new AddonsManagerException("Central catalog ${centralCatalogUrl} not found", fne)
+      }
     }
     LOG.withStatus("Loading add-ons") {
       addons.addAll(parseJSONAddonsList(catalog))

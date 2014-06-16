@@ -33,12 +33,11 @@ class CommandLineParserTest extends Specification {
    * Logger
    */
   private static final Logger LOG = Logger.get()
+  private static final String validCatalogUrl = "http://somewhere.com/catalog"
+  private static final String invalidCatalogUrl = "thisIsNotAnUrl"
 
   CommandLineParser clp = new CommandLineParser("FAKE.sh", Console.get().width)
 
-  def setupSpec() {
-    LOG.enableDebug()
-  }
 
   def cleanSpec() {
     Console.get().reset()
@@ -80,6 +79,33 @@ class CommandLineParserTest extends Specification {
         ["--verbose", "-v", ""],
         ["list"],
         ["--snapshots", "-s"],
+    ].combinations().collect { it.minus("") }
+  }
+
+  def "Test command line parameters to list add-ons with a valid catalog parameter"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.LIST == cliArgs.command
+    validCatalogUrl.equals(cliArgs.commandList.catalog.toString())
+    where:
+    args << [
+        ["--verbose", "-v", ""],
+        ["list"],
+        ["--catalog=${validCatalogUrl}"],
+    ].combinations().collect { it.minus("") }
+  }
+
+  def "Test command line parameters to list add-ons with a invalid catalog parameter"(String[] args) {
+    when:
+    clp.parse(args)
+    then:
+    thrown(CommandLineParsingException)
+    where:
+    args << [
+        ["--verbose", "-v", ""],
+        ["list"],
+        ["--catalog=${invalidCatalogUrl}"],
     ].combinations().collect { it.minus("") }
   }
 
@@ -151,6 +177,35 @@ class CommandLineParserTest extends Specification {
     ].combinations().collect { it.minus("") }
   }
 
+  def "Test command line parameters to install an add-on with a valid catalog parameter"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INSTALL == cliArgs.command
+    validCatalogUrl.equals(cliArgs.commandInstall.catalog.toString())
+    where:
+    args << [
+        ["--verbose", "-v", ""],
+        ["install"],
+        ["my-addon", "my-addon:42"],
+        ["--catalog=${validCatalogUrl}"],
+    ].combinations().collect { it.minus("") }
+  }
+
+  def "Test command line parameters to install an add-on with a invalid catalog parameter"(String[] args) {
+    when:
+    clp.parse(args)
+    then:
+    thrown(CommandLineParsingException)
+    where:
+    args << [
+        ["--verbose", "-v", ""],
+        ["install"],
+        ["my-addon", "my-addon:42"],
+        ["--catalog=${invalidCatalogUrl}"],
+    ].combinations().collect { it.minus("") }
+  }
+
   def "Test command line parameters to uninstall an add-on"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
@@ -180,6 +235,5 @@ class CommandLineParserTest extends Specification {
         ["uninstall", "foo", "bar"],
     ]
   }
-
 
 }
