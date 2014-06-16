@@ -133,8 +133,15 @@ try {
   log.error(t)
   returnCode = AddonsManagerConstants.RETURN_CODE_KO
 }
-// Display details if verbose enabled
-log.debug("Console : ${Console.get().properties}")
-log.debug("Environment Settings : ${env}")
-log.debug("Command Line Settings : ${commandLineParameters}")
+// Display various details for debug purposes
+log.debug("Console", Console.get()?.properties, ["class", "err", "out", "in"])
+log.debug("Environment Settings", env?.properties, ["class", "platform", "manager"])
+log.debug("Platform Settings", env?.platform?.properties, ["class"])
+log.debug("Manager Settings", env?.manager, ["class"])
+log.debug("Command Line Global Parameters", commandLineParameters?.properties,
+          ["class", "commandList", "commandInstall", "commandUninstall"])
+log.debug("Command Line List Parameters", commandLineParameters?.commandList?.properties, ["class"])
+log.debug("Command Line Install Parameters", commandLineParameters?.commandInstall?.properties, ["class"])
+log.debug("Command Line Uninstall Parameters", commandLineParameters?.commandUninstall?.properties, ["class"])
+log.debug("System Properties", System.properties, ["class"])
 System.exit returnCode

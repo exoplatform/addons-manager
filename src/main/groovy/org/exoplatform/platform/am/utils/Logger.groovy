@@ -86,6 +86,20 @@ class Logger {
     }
   }
 
+  void debug(final String title, final Map map, final List<String> excludes) {
+    List<String> fieldsToExcludes = excludes ? excludes : []
+    debug("".padRight(Console.get().width - Level.DEBUG.prefix.length(), "="))
+    debug("${title.toUpperCase()}:")
+    debug("".padRight(Console.get().width - Level.DEBUG.prefix.length(), "="))
+    if (map) {
+      map.keySet().findAll { !fieldsToExcludes.contains(it) }.each {
+        debug String.format("%-${map.keySet()*.size().max()}s : %s", it, map.get(it))
+      }
+    } else {
+      debug "Null"
+    }
+  }
+
   void info(final Object msg) {
     log(Level.INFO, msg, null);
   }
@@ -110,7 +124,7 @@ class Logger {
     log(Level.ERROR, msg, cause);
   }
 
-  def displayHeader(String managerVersion) {
+  void displayHeader(String managerVersion) {
     info("""
     @|yellow               xx      xx |@
     @|yellow                xx    xx  |@
@@ -157,7 +171,7 @@ class Logger {
     displayStatus(text, AddonsManagerConstants.STATUS_KO, Ansi.Color.RED)
   }
 
-  void log(final Level level, Object msg, Throwable cause) {
+  private void log(final Level level, Object msg, Throwable cause) {
     assert level != null
     assert msg != null
 
@@ -184,7 +198,7 @@ class Logger {
     }
   }
 
-  void displayStatus(String text, String status, Ansi.Color color) {
+  private void displayStatus(String text, String status, Ansi.Color color) {
     String statusStr = " [@|${color.name()} ${status.toUpperCase()}|@]"
     String padding = " ".padRight(console.width - new AnsiString(AnsiRenderer.render("${text}${statusStr}")).length(), ".")
     if (console.ansiSupported) {
