@@ -48,7 +48,7 @@ class AddonService {
     this.env = env
   }
 
-  List<Addon> loadAddons(URL centralCatalogUrl) {
+  List<Addon> loadAddons(URL centralCatalogUrl, boolean discardCentralCatalogCache) {
     List<Addon> addons = new ArrayList<Addon>()
     // Let's load the list of available add-ons
     String catalog
@@ -67,6 +67,7 @@ class AddonService {
     // If there is no local cache of the central catalog or if it is older than 1h
     use([TimeCategory]) {
       if (!env.centralAddonsCatalogCacheFile.exists() ||
+          discardCentralCatalogCache ||
           new Date(env.centralAddonsCatalogCacheFile.lastModified()) < 1.hours.ago) {
         // Remove cache file if too old
         if (env.centralAddonsCatalogCacheFile.exists()) {

@@ -107,6 +107,8 @@ class CommandLineParameters {
     @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog
+    @Parameter(names = ["--no-cache"], description = "Discard the central catalog local cache")
+    boolean noCache
     @Parameter(names = ["-v", "--verbose"], hidden = true)
     boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
@@ -126,6 +128,8 @@ class CommandLineParameters {
     @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog
+    @Parameter(names = ["--no-cache"], description = "Discard the central catalog local cache")
+    boolean noCache
     @Parameter(description = "addon[:version]", arity = 1, required = true)
     List<String> addon;
     @Parameter(names = ["-v", "--verbose"], hidden = true)

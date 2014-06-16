@@ -64,7 +64,7 @@ try {
   switch (commandLineParameters.command) {
     case CommandLineParameters.Command.LIST:
       List<Addon> addons = addonService.loadAddons(commandLineParameters.commandList.catalog ? commandLineParameters.commandList
-          .catalog : env.centralCatalogUrl)
+          .catalog : env.centralCatalogUrl, commandLineParameters.commandList.noCache)
       log.info "\n@|bold Available add-ons:|@"
       addons.findAll { it.isStable() || commandLineParameters.commandList.snapshots }.groupBy { it.id }.each {
         Addon anAddon = it.value.first()
@@ -80,7 +80,7 @@ try {
     case CommandLineParameters.Command.INSTALL:
       Addon addon
       List<Addon> addons = addonService.loadAddons(commandLineParameters.commandInstall.catalog ? commandLineParameters
-          .commandInstall.catalog : env.centralCatalogUrl)
+          .commandInstall.catalog : env.centralCatalogUrl, commandLineParameters.commandInstall.noCache)
       if (commandLineParameters.commandInstall.addonVersion == null) {
         // Let's find the first add-on with the given id (including or not snapshots depending of the option)
         addon = addons.find {
