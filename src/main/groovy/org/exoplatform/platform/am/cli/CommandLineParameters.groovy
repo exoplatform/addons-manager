@@ -75,19 +75,19 @@ class CommandLineParameters {
    * To activate verbose logs
    */
   @Parameter(names = ["-v", "--verbose"], description = "Show verbose logs")
-  private boolean verbose
+  private boolean _verbose
   /**
    * To display the help message
    */
   @Parameter(names = ["-h", "--help"], description = "Show usage information", help = true)
-  private boolean help
+  private boolean _help
 
   /**
    * Verifies if is the verbose option is activated as main parameter or command parameter
    * @return true if the verbose option is activated as main parameter or command parameter
    */
   boolean isVerbose() {
-    return verbose || commandList.verbose || commandInstall.verbose || commandUninstall.verbose
+    return _verbose || commandList.verbose || commandInstall.verbose || commandUninstall.verbose
   }
 
   /**
@@ -95,7 +95,7 @@ class CommandLineParameters {
    * @return true if the help option is activated as main parameter or command parameter
    */
   boolean isHelp() {
-    return help || commandList.help || commandInstall.help || commandUninstall.help
+    return _help || commandList.help || commandInstall.help || commandUninstall.help
   }
 
   /**

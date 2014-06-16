@@ -32,25 +32,25 @@ import org.fusesource.jansi.AnsiRenderWriter
 @ToString(includeNames = true, includeFields = true, includePackage = false)
 class Console {
   /** JLine Terminal. */
-  private final Terminal terminal
+  private final Terminal _terminal
 
   /** Preferred input reader. */
-  private final Reader input
+  private final Reader _in
 
   /** Preferred output writer. */
-  private final PrintWriter output
+  private final PrintWriter _out
 
   /** Preferred error output writer. */
-  private final PrintWriter error
+  private final PrintWriter _err
 
   /** Raw input stream. */
-  private final InputStream inputStream
+  private final InputStream _inputStream
 
   /** Raw output stream. */
-  private final OutputStream outputStream
+  private final OutputStream _outputStream
 
   /** Raw error output stream. */
-  private final OutputStream errorStream
+  private final OutputStream _errorStream
 
   /**
    * Construct a new Console.
@@ -60,19 +60,19 @@ class Console {
     assert outputStream != null
     assert errorStream != null
 
-    this.terminal = TerminalFactory.create()
+    this._terminal = TerminalFactory.create()
 
-    this.inputStream = inputStream
-    this.outputStream = outputStream
-    this.errorStream = errorStream
+    this._inputStream = inputStream
+    this._outputStream = outputStream
+    this._errorStream = errorStream
 
-    this.input = new InputStreamReader(terminal.wrapInIfNeeded(inputStream))
-    if (this.terminal.ansiSupported) {
-      this.output = new AnsiRenderWriter(terminal.wrapOutIfNeeded(outputStream), true)
-      this.error = new AnsiRenderWriter(terminal.wrapOutIfNeeded(errorStream), true)
+    this._in = new InputStreamReader(_terminal.wrapInIfNeeded(inputStream))
+    if (this._terminal.ansiSupported) {
+      this._out = new AnsiRenderWriter(_terminal.wrapOutIfNeeded(outputStream), true)
+      this._err = new AnsiRenderWriter(_terminal.wrapOutIfNeeded(errorStream), true)
     } else {
-      this.output = new PrintWriter(terminal.wrapOutIfNeeded(outputStream), true)
-      this.error = new PrintWriter(terminal.wrapOutIfNeeded(errorStream), true)
+      this._out = new PrintWriter(_terminal.wrapOutIfNeeded(outputStream), true)
+      this._err = new PrintWriter(_terminal.wrapOutIfNeeded(errorStream), true)
     }
   }
 
@@ -84,29 +84,29 @@ class Console {
   }
 
   Reader getIn() {
-    input
+    _in
   }
 
   PrintWriter getOut() {
-    output
+    _out
   }
 
   PrintWriter getErr() {
-    error
+    _err
   }
 
   boolean isSupported() {
-    terminal.supported
+    _terminal.supported
   }
 
-  int getWidth() { terminal.width }
+  int getWidth() { _terminal.width }
 
-  int getHeight() { terminal.height }
+  int getHeight() { _terminal.height }
 
-  boolean isAnsiSupported() { terminal.ansiSupported }
+  boolean isAnsiSupported() { _terminal.ansiSupported }
 
-  boolean isEchoEnabled() { terminal.echoEnabled }
+  boolean isEchoEnabled() { _terminal.echoEnabled }
 
-  String getOutputEncoding() { terminal.outputEncoding }
+  String getOutputEncoding() { _terminal.outputEncoding }
 
 }

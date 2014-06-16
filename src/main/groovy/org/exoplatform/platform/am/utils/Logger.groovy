@@ -55,14 +55,14 @@ class Logger {
     }
   }
 
-  private static boolean debug
+  private static boolean _debug
 
   static boolean isDebugEnabled() {
-    return debug
+    return _debug
   }
 
   static enableDebug() {
-    debug = true
+    _debug = true
     debug("Verbose logs activated")
   }
 
