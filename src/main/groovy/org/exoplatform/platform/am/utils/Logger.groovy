@@ -143,6 +143,7 @@ class Logger {
     } else {
       console.out.print new AnsiString(AnsiRenderer.render(text)).plain
     }
+    console.out.flush()
     try {
       def result = closure.call(args)
       displayStatus(text, AddonsManagerConstants.STATUS_OK, Ansi.Color.GREEN)
