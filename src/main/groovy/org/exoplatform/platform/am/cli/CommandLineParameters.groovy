@@ -127,7 +127,7 @@ class CommandLineParameters {
   class InstallCommandParameters {
     @Parameter(names = ["-f", "--force"], description = "Enforce to download again and reinstall an add-on already deployed")
     boolean force
-    @Parameter(names = ["-s", "--snapshots"], description = "List also add-ons SNAPSHOTs")
+    @Parameter(names = ["-s", "--snapshots"], description = "Install add-ons in SNAPSHOTs version")
     boolean snapshots
     @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
