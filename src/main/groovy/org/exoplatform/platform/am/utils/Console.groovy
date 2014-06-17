@@ -31,6 +31,8 @@ import org.fusesource.jansi.AnsiRenderWriter
 @ToString(includeNames = true, includeFields = true, includePackage = false)
 class Console {
 
+  private final int MAX_CONSOLE_WIDTH_TO_USE = 120
+
   /** Preferred input reader. */
   private Reader _in
 
@@ -94,7 +96,7 @@ class Console {
     TerminalFactory.get().supported
   }
 
-  int getWidth() { TerminalFactory.get().width }
+  int getWidth() { Math.min(TerminalFactory.get().width, MAX_CONSOLE_WIDTH_TO_USE) }
 
   int getHeight() { TerminalFactory.get().height }
 
