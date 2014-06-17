@@ -19,9 +19,11 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.cli
+
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
 import groovy.transform.ToString
+
 /**
  * Command line parameters
  * @author Arnaud Héritier <aheritier@exoplatform.com>
@@ -112,9 +114,9 @@ class CommandLineParameters {
     @Parameter(names = ["--offline"], description = "Do not download anything")
     boolean offline
     @Parameter(names = ["-v", "--verbose"], hidden = true)
-    boolean verbose
+    protected boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
-    boolean help
+    protected boolean help
   }
 
   /**
@@ -135,11 +137,11 @@ class CommandLineParameters {
     @Parameter(names = ["--offline"], description = "Do not download anything")
     boolean offline
     @Parameter(description = "addon[:version]", arity = 1, required = true)
-    List<String> addon;
+    protected List<String> addon;
     @Parameter(names = ["-v", "--verbose"], hidden = true)
-    boolean verbose
+    protected boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
-    boolean help
+    protected boolean help
     String addonId
     String addonVersion
   }
@@ -151,11 +153,11 @@ class CommandLineParameters {
   @Parameters(commandDescription = "Uninstall an add-on", commandNames = CommandLineParameters.UNINSTALL_COMMAND, separators = "=")
   class UninstallCommandParameters {
     @Parameter(description = "addon ", arity = 1, required = true)
-    List<String> addon;
+    protected List<String> addon;
     @Parameter(names = ["-v", "--verbose"], hidden = true)
-    boolean verbose
+    protected boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
-    boolean help
+    protected boolean help
     String addonId
   }
 
