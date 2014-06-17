@@ -63,24 +63,32 @@ try {
 
   switch (commandLineParameters.command) {
     case CommandLineParameters.Command.LIST:
-      List<Addon> addons = addonService.loadAddons(commandLineParameters.commandList.catalog ? commandLineParameters.commandList
-          .catalog : env.centralCatalogUrl, commandLineParameters.commandList.noCache)
-      log.info "\n@|bold Available add-ons:|@"
-      addons.findAll { it.isStable() || commandLineParameters.commandList.snapshots }.groupBy { it.id }.each {
-        Addon anAddon = it.value.first()
-        log.info String.format("\n+ @|bold,yellow %-${addons.id*.size().max()}s|@ : @|bold %s|@, %s", anAddon.id,
-                               anAddon.name, anAddon.description)
-        log.info String.format("     Available Version(s) : %s", it.value.collect { "@|yellow ${it.version}|@" }.join(', '))
-      }
-      log.info String.format("""
+      List<Addon> addons = addonService.loadAddons(
+          commandLineParameters.commandList.catalog ? commandLineParameters.commandList.catalog : env.centralCatalogUrl,
+          commandLineParameters.commandList.noCache,
+          commandLineParameters.commandList.offline)
+      if (addons.size() > 0) {
+        log.info "\n@|bold Available add-ons:|@"
+        addons.findAll { it.isStable() || commandLineParameters.commandList.snapshots }.groupBy { it.id }.each {
+          Addon anAddon = it.value.first()
+          log.info String.format("\n+ @|bold,yellow %-${addons.id*.size().max()}s|@ : @|bold %s|@, %s", anAddon.id,
+                                 anAddon.name, anAddon.description)
+          log.info String.format("     Available Version(s) : %s", it.value.collect { "@|yellow ${it.version}|@" }.join(', '))
+        }
+        log.info String.format("""
   To install an add-on:
     ${env.manager.scriptName} install @|yellow addon|@
   """)
+      } else {
+        log.warn("No add-on found in central and local catalogs")
+      }
       break
     case CommandLineParameters.Command.INSTALL:
       Addon addon
-      List<Addon> addons = addonService.loadAddons(commandLineParameters.commandInstall.catalog ? commandLineParameters
-          .commandInstall.catalog : env.centralCatalogUrl, commandLineParameters.commandInstall.noCache)
+      List<Addon> addons = addonService.loadAddons(
+          commandLineParameters.commandInstall.catalog ? commandLineParameters.commandInstall.catalog : env.centralCatalogUrl,
+          commandLineParameters.commandInstall.noCache,
+          commandLineParameters.commandInstall.offline)
       if (commandLineParameters.commandInstall.addonVersion == null) {
         // Let's find the first add-on with the given id (including or not snapshots depending of the option)
         addon = addons.find {
@@ -106,7 +114,11 @@ try {
           break
         }
       }
-      addonService.install(addon, commandLineParameters.commandInstall.force)
+      addonService.install(
+          addon,
+          commandLineParameters.commandInstall.force,
+          commandLineParameters.commandInstall.noCache,
+          commandLineParameters.commandInstall.offline)
       break
     case CommandLineParameters.Command.UNINSTALL:
       File statusFile = addonService.getAddonStatusFile(commandLineParameters.commandUninstall.addonId)

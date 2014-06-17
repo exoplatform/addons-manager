@@ -48,7 +48,7 @@ class AddonService {
     this.env = env
   }
 
-  List<Addon> loadAddons(URL centralCatalogUrl, boolean discardCentralCatalogCache) {
+  List<Addon> loadAddonsFromLocalCatalog() {
     List<Addon> addons = new ArrayList<Addon>()
     // Let's load the list of available add-ons
     String catalog
@@ -64,11 +64,24 @@ class AddonService {
     } else {
       LOG.debug("No local catalog to load from ${env.localAddonsCatalogFile}")
     }
+    return addons
+  }
+
+  List<Addon> loadAddonsFromCentralCatalog(URL centralCatalogUrl, boolean noCache, boolean offline) {
+    List<Addon> addons = new ArrayList<Addon>()
+    // Let's load the list of available add-ons
+    String catalog
+    if (noCache && env.centralAddonsCatalogCacheFile.exists()) {
+      LOG.withStatus("Deleting central catalog cache") {
+        env.centralAddonsCatalogCacheFile.delete()
+      }
+    }
     // If there is no local cache of the central catalog or if it is older than 1h
     use([TimeCategory]) {
-      if (!env.centralAddonsCatalogCacheFile.exists() ||
-          discardCentralCatalogCache ||
-          new Date(env.centralAddonsCatalogCacheFile.lastModified()) < 1.hours.ago) {
+      if ((!env.centralAddonsCatalogCacheFile.exists() ||
+          new Date(env.centralAddonsCatalogCacheFile.lastModified()) < 1.hours.ago)
+          && !offline
+      ) {
         // Remove cache file if too old
         if (env.centralAddonsCatalogCacheFile.exists()) {
           env.centralAddonsCatalogCacheFile.delete()
@@ -98,14 +111,25 @@ class AddonService {
           FileUtils.copyFile(tempFile, env.centralAddonsCatalogCacheFile)
         }
       } else {
-        // Let's load add-ons from the cache
-        LOG.debug("Loading central catalog from cache ${env.centralAddonsCatalogCacheFile}")
-        LOG.withStatus("Loading add-ons list from central catalog cache") {
-          catalog = env.centralAddonsCatalogCacheFile.text
-          addons.addAll(parseJSONAddonsList(catalog))
+        if (env.centralAddonsCatalogCacheFile.exists()) {
+          // Let's load add-ons from the cache
+          LOG.debug("Loading central catalog from cache ${env.centralAddonsCatalogCacheFile}")
+          LOG.withStatus("Loading add-ons list from central catalog cache") {
+            catalog = env.centralAddonsCatalogCacheFile.text
+            addons.addAll(parseJSONAddonsList(catalog))
+          }
+        } else {
+          LOG.warn("No central catalog cache and offline mode activated")
         }
       }
     }
+    return addons
+  }
+
+  List<Addon> loadAddons(URL centralCatalogUrl, boolean noCache, boolean offline) {
+    List<Addon> addons = new ArrayList<Addon>()
+    addons.addAll(loadAddonsFromLocalCatalog())
+    addons.addAll(loadAddonsFromCentralCatalog(centralCatalogUrl, noCache, offline))
     return addons
   }
 
@@ -168,7 +192,7 @@ class AddonService {
     return getAddonStatusFile(addon).exists()
   }
 
-  void install(Addon addon, boolean force) {
+  void install(Addon addon, boolean force, boolean noCache, boolean offline) {
     if (isInstalled(addon)) {
       if (!force) {
         throw new AddonsManagerException("Add-on already installed. Use --force to enforce to override it")
@@ -177,10 +201,17 @@ class AddonService {
         uninstall(oldAddon)
       }
     }
+    if (noCache && getLocalArchive(addon).exists()) {
+      LOG.withStatus("Deleting ${addon.name} ${addon.version} archive") {
+        getLocalArchive(addon).delete()
+      }
+    }
     LOG.info("Installing @|yellow ${addon.name} ${addon.version}|@")
-    if (!getLocalArchive(addon).exists() || force) {
+    if (!getLocalArchive(addon).exists()) {
       // Let's download it
       if (addon.downloadUrl.startsWith("http")) {
+        if (offline) throw new AddonsManagerException(
+            "${addon.name} ${addon.version} archive not found locally and offline mode activated")
         LOG.withStatus("Downloading add-on ${addon.name} ${addon.version}") {
           FileUtils.downloadFile(addon.downloadUrl, getLocalArchive(addon))
         }

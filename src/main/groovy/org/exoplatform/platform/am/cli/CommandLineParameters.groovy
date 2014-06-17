@@ -109,6 +109,8 @@ class CommandLineParameters {
     URL catalog
     @Parameter(names = ["--no-cache"], description = "Discard the central catalog local cache")
     boolean noCache
+    @Parameter(names = ["--offline"], description = "Do not download anything")
+    boolean offline
     @Parameter(names = ["-v", "--verbose"], hidden = true)
     boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
@@ -130,6 +132,8 @@ class CommandLineParameters {
     URL catalog
     @Parameter(names = ["--no-cache"], description = "Discard the central catalog local cache")
     boolean noCache
+    @Parameter(names = ["--offline"], description = "Do not download anything")
+    boolean offline
     @Parameter(description = "addon[:version]", arity = 1, required = true)
     List<String> addon;
     @Parameter(names = ["-v", "--verbose"], hidden = true)
