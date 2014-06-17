@@ -243,6 +243,7 @@
               <artifactId>maven-failsafe-plugin</artifactId>
               <configuration>
                 <systemPropertyVariables>
+                  <testResourcesPath>${project.build.testOutputDirectory}</testResourcesPath>
                   <integrationTestsDirPath>${integration.tests.dir.path}</integrationTestsDirPath>
                   <testedArtifactPath>${tested.artifact.path}</testedArtifactPath>
                   <platformVersion>${platform.version}</platformVersion>

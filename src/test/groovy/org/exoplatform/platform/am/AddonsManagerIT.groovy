@@ -57,6 +57,15 @@ class AddonsManagerIT {
       data.add([directory, ["--help"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
       // With list param the program must display the list of available add-ons and return 0
       data.add([directory, ["list"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
+      // List add-ons from another catalog [AM_CAT_02]
+      data.add([directory, ["list","--catalog=file://${System.getProperty("testResourcesPath")}/catalog.json"] as String[],
+                AddonsManagerConstants.RETURN_CODE_OK] as Object[])
+      // List add-ons without using local cache
+      data.add([directory, ["list","--no-cache"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
+      // List add-ons in offline mode (thus from data in cache)
+      data.add([directory, ["list","--offline"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
+      // List add-ons in offline mode with no cache (thus only the local catalog is used)
+      data.add([directory, ["list","--no-cache","--offline"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
       // Install an extension
       data.add([directory, ["install", "exo-chat-extension"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
       // Uninstall an extension
@@ -71,6 +80,18 @@ class AddonsManagerIT {
       // Install the same extension must succeed if forced
       data.add(
           [directory, ["install", "exo-sirona", "--snapshots", "--force"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
+      // Uninstall it
+      data.add([directory, ["uninstall", "exo-sirona"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
+      // Install the same extension without cache must succeed
+      data.add(
+          [directory, ["install", "exo-sirona", "--no-cache"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as
+              Object[])
+      // Uninstall it
+      data.add([directory, ["uninstall", "exo-sirona"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
+      // Install the same extension in offline mode must succeed
+      data.add(
+          [directory, ["install", "exo-sirona", "--offline"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as
+              Object[])
       // Uninstall it
       data.add([directory, ["uninstall", "exo-sirona"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
       // Install unknown add-on
@@ -94,7 +115,6 @@ class AddonsManagerIT {
     commandToExecute << "-D${PlatformSettings.PLATFORM_HOME_SYS_PROP}=${productHome.absolutePath}"
     commandToExecute << "-jar"
     commandToExecute << "${testedArtifactPath}"
-    commandToExecute << "-v"
     commandToExecute.addAll(params)
     println "Command launched : ${commandToExecute.join(' ')}"
     Process process = commandToExecute.execute()
