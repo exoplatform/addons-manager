@@ -20,23 +20,12 @@
  */
 package org.exoplatform.platform.am.utils
 
+import groovy.transform.InheritConstructors
+
 /**
  * Addons Manager Runtime Exception
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
+@InheritConstructors
 class AddonsManagerException extends RuntimeException {
-  AddonsManagerException() {
-  }
-
-  AddonsManagerException(String s) {
-    super(s)
-  }
-
-  AddonsManagerException(String s, Throwable throwable) {
-    super(s, throwable)
-  }
-
-  AddonsManagerException(Throwable throwable) {
-    super(throwable)
-  }
 }
