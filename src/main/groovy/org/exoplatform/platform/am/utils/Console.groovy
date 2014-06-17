@@ -20,7 +20,6 @@
  */
 package org.exoplatform.platform.am.utils
 
-import groovy.transform.ToString
 import jline.TerminalFactory
 import org.fusesource.jansi.AnsiRenderWriter
 
@@ -28,7 +27,6 @@ import org.fusesource.jansi.AnsiRenderWriter
  * Console wrapper
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-@ToString(includeNames = true, includeFields = true, includePackage = false)
 class Console {
 
   private final int MAX_CONSOLE_WIDTH_TO_USE = 120
