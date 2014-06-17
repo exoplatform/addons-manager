@@ -246,7 +246,7 @@
                   <integrationTestsDirPath>${integration.tests.dir.path}</integrationTestsDirPath>
                   <testedArtifactPath>${tested.artifact.path}</testedArtifactPath>
                   <platformVersion>${platform.version}</platformVersion>
-                  <jacocoAgent>${jacoco.agent.it.arg}</jacocoAgent>
+                  <jacocoAgent>${argLine}</jacocoAgent>
                 </systemPropertyVariables>
               </configuration>
             </plugin>
