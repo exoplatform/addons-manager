@@ -196,7 +196,7 @@ class AddonService {
   void install(Addon addon, boolean force, boolean noCache, boolean offline) {
     if (isInstalled(addon)) {
       if (!force) {
-        throw new AddonAlreadyInstalledException("Add-on already installed. Use --force to enforce to override it")
+        throw new AddonAlreadyInstalledException(addon)
       } else {
         Addon oldAddon = parseJSONAddon(getAddonStatusFile(addon).text);
         uninstall(oldAddon)
