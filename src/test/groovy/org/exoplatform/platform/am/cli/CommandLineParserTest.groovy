@@ -60,10 +60,49 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
+    !cliArgs.commandList.catalog
+    !cliArgs.commandList.noCache
+    !cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
+    !cliArgs.help
+    !cliArgs.verbose
     where:
     args << [
         ["list"],
+    ]
+  }
+
+  def "Test command line parameters to list all add-ons without using cache"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.LIST == cliArgs.command
+    !cliArgs.commandList.catalog
+    cliArgs.commandList.noCache
+    !cliArgs.commandList.offline
+    !cliArgs.commandList.snapshots
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["list", "--no-cache"],
+    ]
+  }
+
+  def "Test command line parameters to list all add-ons while being offline"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.LIST == cliArgs.command
+    !cliArgs.commandList.catalog
+    !cliArgs.commandList.noCache
+    cliArgs.commandList.offline
+    !cliArgs.commandList.snapshots
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["list", "--offline"],
     ]
   }
 
@@ -72,7 +111,11 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
+    !cliArgs.commandList.catalog
+    !cliArgs.commandList.noCache
+    !cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
+    !cliArgs.help
     cliArgs.verbose
     where:
     args << [
@@ -88,7 +131,12 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
+    !cliArgs.commandList.catalog
+    !cliArgs.commandList.noCache
+    !cliArgs.commandList.offline
     cliArgs.commandList.snapshots
+    !cliArgs.help
+    !cliArgs.verbose
     where:
     args << [
         ["list", "--snapshots"],
@@ -101,7 +149,11 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
+    !cliArgs.commandList.catalog
+    !cliArgs.commandList.noCache
+    !cliArgs.commandList.offline
     cliArgs.commandList.snapshots
+    !cliArgs.help
     cliArgs.verbose
     where:
     args << [
@@ -122,6 +174,11 @@ class CommandLineParserTest extends Specification {
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
     validCatalogUrl.equals(cliArgs.commandList.catalog.toString())
+    !cliArgs.commandList.noCache
+    !cliArgs.commandList.offline
+    !cliArgs.commandList.snapshots
+    !cliArgs.help
+    !cliArgs.verbose
     where:
     args << [
         ["list", "--catalog=${validCatalogUrl}"],
@@ -144,13 +201,58 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.INSTALL == cliArgs.command
-    !cliArgs.commandInstall.snapshots
-    !cliArgs.commandInstall.force
     "my-addon".equals(cliArgs.commandInstall.addonId)
-    cliArgs.commandInstall.addonVersion == null
+    !cliArgs.commandInstall.addonVersion
+    !cliArgs.commandInstall.catalog
+    !cliArgs.commandInstall.force
+    !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.offline
+    !cliArgs.commandInstall.snapshots
+    !cliArgs.help
+    !cliArgs.verbose
     where:
     args << [
         ["install", "my-addon"],
+    ]
+  }
+
+  def "Test command line parameters to install the latest version of an add-on without using cache"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INSTALL == cliArgs.command
+    "my-addon".equals(cliArgs.commandInstall.addonId)
+    !cliArgs.commandInstall.addonVersion
+    !cliArgs.commandInstall.catalog
+    !cliArgs.commandInstall.force
+    cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.offline
+    !cliArgs.commandInstall.snapshots
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["install", "my-addon", "--no-cache"],
+    ]
+  }
+
+  def "Test command line parameters to install the latest version of an add-on while being offline"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INSTALL == cliArgs.command
+    "my-addon".equals(cliArgs.commandInstall.addonId)
+    !cliArgs.commandInstall.addonVersion
+    !cliArgs.commandInstall.catalog
+    !cliArgs.commandInstall.force
+    !cliArgs.commandInstall.noCache
+    cliArgs.commandInstall.offline
+    !cliArgs.commandInstall.snapshots
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["install", "my-addon", "--offline"],
     ]
   }
 
@@ -158,11 +260,15 @@ class CommandLineParserTest extends Specification {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
-    CommandLineParameters.Command.INSTALL == cliArgs.command
-    !cliArgs.commandInstall.snapshots
-    !cliArgs.commandInstall.force
     "my-addon".equals(cliArgs.commandInstall.addonId)
     "42".equals(cliArgs.commandInstall.addonVersion)
+    !cliArgs.commandInstall.catalog
+    !cliArgs.commandInstall.force
+    !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.offline
+    !cliArgs.commandInstall.snapshots
+    !cliArgs.help
+    !cliArgs.verbose
     where:
     args << [
         ["install", "my-addon:42"],
@@ -174,9 +280,14 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.INSTALL == cliArgs.command
-    !cliArgs.commandInstall.snapshots
-    cliArgs.commandInstall.force
     "my-addon".equals(cliArgs.commandInstall.addonId)
+    !cliArgs.commandInstall.catalog
+    cliArgs.commandInstall.force
+    !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.offline
+    !cliArgs.commandInstall.snapshots
+    !cliArgs.help
+    !cliArgs.verbose
     where:
     args << [
         ["install", "my-addon", "--force"],
@@ -191,9 +302,14 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.INSTALL == cliArgs.command
-    cliArgs.commandInstall.snapshots
-    !cliArgs.commandInstall.force
     "my-addon".equals(cliArgs.commandInstall.addonId)
+    !cliArgs.commandInstall.catalog
+    !cliArgs.commandInstall.force
+    !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.offline
+    cliArgs.commandInstall.snapshots
+    !cliArgs.help
+    !cliArgs.verbose
     where:
     args << [
         ["install", "my-addon", "--snapshots"],
@@ -208,7 +324,14 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.INSTALL == cliArgs.command
+    "my-addon".equals(cliArgs.commandInstall.addonId)
     validCatalogUrl.equals(cliArgs.commandInstall.catalog.toString())
+    !cliArgs.commandInstall.force
+    !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.offline
+    !cliArgs.commandInstall.snapshots
+    !cliArgs.help
+    !cliArgs.verbose
     where:
     args << [
         ["install", "my-addon", "--catalog=${validCatalogUrl}"],
@@ -234,9 +357,11 @@ class CommandLineParserTest extends Specification {
     then:
     CommandLineParameters.Command.UNINSTALL == cliArgs.command
     "my-addon".equals(cliArgs.commandUninstall.addonId)
+    !cliArgs.help
+    !cliArgs.verbose
     where:
     args << [
-        ["uninstall","my-addon"],
+        ["uninstall", "my-addon"],
     ]
   }
 
