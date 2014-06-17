@@ -52,7 +52,7 @@ class AddonsManagerIT {
     def data = new ArrayList<Object[]>()
     integrationTestsDir.eachDir { directory ->
       // Without any param the program must return an error code 1
-      data.add([directory, [""] as String[], AddonsManagerConstants.RETURN_CODE_KO] as Object[])
+      data.add([directory, [""] as String[], AddonsManagerConstants.RETURN_CODE_INVALID_COMMAND_LINE_PARAMS] as Object[])
       // With --help param the program must display the help return 0
       data.add([directory, ["--help"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
       // With list param the program must display the list of available add-ons and return 0
@@ -67,16 +67,16 @@ class AddonsManagerIT {
       data.add([directory, ["install", "exo-sirona:1.0.0"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
       // Install the same extension must fail
       data.add(
-          [directory, ["install", "exo-sirona", "--snapshots"] as String[], AddonsManagerConstants.RETURN_CODE_KO] as Object[])
+          [directory, ["install", "exo-sirona", "--snapshots"] as String[], AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED] as Object[])
       // Install the same extension must succeed if forced
       data.add(
           [directory, ["install", "exo-sirona", "--snapshots", "--force"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
       // Uninstall it
       data.add([directory, ["uninstall", "exo-sirona"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
       // Install unknown add-on
-      data.add([directory, ["install", "unknown-addon"] as String[], AddonsManagerConstants.RETURN_CODE_KO] as Object[])
+      data.add([directory, ["install", "unknown-addon"] as String[], AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND] as Object[])
       // Uninstall unknown add-on
-      data.add([directory, ["uninstall", "unknown-addon"] as String[], AddonsManagerConstants.RETURN_CODE_KO] as Object[])
+      data.add([directory, ["uninstall", "unknown-addon"] as String[], AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED] as Object[])
     }
     return data
   }

@@ -24,6 +24,7 @@ import org.exoplatform.platform.am.cli.CommandLineParameters
 import org.exoplatform.platform.am.cli.CommandLineParser
 import org.exoplatform.platform.am.cli.CommandLineParsingException
 import org.exoplatform.platform.am.settings.EnvironmentSettings
+import org.exoplatform.platform.am.utils.AddonAlreadyInstalledException
 import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.Console
 import org.exoplatform.platform.am.utils.Logger
@@ -97,7 +98,7 @@ try {
         }
         if (addon == null) {
           log.error("No add-on with identifier ${commandLineParameters.commandInstall.addonId} found")
-          returnCode = AddonsManagerConstants.RETURN_CODE_KO
+          returnCode = AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
           break
         }
       } else {
@@ -110,7 +111,7 @@ try {
         if (addon == null) {
           log.error(
               "No add-on with identifier ${commandLineParameters.commandInstall.addonId} and version ${commandLineParameters.commandInstall.addonVersion} found")
-          returnCode = AddonsManagerConstants.RETURN_CODE_KO
+          returnCode = AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
           break
         }
       }
@@ -130,20 +131,23 @@ try {
         addonService.uninstall(addon)
       } else {
         log.error("Add-on not installed. It cannot be uninstalled.")
-        returnCode = AddonsManagerConstants.RETURN_CODE_KO
+        returnCode = AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED
       }
       break
   }
 } catch (CommandLineParsingException clpe) {
   log.error("Invalid command line parameter(s) : ${clpe.message}")
   clp.usage()
-  returnCode = AddonsManagerConstants.RETURN_CODE_KO
+  returnCode = AddonsManagerConstants.RETURN_CODE_INVALID_COMMAND_LINE_PARAMS
+} catch (AddonAlreadyInstalledException aaie) {
+  log.error aaie.message
+  returnCode = AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED
 } catch (AddonsManagerException ame) {
   log.error ame.message
-  returnCode = AddonsManagerConstants.RETURN_CODE_KO
+  returnCode = AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR
 } catch (Throwable t) {
   log.error(t)
-  returnCode = AddonsManagerConstants.RETURN_CODE_KO
+  returnCode = AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR
 }
 // Display various details for debug purposes
 log.debug("Console", Console.get()?.properties, ["class", "err", "out", "in"])

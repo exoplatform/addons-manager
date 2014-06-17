@@ -27,6 +27,7 @@ import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
 import org.exoplatform.platform.am.settings.EnvironmentSettings
+import org.exoplatform.platform.am.utils.AddonAlreadyInstalledException
 import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.FileUtils
 import org.exoplatform.platform.am.utils.Logger
@@ -195,7 +196,7 @@ class AddonService {
   void install(Addon addon, boolean force, boolean noCache, boolean offline) {
     if (isInstalled(addon)) {
       if (!force) {
-        throw new AddonsManagerException("Add-on already installed. Use --force to enforce to override it")
+        throw new AddonAlreadyInstalledException("Add-on already installed. Use --force to enforce to override it")
       } else {
         Addon oldAddon = parseJSONAddon(getAddonStatusFile(addon).text);
         uninstall(oldAddon)

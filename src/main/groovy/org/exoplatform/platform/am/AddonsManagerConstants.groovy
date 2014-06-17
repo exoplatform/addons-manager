@@ -30,9 +30,29 @@ class AddonsManagerConstants {
    */
   static final int RETURN_CODE_OK = 0
   /**
-   * Command line return code when the program failed
+   * Command line return code when the program failed without a known reason
    */
-  static final int RETURN_CODE_KO = 1
+  static final int RETURN_CODE_UNKNOWN_ERROR = 1
+
+  /**
+   * Command line return code when command line parameters are invalid
+   */
+  static final int RETURN_CODE_INVALID_COMMAND_LINE_PARAMS = 2
+
+  /**
+   * Command line return code when an action is asked on an add-on not found in any catalog
+   */
+  static final int RETURN_CODE_ADDON_NOT_FOUND = 3
+
+  /**
+   * Command line return code when an invalid action is asked on an add-on not installed locally
+   */
+  static final int RETURN_CODE_ADDON_NOT_INSTALLED = 4
+
+  /**
+   * Command line return code when an invalid action is asked on an add-on already installed locally
+   */
+  static final int RETURN_CODE_ADDON_ALREADY_INSTALLED = 5
 
   static final String STATUS_OK = "OK"
   static final String STATUS_KO = "KO"
