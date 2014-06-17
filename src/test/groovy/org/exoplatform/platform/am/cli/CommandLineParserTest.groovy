@@ -377,6 +377,7 @@ class CommandLineParserTest extends Specification {
         ["uninstall"],
         // Too much params
         ["install", "foo", "bar"],
+        ["install", "foo", "--catalog=http://firstURL.com", "--catalog=http://secondURL.com"],
         ["uninstall", "foo", "bar"],
     ]
   }
