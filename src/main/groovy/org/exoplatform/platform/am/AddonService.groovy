@@ -127,11 +127,17 @@ class AddonService {
     return addons
   }
 
+  List<Addon> mergeCatalogs(final List<Addon> centralCatalog, final List<Addon> localCatalog) {
+    // [AM_CAT_07] At merge, de-duplication of add-on entries of the local and remote catalogs is
+    // done using ID, Version, Distributions, Application Servers as the identifier.
+    // In case of duplication, the remote entry takes precedence
+    List<Addon> mergedCatalog = centralCatalog.clone()
+    localCatalog.findAll { !centralCatalog.contains(it) }.each { mergedCatalog.add(it) }
+    return mergedCatalog
+  }
+
   List<Addon> loadAddons(URL centralCatalogUrl, boolean noCache, boolean offline) {
-    List<Addon> addons = new ArrayList<Addon>()
-    addons.addAll(loadAddonsFromLocalCatalog())
-    addons.addAll(loadAddonsFromCentralCatalog(centralCatalogUrl, noCache, offline))
-    return addons
+    return mergeCatalogs(loadAddonsFromCentralCatalog(centralCatalogUrl, noCache, offline), loadAddonsFromLocalCatalog())
   }
 
   Addon fromJSON(anAddon) {

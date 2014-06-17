@@ -22,25 +22,27 @@ package org.exoplatform.platform.am
 
 import groovy.transform.Canonical
 
-@Canonical
+@Canonical(includes = ['id', 'version', 'supportedDistributions', 'supportedApplicationServers'])
 class Addon {
 
-  String id
-  String version
-  String name
-  String description
-  String releaseDate
-  String sourceUrl
-  String screenshotUrl
-  String thumbnailUrl
-  String documentationUrl
-  String downloadUrl
-  String vendor
-  String license
-  List<String> supportedDistributions
-  List<String> supportedApplicationServers
-  List<String> installedLibraries
-  List<String> installedWebapps
+  private final static String NA = "N/A"
+
+  String id = NA
+  String version = NA
+  String name = NA
+  String description = NA
+  String releaseDate = NA
+  String sourceUrl = NA
+  String screenshotUrl = NA
+  String thumbnailUrl = NA
+  String documentationUrl = NA
+  String downloadUrl = NA
+  String vendor = NA
+  String license = NA
+  List<String> supportedDistributions = Collections.EMPTY_LIST
+  List<String> supportedApplicationServers = Collections.EMPTY_LIST
+  List<String> installedLibraries = Collections.EMPTY_LIST
+  List<String> installedWebapps = Collections.EMPTY_LIST
 
   boolean isStable() {
     return !(version =~ '.*SNAPSHOT$')
