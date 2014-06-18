@@ -62,6 +62,7 @@
     <platform.groupId>org.exoplatform.platform.distributions</platform.groupId>
     <platform.artifactId>plf-community-tomcat-standalone</platform.artifactId>
     <platform.version>4.1-M1</platform.version>
+    <tomcat.version>7.0.54</tomcat.version>
     <!-- **************************************** -->
     <!-- Build/Tests settings -->
     <!-- **************************************** -->
@@ -107,6 +108,36 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-jasper</artifactId>
+      <version>${tomcat.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-jasper-el</artifactId>
+      <version>${tomcat.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat.embed</groupId>
+      <artifactId>tomcat-embed-core</artifactId>
+      <version>${tomcat.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat.embed</groupId>
+      <artifactId>tomcat-embed-jasper</artifactId>
+      <version>${tomcat.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat.embed</groupId>
+      <artifactId>tomcat-embed-logging-juli</artifactId>
+      <version>${tomcat.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -236,6 +267,24 @@
     <profile>
       <id>run-its</id>
       <build>
+        <testResources>
+          <testResource>
+            <targetPath>${project.build.directory}/test-data</targetPath>
+            <filtering>true</filtering>
+            <directory>${project.basedir}/src/test/data</directory>
+            <includes>
+              <include>**/*.json</include>
+            </includes>
+          </testResource>
+          <testResource>
+            <targetPath>${project.build.directory}/test-data</targetPath>
+            <filtering>false</filtering>
+            <directory>${project.basedir}/src/test/data</directory>
+            <excludes>
+              <exclude>**/*.json</exclude>
+            </excludes>
+          </testResource>
+        </testResources>
         <pluginManagement>
           <plugins>
             <plugin>
@@ -243,17 +292,36 @@
               <artifactId>maven-failsafe-plugin</artifactId>
               <configuration>
                 <systemPropertyVariables>
-                  <testDataPath>${project.build.testOutputDirectory}</testDataPath>
+                  <testDataPath>${project.build.directory}/test-data</testDataPath>
                   <integrationTestsDirPath>${integration.tests.dir.path}</integrationTestsDirPath>
                   <testedArtifactPath>${tested.artifact.path}</testedArtifactPath>
                   <platformVersion>${platform.version}</platformVersion>
                   <jacocoAgent>${argLine}</jacocoAgent>
+                  <tomcatHttpPort>${tomcat.http.port}</tomcatHttpPort>
                 </systemPropertyVariables>
               </configuration>
             </plugin>
           </plugins>
         </pluginManagement>
         <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>reserve-network-port</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>reserve-network-port</goal>
+                </goals>
+                <configuration>
+                  <portNames>
+                    <portName>tomcat.http.port</portName>
+                  </portNames>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>

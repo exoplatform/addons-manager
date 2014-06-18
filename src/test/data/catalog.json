@@ -1,0 +1,21 @@
+[
+  {
+    "id": "test-addon",
+    "version": "1.0.0",
+    "name": "A fake addon used for tests",
+    "description": "A fake addon used for tests",
+    "releaseDate": "2014-06-18T00:00:00.000Z",
+    "downloadUrl": "http://localhost:${tomcat.http.port}/addon.zip",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss"
+  },
+  {
+    "id": "test-addon",
+    "version": "2.0.0-SNAPSHOT",
+    "name": "A fake addon used for tests",
+    "description": "A fake addon used for tests",
+    "downloadUrl": "http://localhost:${tomcat.http.port}/addon.zip",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss"
+  }
+]
