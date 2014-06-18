@@ -29,13 +29,14 @@ import static org.junit.Assert.*
 class PlatformSettingsIT extends Specification {
 
   @Shared
-  File plfHome = new File(System.getProperty("integrationTestsDirPath")).listFiles().first()
+  File plfHome = new File(System.getProperty("integrationTestsDirPath")).listFiles(
+      [accept: { file -> file.directory }] as FileFilter).first()
 
   def setupSpec() {
     assertNotNull("Integration tests directory path mustn't be null", System.getProperty("integrationTestsDirPath"))
-    assertTrue("Integration tests directory must be a directory",
+    assertTrue("Integration tests directory (${System.getProperty("integrationTestsDirPath")}) must be a directory",
                new File(System.getProperty("integrationTestsDirPath")).isDirectory())
-    assertTrue("PLF_HOME must be a directory", plfHome.isDirectory())
+    assertTrue("PLF_HOME (${plfHome}) must be a directory", plfHome.isDirectory())
   }
 
   @Test

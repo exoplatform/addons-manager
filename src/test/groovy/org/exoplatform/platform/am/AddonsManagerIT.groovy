@@ -39,7 +39,8 @@ class AddonsManagerIT extends Specification {
   @Shared
   String testDataPath = System.getProperty("testDataPath")
   @Shared
-  File productHome = new File(System.getProperty("integrationTestsDirPath")).listFiles().first()
+  File plfHome = new File(System.getProperty("integrationTestsDirPath")).listFiles(
+      [accept: { file -> file.directory }] as FileFilter).first()
   @Shared
   Tomcat tomcat = new Tomcat();
 
@@ -47,9 +48,9 @@ class AddonsManagerIT extends Specification {
     assertNotNull("Tested artifact path mustn't be null", testedArtifactPath)
     assertNotNull("Path to tests data mustn't be null", testDataPath)
     assertNotNull("Integration tests directory path mustn't be null", System.getProperty("integrationTestsDirPath"))
-    assertTrue("Integration tests directory must be a directory",
+    assertTrue("Integration tests directory (${System.getProperty("integrationTestsDirPath")}) must be a directory",
                new File(System.getProperty("integrationTestsDirPath")).isDirectory())
-    assertTrue("PLF_HOME must be a directory", productHome.isDirectory())
+    assertTrue("PLF_HOME (${plfHome}) must be a directory", plfHome.isDirectory())
     // Let's start a web server to serve test data
     tomcat.setPort(Integer.getInteger("tomcatHttpPort"));
     tomcat.addWebapp("/", new File(testDataPath).getAbsolutePath());
@@ -63,7 +64,7 @@ class AddonsManagerIT extends Specification {
 
   def "Test exit code"(String[] params, int expectedExitCode) {
     expect:
-    println "Testing on ${productHome.name}, expecting return code ${expectedExitCode} with params \"${params}\""
+    println "Testing on ${plfHome.name}, expecting return code ${expectedExitCode} with params \"${params}\""
     expectedExitCode == launchAddonsManager(params)
 
     where:
@@ -102,10 +103,11 @@ class AddonsManagerIT extends Specification {
     if (System.getProperty('jacocoAgent') != null) {
       commandToExecute << "${System.getProperty('jacocoAgent')}"
     }
-    commandToExecute << "-D${PlatformSettings.PLATFORM_HOME_SYS_PROP}=${productHome.absolutePath}"
+    commandToExecute << "-D${PlatformSettings.PLATFORM_HOME_SYS_PROP}=${plfHome.absolutePath}"
     commandToExecute << "-D${AddonsManagerSettings.PROPERTY_PREFIX}.centralCatalogUrl=http://localhost:${tomcat.connector.localPort}/catalog.json"
     commandToExecute << "-jar" << testedArtifactPath
-    commandToExecute << params
+    commandToExecute.addAll(params)
+    commandToExecute << "-v"
     println "Command launched : ${commandToExecute.join(' ')}"
     Process process = commandToExecute.execute()
     process.waitFor() // Wait for the command to finish
