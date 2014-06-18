@@ -21,28 +21,21 @@
 package org.exoplatform.platform.am.settings
 
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import spock.lang.Shared
+import spock.lang.Specification
 
 import static org.junit.Assert.*
 
-@RunWith(Parameterized.class)
-class PlatformSettingsIT {
+class PlatformSettingsIT extends Specification {
 
-  @Parameterized.Parameter(0)
-  public File plfHome;
+  @Shared
+  File plfHome = new File(System.getProperty("integrationTestsDirPath")).listFiles().first()
 
-  @Parameterized.Parameters(name = "{index}: plfHome={0}")
-  static Collection<Object[]> data() {
-    String integrationTestsDirPath = System.getProperty("integrationTestsDirPath")
-    assertNotNull("Integration tests directory path mustn't be null", integrationTestsDirPath)
-    File integrationTestsDir = new File(integrationTestsDirPath);
-    assertTrue("Integration tests directory must be a directory", integrationTestsDir.isDirectory())
-    def data = new ArrayList<Object[]>()
-    integrationTestsDir.eachDir { directory ->
-      data.add([directory] as Object[])
-    }
-    return data
+  def setupSpec() {
+    assertNotNull("Integration tests directory path mustn't be null", System.getProperty("integrationTestsDirPath"))
+    assertTrue("Integration tests directory must be a directory",
+               new File(System.getProperty("integrationTestsDirPath")).isDirectory())
+    assertTrue("PLF_HOME must be a directory", plfHome.isDirectory())
   }
 
   @Test
