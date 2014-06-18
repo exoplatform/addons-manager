@@ -19,20 +19,13 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.cli
-
 import org.exoplatform.platform.am.utils.Console
-import org.exoplatform.platform.am.utils.Logger
 import spock.lang.Specification
-
 /**
  * Command line parameters parsing
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class CommandLineParserTest extends Specification {
-  /**
-   * Logger
-   */
-  private static final Logger LOG = Logger.get()
   private static final String validCatalogUrl = "http://somewhere.com/catalog"
   private static final String invalidCatalogUrl = "thisIsNotAnUrl"
 
