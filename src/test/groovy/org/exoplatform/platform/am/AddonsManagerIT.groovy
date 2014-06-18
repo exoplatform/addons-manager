@@ -21,109 +21,85 @@
 package org.exoplatform.platform.am
 
 import org.exoplatform.platform.am.settings.PlatformSettings
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
-import org.junit.runners.Parameterized.Parameter
-import org.junit.runners.Parameterized.Parameters
+import spock.lang.Shared
+import spock.lang.Specification
 
-import static org.junit.Assert.*
+import static org.junit.Assert.assertNotNull
+import static org.junit.Assert.assertTrue
 
-@RunWith(Parameterized.class)
-class AddonsManagerIT {
+/**
+ * @author Arnaud Héritier <aheritier@exoplatform.com>
+ */
+class AddonsManagerIT extends Specification {
 
-  @Parameter(0)
-  public File productHome;
+  @Shared
+  String testedArtifactPath = System.getProperty("testedArtifactPath")
+  @Shared
+  String testDataPath = System.getProperty("testDataPath")
+  @Shared
+  File productHome = new File(System.getProperty("integrationTestsDirPath")).listFiles().first()
 
-  @Parameter(1)
-  public String[] params;
-
-  @Parameter(2)
-  public int exitCode;
-
-  @Parameters(name = "{index}: exitValue(plfHome={0},params={1})={2}")
-  static Collection<Object[]> data() {
-    String testedArtifactPath = System.getProperty("testedArtifactPath")
+  def setupSpec() {
     assertNotNull("Tested artifact path mustn't be null", testedArtifactPath)
-    String integrationTestsDirPath = System.getProperty("integrationTestsDirPath")
-    assertNotNull("Integration tests directory path mustn't be null", integrationTestsDirPath)
-    File integrationTestsDir = new File(integrationTestsDirPath);
-    assertTrue("Integration tests directory must be a directory", integrationTestsDir.isDirectory())
-    def data = new ArrayList<Object[]>()
-    integrationTestsDir.eachDir { directory ->
-      // Without any param the program must return an error code 1
-      data.add([directory, [""] as String[], AddonsManagerConstants.RETURN_CODE_INVALID_COMMAND_LINE_PARAMS] as Object[])
-      // With --help param the program must display the help return 0
-      data.add([directory, ["--help"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // With list param the program must display the list of available add-ons and return 0
-      data.add([directory, ["list"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // List add-ons from another catalog [AM_CAT_02]
-      data.add([directory, ["list","--catalog=file://${System.getProperty("testResourcesPath")}/catalog.json"] as String[],
-                AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // List add-ons without using local cache
-      data.add([directory, ["list","--no-cache"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // List add-ons in offline mode (thus from data in cache)
-      data.add([directory, ["list","--offline"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // List add-ons in offline mode with no cache (thus only the local catalog is used)
-      data.add([directory, ["list","--no-cache","--offline"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // Install an extension
-      data.add([directory, ["install", "exo-chat-extension"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // Uninstall an extension
-      data.add([directory, ["uninstall", "exo-chat-extension"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // With list --snapshots param the program must display the list of available add-ons and return 0
-      data.add([directory, ["list", "--snapshots"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // Install another extension with a given version
-      data.add([directory, ["install", "exo-sirona:1.0.0"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // Install the same extension must fail
-      data.add(
-          [directory, ["install", "exo-sirona", "--snapshots"] as String[], AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED] as Object[])
-      // Install the same extension must succeed if forced
-      data.add(
-          [directory, ["install", "exo-sirona", "--snapshots", "--force"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // Uninstall it
-      data.add([directory, ["uninstall", "exo-sirona"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // Install the same extension without cache must succeed
-      data.add(
-          [directory, ["install", "exo-sirona", "--no-cache"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as
-              Object[])
-      // Uninstall it
-      data.add([directory, ["uninstall", "exo-sirona"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // Install the same extension in offline mode must succeed
-      data.add(
-          [directory, ["install", "exo-sirona", "--offline"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as
-              Object[])
-      // Uninstall it
-      data.add([directory, ["uninstall", "exo-sirona"] as String[], AddonsManagerConstants.RETURN_CODE_OK] as Object[])
-      // Install unknown add-on
-      data.add([directory, ["install", "unknown-addon"] as String[], AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND] as Object[])
-      // Uninstall unknown add-on
-      data.add([directory, ["uninstall", "unknown-addon"] as String[], AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED] as Object[])
-    }
-    return data
+    assertNotNull("Path to tests data mustn't be null", testDataPath)
+    assertNotNull("Integration tests directory path mustn't be null", System.getProperty("integrationTestsDirPath"))
+    assertTrue("Integration tests directory must be a directory",
+               new File(System.getProperty("integrationTestsDirPath")).isDirectory())
+    assertTrue("PLF_HOME must be a directory", productHome.isDirectory())
   }
 
-  @Test
-  void testExitValue() {
-    String testedArtifactPath = System.getProperty("testedArtifactPath")
-    assertNotNull("Tested artifact path mustn't be null", testedArtifactPath)
-    println "Testing on ${productHome.name}, expecting return code ${exitCode} with params ${params.join(" ")}"
+  def "Test exit code"(String params, int expectedExitCode) {
+    expect:
+    println "Testing on ${productHome.name}, expecting return code ${expectedExitCode} with params \"${params}\""
+    expectedExitCode == launchAddonsManager(params)
+
+    where:
+    params                                                                     | expectedExitCode
+    ""                                                                         | AddonsManagerConstants.RETURN_CODE_INVALID_COMMAND_LINE_PARAMS // Without any param the program must return an error code 1
+    "--help"                                                                   | AddonsManagerConstants.RETURN_CODE_OK // With --help param the program must display the help return 0
+    "list"                                                                     | AddonsManagerConstants.RETURN_CODE_OK // With list param the program must display the list of available add-ons and return 0
+    "list --catalog=file://${System.getProperty("testDataPath")}/catalog.json" | AddonsManagerConstants.RETURN_CODE_OK // List add-ons from another catalog [AM_CAT_02]
+    "list --no-cache"                                                          | AddonsManagerConstants.RETURN_CODE_OK // List add-ons without using local cache
+    "list --offline"                                                           | AddonsManagerConstants.RETURN_CODE_OK // List add-ons in offline mode (thus from data in cache)
+    "list --no-cache --offline"                                                | AddonsManagerConstants.RETURN_CODE_OK // List add-ons in offline mode with no cache (thus only the local catalog is used)
+    "install exo-chat-extension"                                               | AddonsManagerConstants.RETURN_CODE_OK // Install an extension
+    "uninstall exo-chat-extension"                                             | AddonsManagerConstants.RETURN_CODE_OK // Uninstall an extension
+    "list --snapshots"                                                         | AddonsManagerConstants.RETURN_CODE_OK // With list --snapshots param the program must display the list of available add-ons and return 0
+    "install exo-sirona:1.0.0"                                                 | AddonsManagerConstants.RETURN_CODE_OK // Install another extension with a given version
+    "install exo-sirona --snapshots"                                           | AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED // Install the same extension must fail
+    "install exo-sirona --snapshots --force"                                   | AddonsManagerConstants.RETURN_CODE_OK // Install the same extension must succeed if forced
+    "uninstall exo-sirona"                                                     | AddonsManagerConstants.RETURN_CODE_OK // Uninstall it
+    "install exo-sirona --no-cache"                                            | AddonsManagerConstants.RETURN_CODE_OK // Install the same extension without cache must succeed
+    "uninstall exo-sirona"                                                     | AddonsManagerConstants.RETURN_CODE_OK // Uninstall it
+    "install exo-sirona --offline"                                             | AddonsManagerConstants.RETURN_CODE_OK // Install the same extension in offline mode must succeed
+    "uninstall exo-sirona"                                                     | AddonsManagerConstants.RETURN_CODE_OK // Uninstall it
+    "install unknown-addon"                                                    | AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND // Install unknown add-on
+    "uninstall unknown-addon"                                                  | AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED // Uninstall unknown add-on
+
+  }
+
+  /**
+   * Helper method used to execute the addons manager
+   * @param params Command line parameters to pass to the addons manager
+   * @return The process return code
+   */
+  private int launchAddonsManager(String params) {
     def commandToExecute = ["${System.getProperty('java.home')}/bin/java"]
     // If Jacoco Agent is used, let's pass it to the forked VM
     if (System.getProperty('jacocoAgent') != null) {
       commandToExecute << "${System.getProperty('jacocoAgent')}"
     }
     commandToExecute << "-D${PlatformSettings.PLATFORM_HOME_SYS_PROP}=${productHome.absolutePath}"
-    commandToExecute << "-jar"
-    commandToExecute << "${testedArtifactPath}"
-    commandToExecute.addAll(params)
+    commandToExecute << "-jar ${testedArtifactPath}"
+    commandToExecute << params
     println "Command launched : ${commandToExecute.join(' ')}"
-    Process process = commandToExecute.execute()
+    Process process = commandToExecute.join(' ').execute()
     process.waitFor() // Wait for the command to finish
     // Obtain status and output
     println "return code: ${process.exitValue()}"
     println "stderr: ${process.err.text}"
     println "stdout: ${process.in.text}" // *out* from the external program is *in* for groovy
-    assertEquals("Invalid exit value", exitCode, process.exitValue())
+    return process.exitValue()
   }
 
 }
