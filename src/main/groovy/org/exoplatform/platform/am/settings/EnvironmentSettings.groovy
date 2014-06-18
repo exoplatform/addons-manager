@@ -37,6 +37,10 @@ class EnvironmentSettings {
    */
   File archivesDirectory
   /**
+   * Where are cached remote catalogs
+   */
+  File catalogsCacheDirectory
+  /**
    * The path where add-ons statuses are stored
    */
   File statusesDirectory
@@ -44,10 +48,6 @@ class EnvironmentSettings {
    * The path to the local catalog
    */
   File localAddonsCatalogFile
-  /**
-   * The path to the central catalog local cache
-   */
-  File centralAddonsCatalogCacheFile
 
   EnvironmentSettings() {
     manager = new AddonsManagerSettings()
@@ -60,12 +60,15 @@ class EnvironmentSettings {
     if (!archivesDirectory.exists()) {
       FileUtils.mkdirs(archivesDirectory)
     }
+    catalogsCacheDirectory = new File(addonsDirectory, manager.catalogsCacheDirectoryName)
+    if (!catalogsCacheDirectory.exists()) {
+      FileUtils.mkdirs(catalogsCacheDirectory)
+    }
     statusesDirectory = new File(addonsDirectory, manager.archivesDirectoryName)
     if (!statusesDirectory.exists()) {
       FileUtils.mkdirs(statusesDirectory)
     }
     localAddonsCatalogFile = new File(addonsDirectory, manager.localAddonsCatalogFilename)
-    centralAddonsCatalogCacheFile = new File(addonsDirectory, manager.centralAddonsCatalogCacheFilename)
   }
 
   /**

@@ -76,10 +76,23 @@ class FileUtils {
    * @throws IOException If there is an IO error
    */
   static void copyFile(File sourceFile, File destFile) throws IOException {
+    copyFile(sourceFile, destFile, true)
+  }
+
+  /**
+   * Copy a local file to another location using NIO
+   * @param sourceFile the source file to copy
+   * @param destFile where the file should be copied
+   * @param warnIfOverride Display a warning if destFile already exists
+   * @throws IOException If there is an IO error
+   */
+  static void copyFile(File sourceFile, File destFile, boolean warnIfOverride) throws IOException {
     if (!destFile.exists()) {
       destFile.createNewFile();
     } else {
-      LOG.warn("${destFile.name} already exists. Replacing it.")
+      if (warnIfOverride) {
+        LOG.warn("${destFile.name} already exists. Replacing it.")
+      }
     }
 
     FileChannel source = null;

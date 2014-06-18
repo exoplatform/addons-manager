@@ -66,7 +66,7 @@ try {
     case CommandLineParameters.Command.LIST:
       List<Addon> addons = addonService.loadAddons(
           commandLineParameters.commandList.catalog ? commandLineParameters.commandList.catalog : env.centralCatalogUrl,
-          commandLineParameters.commandList.catalog ? true : commandLineParameters.commandList.noCache,
+          commandLineParameters.commandList.noCache,
           commandLineParameters.commandList.offline)
       if (addons.size() > 0) {
         log.info "\n@|bold Available add-ons:|@"
@@ -88,7 +88,7 @@ try {
       Addon addon
       List<Addon> addons = addonService.loadAddons(
           commandLineParameters.commandInstall.catalog ? commandLineParameters.commandInstall.catalog : env.centralCatalogUrl,
-          commandLineParameters.commandInstall.catalog ? true : commandLineParameters.commandInstall.noCache,
+          commandLineParameters.commandInstall.noCache,
           commandLineParameters.commandInstall.offline)
       if (commandLineParameters.commandInstall.addonVersion == null) {
         // Let's find the first add-on with the given id (including or not snapshots depending of the option)

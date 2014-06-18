@@ -32,6 +32,8 @@ import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.FileUtils
 import org.exoplatform.platform.am.utils.Logger
 
+import java.security.MessageDigest
+
 /**
  * All services related to add-ons
  * @author Arnaud Héritier <aheritier@exoplatform.com>
@@ -72,21 +74,14 @@ class AddonService {
     List<Addon> addons = new ArrayList<Addon>()
     // Let's load the list of available add-ons
     String catalog
-    if (noCache && env.centralAddonsCatalogCacheFile.exists()) {
-      LOG.withStatus("Deleting central catalog cache") {
-        env.centralAddonsCatalogCacheFile.delete()
-      }
-    }
+    File remoteCatalogCacheFile = getRemoteCatalogCacheFile(centralCatalogUrl);
+    LOG.debug("Remote catalog cache file for ${centralCatalogUrl} : ${remoteCatalogCacheFile}")
     // If there is no local cache of the central catalog or if it is older than 1h
     use([TimeCategory]) {
-      if ((!env.centralAddonsCatalogCacheFile.exists() ||
-          new Date(env.centralAddonsCatalogCacheFile.lastModified()) < 1.hours.ago)
+      if ((noCache || !remoteCatalogCacheFile.exists() ||
+          new Date(remoteCatalogCacheFile.lastModified()) < 1.hours.ago)
           && !offline
       ) {
-        // Remove cache file if too old
-        if (env.centralAddonsCatalogCacheFile.exists()) {
-          env.centralAddonsCatalogCacheFile.delete()
-        }
         LOG.debug("Loading central catalog from ${centralCatalogUrl}")
         // Load the central list
         File tempFile
@@ -107,16 +102,18 @@ class AddonService {
         LOG.withStatus("Loading add-ons list from central catalog") {
           addons.addAll(parseJSONAddonsList(catalog))
         }
-        // Everything was ok, let's store the cache
-        LOG.withStatus("Updating local cache of central catalog") {
-          FileUtils.copyFile(tempFile, env.centralAddonsCatalogCacheFile)
+        if (!noCache) {
+          // Everything was ok, let's store the cache
+          LOG.withStatus("Updating local cache of central catalog") {
+            FileUtils.copyFile(tempFile, remoteCatalogCacheFile, false)
+          }
         }
       } else {
-        if (env.centralAddonsCatalogCacheFile.exists()) {
+        if (remoteCatalogCacheFile.exists()) {
           // Let's load add-ons from the cache
-          LOG.debug("Loading central catalog from cache ${env.centralAddonsCatalogCacheFile}")
+          LOG.debug("Loading central catalog from cache ${remoteCatalogCacheFile}")
           LOG.withStatus("Loading add-ons list from central catalog cache") {
-            catalog = env.centralAddonsCatalogCacheFile.text
+            catalog = remoteCatalogCacheFile.text
             addons.addAll(parseJSONAddonsList(catalog))
           }
         } else {
@@ -348,6 +345,17 @@ class AddonService {
   private processFileInplace(File file, Closure processText) {
     String text = file.text
     file.write(processText(text))
+  }
+
+  /**
+   * Build the cache file path from the URL transformed into MD5
+   * @param catalogUrl The catalog URL
+   * @return The File associated to the given URL
+   */
+  private File getRemoteCatalogCacheFile(URL catalogUrl) {
+    return new File(env.catalogsCacheDirectory,
+                    new BigInteger(1, MessageDigest.getInstance("MD5").digest(catalogUrl.toString().getBytes())).toString(
+                        16).padLeft(32, "0").toUpperCase() + ".json")
   }
 
 }
