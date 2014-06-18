@@ -33,10 +33,18 @@ class AddonsManagerSettings extends Properties {
    */
   private static final Logger LOG = Logger.get()
 
-  private static final String ADDONS_MANAGER_PROPERTIES = "org/exoplatform/platform/am/settings/am.properties"
+  static final String ADDONS_MANAGER_PROPERTIES = "org/exoplatform/platform/am/settings/am.properties"
+  static final String PROPERTY_PREFIX = "am"
 
   AddonsManagerSettings() {
     super()
+    init()
+  }
+
+  /**
+   * Automatically load properties for {@link AddonsManagerSettings#ADDONS_MANAGER_PROPERTIES}
+   */
+  protected void init() {
     InputStream inputStream = getClass().getClassLoader().
         getResourceAsStream(ADDONS_MANAGER_PROPERTIES)
 
@@ -61,5 +69,14 @@ class AddonsManagerSettings extends Properties {
     } else {
       setProperty("scriptName", "${scriptBaseName}.sh")
     }
+  }
+
+  /**
+   * Allows to override any property loaded from {@link AddonsManagerSettings#ADDONS_MANAGER_PROPERTIES}
+   * with a system property {@link AddonsManagerSettings#PROPERTY_PREFIX}.XXX where XXX is the property key
+   */
+  @Override
+  Object get(Object key) {
+    return System.getProperty("${PROPERTY_PREFIX}.${key}") ? System.getProperty("am.${key}") : super.getProperty(key)
   }
 }

@@ -29,43 +29,64 @@ import spock.lang.Specification
  */
 class AddonsManagerSettingsTest extends Specification {
 
-  /**
-   * Logger
-   */
-  private static final Logger LOG = Logger.get()
-
-  AddonsManagerSettings managerSettings = new AddonsManagerSettings()
-
   def setupSpec() {
-    LOG.enableDebug()
+    Logger.get().enableDebug()
   }
 
   def cleanSpec() {
     Console.get().reset()
   }
 
-  def "version is defined"() {
-    expect:
-    managerSettings.version
-  }
-
-  def "centralCatalogUrl is defined"() {
-    expect:
-    managerSettings.centralCatalogUrl
-  }
-
-  def "addonsDirectoryPath is defined"() {
+  def "default properties are defined"() {
+    setup:
+    def managerSettings = new AddonsManagerSettings()
+    Logger.get().debug("Manager Settings", managerSettings, ["class"])
     expect:
     managerSettings.addonsDirectoryPath
-  }
-
-  def "localAddonsCatalogFilename is defined"() {
-    expect:
+    managerSettings.archivesDirectoryName
+    managerSettings.centralAddonsCatalogCacheFilename
+    managerSettings.centralCatalogUrl
     managerSettings.localAddonsCatalogFilename
-  }
-
-  def "scriptName is defined"() {
-    expect:
+    managerSettings.scriptBaseName
+    managerSettings.scriptName
+    managerSettings.statusesDirectoryName
+    managerSettings.version
+    // Created within the object constructor
     managerSettings.scriptName
   }
+
+  def "System property am.XXX can override the XXX property"() {
+    setup:
+    System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.addonsDirectoryPath", "foo")
+    System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.archivesDirectoryName", "foo")
+    System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.centralAddonsCatalogCacheFilename", "foo")
+    System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.centralCatalogUrl", "foo")
+    System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.localAddonsCatalogFilename", "foo")
+    System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.scriptBaseName", "foo")
+    System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.statusesDirectoryName", "foo")
+    System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.version", "foo")
+    def managerSettings = new AddonsManagerSettings()
+    Logger.get().debug("Manager Settings", managerSettings, ["class"])
+    expect:
+    "foo".equals(managerSettings.addonsDirectoryPath)
+    "foo".equals(managerSettings.archivesDirectoryName)
+    "foo".equals(managerSettings.centralAddonsCatalogCacheFilename)
+    "foo".equals(managerSettings.centralCatalogUrl)
+    "foo".equals(managerSettings.localAddonsCatalogFilename)
+    "foo".equals(managerSettings.scriptBaseName)
+    "foo".equals(managerSettings.statusesDirectoryName)
+    "foo".equals(managerSettings.version)
+    // Must have been updated too
+    managerSettings.scriptName.startsWith("foo")
+    cleanup:
+    System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.addonsDirectoryPath")
+    System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.archivesDirectoryName")
+    System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.centralAddonsCatalogCacheFilename")
+    System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.centralCatalogUrl")
+    System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.localAddonsCatalogFilename")
+    System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.scriptBaseName")
+    System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.statusesDirectoryName")
+    System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.version")
+  }
+
 }
