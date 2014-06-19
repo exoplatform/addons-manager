@@ -24,14 +24,6 @@ package org.exoplatform.platform.am
  */
 class AddonsManagerIT extends ITSpecification {
 
-  def setupSpec() {
-    startWebServer()
-  }
-
-  def cleanupSpec() {
-    stopWebServer()
-  }
-
   def "Test exit code"(String[] params, int expectedExitCode) {
     expect:
     println "Testing on ${plfHome().name}, expecting return code ${expectedExitCode} with params \"${params}\""

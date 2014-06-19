@@ -20,7 +20,6 @@
  */
 package org.exoplatform.platform.am
 
-import org.apache.catalina.startup.Tomcat
 import org.exoplatform.platform.am.settings.AddonsManagerSettings
 import org.exoplatform.platform.am.settings.PlatformSettings
 import spock.lang.Shared
@@ -98,9 +97,6 @@ class ITSpecification extends Specification {
     _plfSettings
   }
 
-  @Shared
-  private Tomcat tomcat
-
   /**
    * @return The HTTP port on which the test serer must serve its content
    */
@@ -117,32 +113,6 @@ class ITSpecification extends Specification {
   }
 
   /**
-   * Starts the test web server exposing on / the content of {@link #testDataDir()}.
-   * The server is running on localhost : {@link #webServerPort()}
-   */
-  void startWebServer() {
-    if (!tomcat) {
-      tomcat = new Tomcat();
-      // Let's start a web server to serve test data
-      tomcat.setPort(Integer.getInteger("testWebServerHttpPort"));
-      tomcat.addWebapp("/", testDataDir().absolutePath);
-      tomcat.start();
-    }
-  }
-
-  /**
-   * Stops the web server
-   */
-  void stopWebServer() {
-    if (tomcat) {
-      // Let's stop the web server
-      tomcat.stop()
-      // Tomcat doesn't remove this working directory :(
-      new File(System.getProperty("user.dir"), "tomcat.${webServerPort()}").deleteDir()
-    }
-  }
-
-  /**
    * Helper method used to execute the addons manager
    * @param params Command line parameters to pass to the addons manager
    * @return The process return code
@@ -154,7 +124,7 @@ class ITSpecification extends Specification {
       commandToExecute << "${System.getProperty('jacocoAgent')}"
     }
     commandToExecute << "-D${PlatformSettings.PLATFORM_HOME_SYS_PROP}=${plfHome().absolutePath}"
-    commandToExecute << "-D${AddonsManagerSettings.PROPERTY_PREFIX}.centralCatalogUrl=http://localhost:${tomcat.connector.localPort}/catalog.json"
+    commandToExecute << "-D${AddonsManagerSettings.PROPERTY_PREFIX}.centralCatalogUrl=${webServerRootUrl()}/catalog.json"
     commandToExecute << "-jar" << testedArtifact().absolutePath
     commandToExecute.addAll(params)
     commandToExecute << "-v"
