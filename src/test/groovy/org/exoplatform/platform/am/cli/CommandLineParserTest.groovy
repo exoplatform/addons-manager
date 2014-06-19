@@ -19,8 +19,10 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.cli
+
 import org.exoplatform.platform.am.utils.Console
 import spock.lang.Specification
+
 /**
  * Command line parameters parsing
  * @author Arnaud Héritier <aheritier@exoplatform.com>

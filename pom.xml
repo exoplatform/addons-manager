@@ -297,7 +297,7 @@
                   <testedArtifactPath>${tested.artifact.path}</testedArtifactPath>
                   <platformVersion>${platform.version}</platformVersion>
                   <jacocoAgent>${argLine}</jacocoAgent>
-                  <tomcatHttpPort>${tomcat.http.port}</tomcatHttpPort>
+                  <testWebServerHttpPort>${webserver.http.port}</testWebServerHttpPort>
                 </systemPropertyVariables>
               </configuration>
             </plugin>
@@ -316,7 +316,7 @@
                 </goals>
                 <configuration>
                   <portNames>
-                    <portName>tomcat.http.port</portName>
+                    <portName>webserver.http.port</portName>
                   </portNames>
                 </configuration>
               </execution>

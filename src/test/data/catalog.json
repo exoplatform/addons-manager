@@ -5,7 +5,7 @@
     "name": "A fake addon used for tests",
     "description": "A fake addon used for tests",
     "releaseDate": "2014-06-18T00:00:00.000Z",
-    "downloadUrl": "http://localhost:${tomcat.http.port}/addon.zip",
+    "downloadUrl": "http://localhost:${webserver.http.port}/addon.zip",
     "supportedDistributions": "community,enterprise",
     "supportedApplicationServers": "tomcat,jboss"
   },
@@ -14,7 +14,7 @@
     "version": "2.0.0-SNAPSHOT",
     "name": "A fake addon used for tests",
     "description": "A fake addon used for tests",
-    "downloadUrl": "http://localhost:${tomcat.http.port}/addon.zip",
+    "downloadUrl": "http://localhost:${webserver.http.port}/addon.zip",
     "supportedDistributions": "community,enterprise",
     "supportedApplicationServers": "tomcat,jboss"
   }
