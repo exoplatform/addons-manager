@@ -24,34 +24,532 @@ package org.exoplatform.platform.am
  */
 class AddonsManagerIT extends ITSpecification {
 
-  def "Test exit code"(String[] params, int expectedExitCode) {
+
+  def "Without any param the program must return an error"() {
     expect:
-    println "Testing on ${plfHome().name}, expecting return code ${expectedExitCode} with params \"${params}\""
-    expectedExitCode == launchAddonsManager(params)
-
-    where:
-    params                                                    | expectedExitCode
-    [""]                                                      | AddonsManagerConstants.RETURN_CODE_INVALID_COMMAND_LINE_PARAMS // Without any param the program must return an error code 1
-    ["--help"]                                                | AddonsManagerConstants.RETURN_CODE_OK // With --help param the program must display the help return 0
-    ["list"]                                                  | AddonsManagerConstants.RETURN_CODE_OK // With list param the program must display the list of available add-ons and return 0
-    ["list", "--catalog=${webServerRootUrl()}/catalog2.json"] | AddonsManagerConstants.RETURN_CODE_OK // List add-ons from another catalog [AM_CAT_02]
-    ["list", "--no-cache"]                                    | AddonsManagerConstants.RETURN_CODE_OK // List add-ons without using local cache
-    ["list", "--offline"]                                     | AddonsManagerConstants.RETURN_CODE_OK // List add-ons in offline mode (thus from data in cache)
-    ["list", "--no-cache", "--offline"]                       | AddonsManagerConstants.RETURN_CODE_OK // List add-ons in offline mode with no cache (thus only the local catalog is used)
-    ["install", "test-addon"]                                 | AddonsManagerConstants.RETURN_CODE_OK // Install an add-on
-    ["uninstall", "test-addon"]                               | AddonsManagerConstants.RETURN_CODE_OK // Uninstall an add-on
-    ["list", "--snapshots"]                                   | AddonsManagerConstants.RETURN_CODE_OK // With list --snapshots param the program must display the list of available add-ons and return 0
-    ["install", "test-addon:1.0.0"]                           | AddonsManagerConstants.RETURN_CODE_OK // Install another extension with a given version
-    ["install", "test-addon", "--snapshots"]                  | AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED // Install the same extension must fail
-    ["install", "test-addon", "--snapshots", "--force"]       | AddonsManagerConstants.RETURN_CODE_OK // Install the same extension  must succeed if forced
-    ["uninstall", "test-addon"]                               | AddonsManagerConstants.RETURN_CODE_OK // Uninstall it
-    ["install", "test-addon", "--no-cache"]                   | AddonsManagerConstants.RETURN_CODE_OK // Install the same extension without cache must succeed
-    ["uninstall", "test-addon"]                               | AddonsManagerConstants.RETURN_CODE_OK // Uninstall it
-    ["install", "test-addon", "--offline"]                    | AddonsManagerConstants.RETURN_CODE_OK // Install the same extension in offline mode must succeed
-    ["uninstall", "test-addon"]                               | AddonsManagerConstants.RETURN_CODE_OK // Uninstall it
-    ["install", "unknown-addon"]                              | AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND // Install unknown add-on
-    ["uninstall", "unknown-addon"]                            | AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED // Uninstall unknown add-on
-
+    AddonsManagerConstants.RETURN_CODE_INVALID_COMMAND_LINE_PARAMS == launchAddonsManager([""]).exitValue()
   }
 
+  def "[AM_CLI_02] With --help param the program must display the help"() {
+    expect:
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["--help"]).exitValue()
+  }
+
+  /**
+   * list each Add-on of the Catalog which have at least 1 stable version
+   * for each listed Add-on, list all the stable versions
+   * for each listed Add-on, never list the development and unstable versions
+   * don't list add-ons which contains only development or unstable versions
+   */
+  def "[AM_LIST_01] addon.(sh|bat) list"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--verbose"]).exitValue()
+  }
+
+  /**
+   * list each add-on of the Catalog (stable and development versions)
+   * for each listed Add-on, list all the versions (stable and development)
+   */
+  def "[AM_LIST_02] addon.(sh|bat) list --snapshots"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--snapshots", "--verbose"]).exitValue()
+  }
+
+  /**
+   * List stable and unstable add-ons
+   */
+  def "[AM_LIST_03] addon.(sh|bat) list --unstable"() {
+    // TODO : Not yet implemented
+  }
+
+  /**
+   * list each add-on in the catalog at http://example.org/list.json
+   */
+  def "[AM_LIST_04] add-on.(sh|bat) list --catalog=http://example.org/list.json"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["list", "--catalog=${webServerRootUrl()}/catalog2.json", "--verbose"]).exitValue()
+  }
+
+  /**
+   * same as list without arguments, but does not use the cached catalog
+   */
+  def "[AM_LIST_05] add-on.(sh|bat) list --no-cache"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--no-cache", "--verbose"]).exitValue()
+  }
+
+  /**
+   * same as list without arguments,only using the local + cached catalogs
+   */
+  def "[AM_LIST_06] addon.(sh|bat) list --offline"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--offline", "--verbose"]).exitValue()
+  }
+
+  /**
+   * same as list without arguments, only using the local catalog
+   */
+  def "[AM_LIST_07] add-on.(sh|bat) list --offline --no-cache"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--no-cache", "--offline", "--verbose"]).exitValue()
+  }
+
+  /**
+   * list each add-on installed locally (stable and development versions)
+   */
+  def "[AM_LIST_08] add-on.(sh|bat) list --installed"() {
+    // TODO : Not yet implemented
+  }
+
+  /**
+   * List installed add-ons(stable, unstable or development) for which a newer version is available based on release date indicated in the catalog.
+   */
+  def "[AM_LIST_09] addon.(sh|bat) list --outdated"() {
+    // TODO : Not yet implemented
+  }
+
+  /**
+   * if the foo-addon exists and has at least 1 released version : list all the informations about the most recent released version of foo-addon
+   * if the foo-addon exists and has no released version (only snapshots) : must raise an error saying "The add-on foo-addon doesn't doesn't have a released version yet ! add snapshot option to use the snapshot version [KO]"
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the catalog, check your add-on name [KO]"
+   */
+  def "[AM_INF_01] addons.(sh|bat) infos foo-addon"() {
+    // TODO : Not yet implemented
+  }
+
+  /**
+   * if the foo-addon exists and has released version 42 : list all the informations the version42 of foo-addon
+   * if the foo-addon exists and has no released version 42 : must raise an error saying "The add-on foo-addon doesn't have a released version 42 yet ! check the version you specify [KO]"
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the catalog, check your add-on name [KO]"
+   */
+  def "[AM_INF_02] addons.(sh|bat) infos foo-addon:42"() {
+    // TODO : Not yet implemented
+  }
+
+  /**
+   * if foo-addon not already installed : must install the most recent stable version of foo-addon
+   */
+  def "[AM_INST_01] addons.(sh|bat) install foo-addon - not yet installed"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-42.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon is already installed : must not install anything
+   */
+  def "[AM_INST_01] addons.(sh|bat) install foo-addon - already installed"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED == launchAddonsManager(
+        ["install", "foo-addon", "--verbose"]).exitValue()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
+   * catalog, check your add-on name [KO]"
+   */
+  def "[AM_INST_01] addons.(sh|bat) install foo-addon - not found"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
+        ["install", "unknown-foo-addon", "--verbose"]).exitValue()
+  }
+
+  /**
+   * if foo-addon not already installed : must install the most recent development version of the foo-addon
+   */
+  def "[AM_INST_02] addons.(sh|bat) install foo-addon --snapshots - not yet installed"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--snapshots", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-43-SNAPSHOT.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-43-SNAPSHOT.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon is already installed : must not install anything
+   * TODO : if the last stable version is more recent than the most recent development version, we must install the stable version
+   */
+  def "[AM_INST_02] addons.(sh|bat) install foo-addon --snapshots - already installed"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon", "--snapshots"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED == launchAddonsManager(
+        ["install", "foo-addon", "--snapshots", "--verbose"]).exitValue()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
+   * catalog, check your add-on name [KO]"
+   */
+  def "[AM_INST_02] addons.(sh|bat) install foo-addon --snapshots - not found"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
+        ["install", "unknown-foo-addon", "--snapshots", "--verbose"]).exitValue()
+  }
+
+  /**
+   * if foo-addon not already installed : must install the most recent stable version of the foo-addon
+   */
+  def "[AM_INST_03] addons.(sh|bat) install foo-addon --force - not yet installed"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--force", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-42.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon is already installed : must enforce to reinstall the foo-addon
+   */
+  def "[AM_INST_03] addons.(sh|bat) install foo-addon --force - already installed"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--force", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-42.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
+   * catalog, check your add-on name [KO]"
+   */
+  def "[AM_INST_03] addons.(sh|bat) install foo-addon --force - not found"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
+        ["install", "unknown-foo-addon", "--force", "--verbose"]).exitValue()
+  }
+
+  /**
+   * if foo-addon not already installed : must install the most recent development version of the foo-addon
+   */
+  def "[AM_INST_04] addons.(sh|bat) install foo-addon --snapshots --force - not yet installed"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "foo-addon", "--snapshots", "--force", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-43-SNAPSHOT.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-43-SNAPSHOT.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon is already installed : must enforce to reinstall the foo-addon with its more recent development version
+   * TODO : if the last stable version is more recent than the most recent development version, we must install / reinstall the stable
+   * version
+   */
+  def "[AM_INST_04] addons.(sh|bat) install foo-addon --snapshots --force - already installed"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon", "--snapshots"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "foo-addon", "--snapshots", "--force", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-43-SNAPSHOT.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-43-SNAPSHOT.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
+   * catalog, check your add-on name [KO]"
+   */
+  def "[AM_INST_04] addons.(sh|bat) install foo-addon --snapshots --force - not found"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
+        ["install", "unknown-foo-addon", "--snapshots", "--force", "--verbose"]).exitValue()
+  }
+
+  /**
+   * if foo-addon not already installed : must install the version 42 of the foo-addon
+   */
+  def "[AM_INST_05] addons.(sh|bat) install foo-addon:42 - not yet installed"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon:42", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-42.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon is already installed : must not install anything
+   */
+  def "[AM_INST_05] addons.(sh|bat) install foo-addon:42 - already installed"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED == launchAddonsManager(
+        ["install", "foo-addon:42", "--verbose"]).exitValue()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
+   * catalog, check your add-on name [KO]"
+   */
+  def "[AM_INST_05] addons.(sh|bat) install foo-addon - not found"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
+        ["install", "unknown-foo-addon:42", "--verbose"]).exitValue()
+  }
+
+  /**
+   * if foo-addon not already installed : must install the last 42 snapshot version available of the foo-addon
+   */
+  def "[AM_INST_06] addons.(sh|bat) install foo-addon:43-SNAPSHOT --snapshots - not yet installed"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "foo-addon:43-SNAPSHOT", "--snapshots", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-43-SNAPSHOT.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-43-SNAPSHOT.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon is already installed : must not install anything
+   */
+  def "[AM_INST_06] addons.(sh|bat) install foo-addon:43-SNAPSHOT --snapshots - already installed"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon:43-SNAPSHOT", "--snapshots"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED == launchAddonsManager(
+        ["install", "foo-addon", "--snapshots", "--verbose"]).exitValue()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
+   * catalog, check your add-on name [KO]"
+   */
+  def "[AM_INST_06] addons.(sh|bat) install foo-addon:43-SNAPSHOT --snapshots - not found"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
+        ["install", "unknown-foo-addon:43-SNAPSHOT", "--snapshots", "--verbose"]).exitValue()
+  }
+
+  /**
+   * if foo-addon not already installed : must install the version 42 of the foo-addon
+   */
+  def "[AM_INST_07] addons.(sh|bat) install foo-addon:42 --force - not yet installed"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon:42", "--force", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-42.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon is already installed : must enforce to reinstall the version 42 of the foo-addon
+   */
+  def "[AM_INST_07] addons.(sh|bat) install foo-addon:42 --force - already installed"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon:42", "--force", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-42.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
+   * catalog, check your add-on name [KO]"
+   */
+  def "[AM_INST_07] addons.(sh|bat) install foo-addon:42 --force - not found"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
+        ["install", "unknown-foo-addon:42", "--force", "--verbose"]).exitValue()
+  }
+
+  /**
+   * if foo-addon not already installed : must install the most recent 43-SNAPSHOT development version of the foo-addon
+   */
+  def "[AM_INST_08] addons.(sh|bat) install foo-addon:43-SNAPSHOT --snapshots --force - not yet installed"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "foo-addon:43-SNAPSHOT", "--snapshots", "--force", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-43-SNAPSHOT.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-43-SNAPSHOT.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon is already installed : must enforce to reinstall the foo-addon with its more recent 43-SNAPSHOT development
+   * version
+   */
+  def "[AM_INST_08] addons.(sh|bat) install foo-addon:43-SNAPSHOT --snapshots --force - already installed"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon", "--snapshots"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "foo-addon:43-SNAPSHOT", "--snapshots", "--force", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-43-SNAPSHOT.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-43-SNAPSHOT.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
+   * catalog, check your add-on name [KO]"
+   */
+  def "[AM_INST_08] addons.(sh|bat) install foo-addon:43-SNAPSHOT --snapshots --force - not found"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
+        ["install", "unknown-foo-addon:43-SNAPSHOT", "--snapshots", "--force", "--verbose"]).exitValue()
+  }
+
+  /**
+   * The add-ons manager does a compatibility check using the compatibility values prior to install an add-on. If the add-on is
+   * not compatible, the installation interrupts with an error : "The add-on foo-addon:version is not compatible with your
+   * version of eXo Platform. Use --no-compat to ignore this compatibility check and install anyway.
+   */
+  def "[AM_INST_09] The add-ons manager does a compatibility check using the compatibility values prior to install an add-on."() {
+    // TODO : Not yet implemented
+  }
+
+  /**
+   * installs foo-addon version 1.2 ignoring the compatiblity check
+   */
+  def "[AM_INST_10] addons.(sh|bat) install foo-addon --no-compat"() {
+    // TODO : Not yet implemented
+  }
+
+  /**
+   * If installation requires to install an existing file, the default behaviour is to abort the installation with an error :
+   * File XYZ already exists. Installation aborted. Use --conflict=skip|overwrite.
+   * --conflict=skip will skip the conflicted files and log a warning for each one : File XYZ already exists. Skipped.
+   * --conflict=overwrite will overwrite the conflicted files by the one contained in the add-on and log a warning for each one
+   * : File XYZ already exists. Overwritten.
+   */
+  def "[AM_INST_11] addons.(sh|bat) install foo-addon --conflict=skip|overwrite"() {
+    // TODO : Not yet implemented
+  }
+
+  /**
+   * At the end of a successful install command, the README of the add-on is displayed in the console if present.
+   */
+  def "[AM_INST_12] At the end of a successful install command, the README of the add-on is displayed in the console if present."() {
+    // TODO : Not yet implemented
+  }
+
+  /**
+   * if foo-addon not already installed : must raise an error saying "The add-on foo-addon was not installed [KO]"
+   */
+  def "[AM_UNINST_01] addons.(sh|bat) uninstall foo-addon - not already installed"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED == launchAddonsManager(
+        ["uninstall", "foo-addon", "--verbose"]).exitValue()
+  }
+
+  /**
+   * if foo-addon is already installed : must uninstall the add-on whatever the installed version is stable or development
+   */
+  def "[AM_UNINST_01] addons.(sh|bat) uninstall foo-addon - already installed"() {
+    setup:
+    launchAddonsManager(["install", "foo-addon:42"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["uninstall", "foo-addon", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    !new File(plfSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    !new File(plfSettings().webappsDirectory, "foo-addon-42.war").exists()
+  }
+
+  /**
+   * At uninstall, files that were already existing are not removed unless they were overwritten with (--conflict=overwrite in
+   * which case, the previous version of the file is restored and the following warning message is logged : File XYZ has been
+   * restored
+   */
+  def "[AM_UNINST_02] Removal of add-ons installed with --conflict=overwrite"() {
+    // TODO : Not yet implemented
+  }
 }

@@ -117,7 +117,7 @@ class ITSpecification extends Specification {
    * @param params Command line parameters to pass to the addons manager
    * @return The process return code
    */
-  def launchAddonsManager(String[] params) {
+  def launchAddonsManager(List<String> params) {
     def commandToExecute = ["${System.getProperty('java.home')}/bin/java"]
     // If Jacoco Agent is used, let's pass it to the forked VM
     if (System.getProperty('jacocoAgent') != null) {
@@ -127,7 +127,6 @@ class ITSpecification extends Specification {
     commandToExecute << "-D${AddonsManagerSettings.PROPERTY_PREFIX}.centralCatalogUrl=${webServerRootUrl()}/catalog.json"
     commandToExecute << "-jar" << testedArtifact().absolutePath
     commandToExecute.addAll(params)
-    commandToExecute << "-v"
     println "Command launched : ${commandToExecute.join(' ')}"
     Process process = commandToExecute.execute()
     process.waitFor() // Wait for the command to finish
@@ -135,7 +134,7 @@ class ITSpecification extends Specification {
     println "return code: ${process.exitValue()}"
     println "stderr: ${process.err.text}"
     println "stdout: ${process.in.text}" // *out* from the external program is *in* for groovy
-    return process.exitValue()
+    return process
   }
 
 }

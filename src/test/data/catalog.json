@@ -1,20 +1,49 @@
 [
   {
-    "id": "test-addon",
-    "version": "1.0.0",
-    "name": "A fake addon used for tests",
-    "description": "A fake addon used for tests",
-    "releaseDate": "2014-06-18T00:00:00.000Z",
-    "downloadUrl": "http://localhost:${webserver.http.port}/addon.zip",
+    "id": "foo-addon",
+    "version": "43-SNAPSHOT",
+    "name": "Fake addon",
+    "description": "A fake addon",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-43-SNAPSHOT.zip",
     "supportedDistributions": "community,enterprise",
     "supportedApplicationServers": "tomcat,jboss"
   },
   {
-    "id": "test-addon",
-    "version": "2.0.0-SNAPSHOT",
-    "name": "A fake addon used for tests",
-    "description": "A fake addon used for tests",
-    "downloadUrl": "http://localhost:${webserver.http.port}/addon.zip",
+    "id": "foo-addon",
+    "version": "42",
+    "name": "Fake addon",
+    "description": "A fake addon",
+    "releaseDate": "2014-06-18T00:00:00.000Z",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-42.zip",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss"
+  },
+  {
+    "id": "foo-addon",
+    "version": "42-SNAPSHOT",
+    "name": "Fake addon",
+    "description": "A fake addon",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-42-SNAPSHOT.zip",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss"
+  },
+  {
+    "id": "foo-addon",
+    "version": "41",
+    "name": "Fake addon",
+    "description": "A fake addon",
+    "releaseDate": "2014-05-18T00:00:00.000Z",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-41.zip",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss"
+  },
+  {
+    "id": "foo-addon",
+    "version": "40",
+    "name": "Fake addon",
+    "description": "A fake addon",
+    "releaseDate": "2014-04-18T00:00:00.000Z",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-40.zip",
     "supportedDistributions": "community,enterprise",
     "supportedApplicationServers": "tomcat,jboss"
   }

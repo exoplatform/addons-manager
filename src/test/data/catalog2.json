@@ -1,21 +1,11 @@
 [
   {
-    "id": "test-addon",
-    "version": "1.0.0",
-    "name": "A fake addon used for tests",
-    "description": "A fake addon used for tests",
-    "releaseDate": "2014-05-18T00:00:00.000Z",
-    "downloadUrl": "http://localhost:${webserver.http.port}/addon.zip",
-    "supportedDistributions": "community,enterprise",
-    "supportedApplicationServers": "tomcat,jboss"
-  },
-  {
-    "id": "test-addon",
-    "version": "2.0.0",
-    "name": "A fake addon used for tests",
-    "description": "A fake addon used for tests",
+    "id": "foo-addon",
+    "version": "42",
+    "name": "Fake addon",
+    "description": "A fake addon",
     "releaseDate": "2014-06-18T00:00:00.000Z",
-    "downloadUrl": "http://localhost:${webserver.http.port}/addon.zip",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-42.zip",
     "supportedDistributions": "community,enterprise",
     "supportedApplicationServers": "tomcat,jboss"
   }
