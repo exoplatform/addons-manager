@@ -91,7 +91,7 @@ class ITSpecification extends Specification {
    * @return The PLF Settings for the instance to test
    */
   PlatformSettings plfSettings() {
-    if (!plfSettings()) {
+    if (!_plfSettings) {
       _plfSettings = new PlatformSettings(plfHome())
     }
     _plfSettings
