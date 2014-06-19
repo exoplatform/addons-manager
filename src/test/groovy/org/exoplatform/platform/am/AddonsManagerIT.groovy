@@ -60,6 +60,8 @@ class AddonsManagerIT extends Specification {
   def cleanupSpec() {
     // Let's stop the web server
     tomcat.stop()
+    // Tomcat doesn't remove this working directory :(
+    new File(System.getProperty("user.dir"), "tomcat.${tomcat.connector.localPort}").deleteDir()
   }
 
   def "Test exit code"(String[] params, int expectedExitCode) {
