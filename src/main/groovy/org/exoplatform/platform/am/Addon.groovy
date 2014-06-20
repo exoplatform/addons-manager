@@ -29,6 +29,7 @@ class Addon {
 
   String id = NA
   String version = NA
+  Boolean unstable = Boolean.FALSE
   String name = NA
   String description = NA
   String releaseDate = NA
@@ -38,13 +39,18 @@ class Addon {
   String documentationUrl = NA
   String downloadUrl = NA
   String vendor = NA
+  String author = NA
+  String authorEmail = NA
   String license = NA
+  String licenseUrl = NA
+  Boolean mustAcceptLicense = Boolean.FALSE
   List<String> supportedDistributions = Collections.EMPTY_LIST
   List<String> supportedApplicationServers = Collections.EMPTY_LIST
+  String compatibility = NA
   List<String> installedLibraries = Collections.EMPTY_LIST
   List<String> installedWebapps = Collections.EMPTY_LIST
 
-  boolean isStable() {
-    return !(version =~ '.*SNAPSHOT$')
+  boolean isSnapshot() {
+    return version =~ '.*SNAPSHOT$'
   }
 }

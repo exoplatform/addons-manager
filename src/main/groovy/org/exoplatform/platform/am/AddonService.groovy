@@ -136,6 +136,7 @@ class AddonService {
     Addon addonObj = new Addon(
         id: anAddon.id ? anAddon.id : 'N/A',
         version: anAddon.version ? anAddon.version : 'N/A');
+    addonObj.unstable = anAddon.unstable ? anAddon.unstable : Boolean.FALSE
     addonObj.name = anAddon.name ? anAddon.name : 'N/A'
     addonObj.description = anAddon.description ? anAddon.description : 'N/A'
     addonObj.releaseDate = anAddon.releaseDate ? anAddon.releaseDate : 'N/A'
@@ -145,7 +146,11 @@ class AddonService {
     addonObj.documentationUrl = anAddon.documentationUrl ? anAddon.documentationUrl : 'N/A'
     addonObj.downloadUrl = anAddon.downloadUrl ? anAddon.downloadUrl : 'N/A'
     addonObj.vendor = anAddon.vendor ? anAddon.vendor : 'N/A'
+    addonObj.author = anAddon.author ? anAddon.author : 'N/A'
+    addonObj.authorEmail = anAddon.authorEmail ? anAddon.authorEmail : 'N/A'
     addonObj.license = anAddon.license ? anAddon.license : 'N/A'
+    addonObj.licenseUrl = anAddon.licenseUrl ? anAddon.licenseUrl : 'N/A'
+    addonObj.mustAcceptLicense = anAddon.mustAcceptLicense ? anAddon.mustAcceptLicense : 'N/A'
     if (anAddon.supportedDistributions instanceof String) {
       addonObj.supportedDistributions = anAddon.supportedDistributions.split(',')
     } else {
@@ -156,6 +161,7 @@ class AddonService {
     } else {
       addonObj.supportedApplicationServers = anAddon.supportedApplicationServers ? anAddon.supportedApplicationServers : []
     }
+    addonObj.compatibility = anAddon.compatibility ? anAddon.compatibility : 'N/A'
     addonObj.installedLibraries = anAddon.installedLibraries ? anAddon.installedLibraries : []
     addonObj.installedWebapps = anAddon.installedWebapps ? anAddon.installedWebapps : []
     // TODO : Add some validations here

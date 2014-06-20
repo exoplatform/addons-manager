@@ -70,7 +70,7 @@ try {
           commandLineParameters.commandList.offline)
       if (addons.size() > 0) {
         log.info "\n@|bold Available add-ons:|@"
-        addons.findAll { it.isStable() || commandLineParameters.commandList.snapshots }.groupBy { it.id }.each {
+        addons.findAll { !it.isSnapshot() || commandLineParameters.commandList.snapshots }.groupBy { it.id }.each {
           Addon anAddon = it.value.first()
           log.info String.format("\n+ @|bold,yellow %-${addons.id*.size().max()}s|@ : @|bold %s|@, %s", anAddon.id,
                                  anAddon.name, anAddon.description)
@@ -93,8 +93,8 @@ try {
       if (commandLineParameters.commandInstall.addonVersion == null) {
         // Let's find the first add-on with the given id (including or not snapshots depending of the option)
         addon = addons.find {
-          (it.isStable() || commandLineParameters.commandInstall.snapshots) && commandLineParameters.commandInstall.addonId.equals(
-              it.id)
+          (!it.isSnapshot() || commandLineParameters.commandInstall.snapshots) && commandLineParameters.commandInstall.addonId
+              .equals(it.id)
         }
         if (addon == null) {
           log.error("No add-on with identifier ${commandLineParameters.commandInstall.addonId} found")
