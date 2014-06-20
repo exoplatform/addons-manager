@@ -62,7 +62,7 @@
     <spock-core.version>0.7-groovy-2.0</spock-core.version>
     <platform.groupId>org.exoplatform.platform.distributions</platform.groupId>
     <platform.artifactId>plf-community-tomcat-standalone</platform.artifactId>
-    <platform.version>4.1-M1</platform.version>
+    <platform.version>4.1-M2</platform.version>
     <!-- **************************************** -->
     <!-- Build/Tests settings -->
     <!-- **************************************** -->
