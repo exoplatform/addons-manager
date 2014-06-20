@@ -20,9 +20,9 @@
  */
 package org.exoplatform.platform.am.settings
 
-import org.exoplatform.platform.am.ITSpecification
+import org.exoplatform.platform.am.IntegrationTestsSpecification
 
-class PlatformSettingsIT extends ITSpecification {
+class PlatformSettingsIT extends IntegrationTestsSpecification {
 
   def "validate Settings"() {
     expect:

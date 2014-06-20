@@ -1,11 +1,11 @@
 package org.exoplatform.platform.am.utils
 
-import org.exoplatform.platform.am.ITSpecification
+import org.exoplatform.platform.am.IntegrationTestsSpecification
 
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class FileUtilsIT extends ITSpecification {
+class FileUtilsIT extends IntegrationTestsSpecification {
 
   def "[AM_CAT_01] The download mechanism must follow permanent redirects"() {
     setup:

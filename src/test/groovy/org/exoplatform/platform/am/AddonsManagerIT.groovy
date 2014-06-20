@@ -22,7 +22,7 @@ package org.exoplatform.platform.am
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class AddonsManagerIT extends ITSpecification {
+class AddonsManagerIT extends IntegrationTestsSpecification {
 
 
   def "Without any param the program must return an error"() {

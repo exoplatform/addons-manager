@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue
  * This class offers various helpers methods to write integration tests
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class ITSpecification extends Specification {
+abstract class IntegrationTestsSpecification extends Specification {
 
   @Shared
   private File _testedArtifact
