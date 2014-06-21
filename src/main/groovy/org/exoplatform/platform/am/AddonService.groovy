@@ -20,9 +20,7 @@
  */
 package org.exoplatform.platform.am
 
-import groovy.json.JsonSlurper
 import groovy.json.StreamingJsonBuilder
-import groovy.time.TimeCategory
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
@@ -31,8 +29,6 @@ import org.exoplatform.platform.am.utils.AddonAlreadyInstalledException
 import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.FileUtils
 import org.exoplatform.platform.am.utils.Logger
-
-import java.security.MessageDigest
 
 /**
  * All services related to add-ons
@@ -51,133 +47,6 @@ class AddonService {
 
   AddonService(EnvironmentSettings env) {
     this.env = env
-  }
-
-  List<Addon> loadAddonsFromLocalCatalog() {
-    List<Addon> addons = new ArrayList<Addon>()
-    // Let's load the list of available add-ons
-    String catalog
-    // Load the optional local list
-    if (env.localAddonsCatalogFile.exists()) {
-      LOG.debug("Loading local catalog from ${env.localAddonsCatalogFile}")
-      LOG.withStatus("Reading local add-ons list") {
-        catalog = env.localAddonsCatalogFile.text
-      }
-      LOG.withStatus("Loading add-ons") {
-        addons.addAll(parseJSONAddonsList(catalog))
-      }
-    } else {
-      LOG.debug("No local catalog to load from ${env.localAddonsCatalogFile}")
-    }
-    return addons
-  }
-
-  List<Addon> loadAddonsFromCentralCatalog(URL centralCatalogUrl, boolean noCache, boolean offline) {
-    List<Addon> addons = new ArrayList<Addon>()
-    // Let's load the list of available add-ons
-    String catalog
-    File remoteCatalogCacheFile = getRemoteCatalogCacheFile(centralCatalogUrl);
-    LOG.debug("Remote catalog cache file for ${centralCatalogUrl} : ${remoteCatalogCacheFile}")
-    // If there is no local cache of the central catalog or if it is older than 1h
-    use([TimeCategory]) {
-      if ((noCache || !remoteCatalogCacheFile.exists() ||
-          new Date(remoteCatalogCacheFile.lastModified()) < 1.hours.ago)
-          && !offline
-      ) {
-        LOG.debug("Loading central catalog from ${centralCatalogUrl}")
-        // Load the central list
-        File tempFile
-        LOG.withStatus("Downloading central catalog") {
-          try {
-            // Create a temporary file in which we will download the central catalog
-            tempFile = File.createTempFile("addons-manager-central-catalog", ".json", env.addonsDirectory)
-            // Don't forget to always delete it even in case of error
-            tempFile.deleteOnExit()
-            // Download the central catalog
-            FileUtils.downloadFile(centralCatalogUrl, tempFile)
-            // Read the catalog content
-            catalog = tempFile.text
-          } catch (FileNotFoundException fne) {
-            throw new AddonsManagerException("Central catalog ${centralCatalogUrl} not found", fne)
-          }
-        }
-        LOG.withStatus("Loading add-ons list from central catalog") {
-          addons.addAll(parseJSONAddonsList(catalog))
-        }
-        if (!noCache) {
-          // Everything was ok, let's store the cache
-          LOG.withStatus("Updating local cache of central catalog") {
-            FileUtils.copyFile(tempFile, remoteCatalogCacheFile, false)
-          }
-        }
-      } else {
-        if (remoteCatalogCacheFile.exists()) {
-          // Let's load add-ons from the cache
-          LOG.debug("Loading central catalog from cache ${remoteCatalogCacheFile}")
-          LOG.withStatus("Loading add-ons list from central catalog cache") {
-            catalog = remoteCatalogCacheFile.text
-            addons.addAll(parseJSONAddonsList(catalog))
-          }
-        } else {
-          LOG.warn("No central catalog cache and offline mode activated")
-        }
-      }
-    }
-    return addons
-  }
-
-
-  List<Addon> loadAddons(URL centralCatalogUrl, boolean noCache, boolean offline) {
-    return catalogService.mergeCatalogs(loadAddonsFromCentralCatalog(centralCatalogUrl, noCache, offline),
-                                        loadAddonsFromLocalCatalog())
-  }
-
-  Addon fromJSON(anAddon) {
-    Addon addonObj = new Addon(
-        id: anAddon.id ? anAddon.id : 'N/A',
-        version: anAddon.version ? anAddon.version : 'N/A');
-    addonObj.unstable = anAddon.unstable ? anAddon.unstable : Boolean.FALSE
-    addonObj.name = anAddon.name ? anAddon.name : 'N/A'
-    addonObj.description = anAddon.description ? anAddon.description : 'N/A'
-    addonObj.releaseDate = anAddon.releaseDate ? anAddon.releaseDate : 'N/A'
-    addonObj.sourceUrl = anAddon.sourceUrl ? anAddon.sourceUrl : 'N/A'
-    addonObj.screenshotUrl = anAddon.screenshotUrl ? anAddon.screenshotUrl : 'N/A'
-    addonObj.thumbnailUrl = anAddon.thumbnailUrl ? anAddon.thumbnailUrl : 'N/A'
-    addonObj.documentationUrl = anAddon.documentationUrl ? anAddon.documentationUrl : 'N/A'
-    addonObj.downloadUrl = anAddon.downloadUrl ? anAddon.downloadUrl : 'N/A'
-    addonObj.vendor = anAddon.vendor ? anAddon.vendor : 'N/A'
-    addonObj.author = anAddon.author ? anAddon.author : 'N/A'
-    addonObj.authorEmail = anAddon.authorEmail ? anAddon.authorEmail : 'N/A'
-    addonObj.license = anAddon.license ? anAddon.license : 'N/A'
-    addonObj.licenseUrl = anAddon.licenseUrl ? anAddon.licenseUrl : 'N/A'
-    addonObj.mustAcceptLicense = anAddon.mustAcceptLicense ? anAddon.mustAcceptLicense : 'N/A'
-    if (anAddon.supportedDistributions instanceof String) {
-      addonObj.supportedDistributions = anAddon.supportedDistributions.split(',')
-    } else {
-      addonObj.supportedDistributions = anAddon.supportedDistributions ? anAddon.supportedDistributions : []
-    }
-    if (anAddon.supportedApplicationServers instanceof String) {
-      addonObj.supportedApplicationServers = anAddon.supportedApplicationServers.split(',')
-    } else {
-      addonObj.supportedApplicationServers = anAddon.supportedApplicationServers ? anAddon.supportedApplicationServers : []
-    }
-    addonObj.compatibility = anAddon.compatibility ? anAddon.compatibility : 'N/A'
-    addonObj.installedLibraries = anAddon.installedLibraries ? anAddon.installedLibraries : []
-    addonObj.installedWebapps = anAddon.installedWebapps ? anAddon.installedWebapps : []
-    // TODO : Add some validations here
-    return addonObj
-  }
-
-  List<Addon> parseJSONAddonsList(String text) {
-    List<Addon> addonsList = new ArrayList<Addon>();
-    new JsonSlurper().parseText(text).each { anAddon ->
-      addonsList.add(fromJSON(anAddon))
-    }
-    return addonsList
-  }
-
-  Addon parseJSONAddon(String text) {
-    return fromJSON(new JsonSlurper().parseText(text))
   }
 
   File getLocalArchive(Addon addon) {
@@ -202,7 +71,7 @@ class AddonService {
       if (!force) {
         throw new AddonAlreadyInstalledException(addon)
       } else {
-        Addon oldAddon = parseJSONAddon(getAddonStatusFile(addon).text);
+        Addon oldAddon = catalogService.parseJSONAddon(getAddonStatusFile(addon).text);
         uninstall(oldAddon)
       }
     }
@@ -347,16 +216,4 @@ class AddonService {
     String text = file.text
     file.write(processText(text))
   }
-
-  /**
-   * Build the cache file path from the URL transformed into MD5
-   * @param catalogUrl The catalog URL
-   * @return The File associated to the given URL
-   */
-  private File getRemoteCatalogCacheFile(URL catalogUrl) {
-    return new File(env.catalogsCacheDirectory,
-                    new BigInteger(1, MessageDigest.getInstance("MD5").digest(catalogUrl.toString().getBytes())).toString(
-                        16).padLeft(32, "0").toUpperCase() + ".json")
-  }
-
 }

@@ -37,6 +37,6 @@ class CatalogServiceTest extends Specification {
    * In case of duplication, the remote entry takes precedence
    */
   def "[AM_CAT_05] It is possible to place a local catalog under addons/local.json, this catalog will be merged with the central."() {
-
+    
   }
 }

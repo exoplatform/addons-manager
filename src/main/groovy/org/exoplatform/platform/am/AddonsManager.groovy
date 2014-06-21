@@ -61,13 +61,16 @@ try {
   }
 
   AddonService addonService = new AddonService(env)
+  CatalogService catalogService = new CatalogService()
 
   switch (commandLineParameters.command) {
     case CommandLineParameters.Command.LIST:
-      List<Addon> addons = addonService.loadAddons(
+      List<Addon> addons = catalogService.loadAddons(
           commandLineParameters.commandList.catalog ? commandLineParameters.commandList.catalog : env.centralCatalogUrl,
           commandLineParameters.commandList.noCache,
-          commandLineParameters.commandList.offline)
+          env.catalogsCacheDirectory,
+          commandLineParameters.commandList.offline,
+          env.localAddonsCatalogFile)
       if (addons.size() > 0) {
         log.info "\n@|bold Available add-ons:|@"
         addons.findAll { !it.isSnapshot() || commandLineParameters.commandList.snapshots }.groupBy { it.id }.each {
@@ -86,10 +89,12 @@ try {
       break
     case CommandLineParameters.Command.INSTALL:
       Addon addon
-      List<Addon> addons = addonService.loadAddons(
+      List<Addon> addons = catalogService.loadAddons(
           commandLineParameters.commandInstall.catalog ? commandLineParameters.commandInstall.catalog : env.centralCatalogUrl,
           commandLineParameters.commandInstall.noCache,
-          commandLineParameters.commandInstall.offline)
+          env.catalogsCacheDirectory,
+          commandLineParameters.commandInstall.offline,
+          env.localAddonsCatalogFile)
       if (commandLineParameters.commandInstall.addonVersion == null) {
         // Let's find the first add-on with the given id (including or not snapshots depending of the option)
         addon = addons.find {
@@ -126,7 +131,7 @@ try {
       if (statusFile.exists()) {
         Addon addon
         log.withStatus("Loading add-on details") {
-          addon = addonService.parseJSONAddon(statusFile.text);
+          addon = catalogService.parseJSONAddon(statusFile.text);
         }
         addonService.uninstall(addon)
       } else {
