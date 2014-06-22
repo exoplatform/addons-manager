@@ -40,6 +40,11 @@ class CatalogService {
   private static final Logger LOG = Logger.get()
 
   /**
+   * The identifier used in the catalog for the addons manager
+   */
+  public static final String ADDONS_MANAGER_CATALOG_ID = "exo-addons-manager"
+
+  /**
    * Parse a JSON String representing an Add-on to build an {@link Addon} object
    * @param text the JSON text to parse
    * @return an Addon object
@@ -71,7 +76,7 @@ class CatalogService {
         loadAddonsFromUrl(remoteCatalogUrl, noCache, offline, catalogsCacheDirectory),
         loadAddonsFromFile(localCatalogFile),
         distributionType,
-        appServerType)
+        appServerType).findAll{!ADDONS_MANAGER_CATALOG_ID.equals(it.id)}
   }
 
   /**
@@ -90,8 +95,8 @@ class CatalogService {
       PlatformSettings.DistributionType distributionType,
       PlatformSettings.AppServerType appServerType) {
     // Let's keep on entries that are interesting us
-    List<Addon> filteredCentralCatalog=filterCatalog(remoteCatalog,distributionType,appServerType)
-    List<Addon> filteredLocalCatalog=filterCatalog(localCatalog,distributionType,appServerType)
+    List<Addon> filteredCentralCatalog = filterCatalog(remoteCatalog, distributionType, appServerType)
+    List<Addon> filteredLocalCatalog = filterCatalog(localCatalog, distributionType, appServerType)
     // Let's initiate a new list from the filtered list of the remote catalog
     List<Addon> mergedCatalog = filteredCentralCatalog.clone()
     // Let's add entries from the filtered local catalog which aren't already in the catalog (based on id+version identifiers)
