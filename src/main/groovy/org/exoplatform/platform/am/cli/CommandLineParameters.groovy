@@ -103,6 +103,8 @@ class CommandLineParameters {
   class ListCommandParameters {
     @Parameter(names = ["--snapshots"], description = "List also add-ons SNAPSHOTs")
     boolean snapshots
+    @Parameter(names = ["--unstable"], description = "List also unstable add-ons")
+    boolean unstable
     @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog
@@ -123,8 +125,10 @@ class CommandLineParameters {
   class InstallCommandParameters {
     @Parameter(names = ["--force"], description = "Enforce to download again and reinstall an add-on already deployed")
     boolean force
-    @Parameter(names = ["--snapshots"], description = "Install add-ons in SNAPSHOTs version")
+    @Parameter(names = ["--snapshots"], description = "Allows to install add-on in SNAPSHOTs version")
     boolean snapshots
+    @Parameter(names = ["--unstable"], description = "Allows to install add-on in unstable version")
+    boolean unstable
     @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog

@@ -61,7 +61,9 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * List stable and unstable add-ons
    */
   def "[AM_LIST_03] addon.(sh|bat) list --unstable"() {
-    // TODO : Not yet implemented
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--unstable", "--verbose"]).exitValue()
   }
 
   /**
@@ -219,6 +221,49 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   }
 
   /**
+   * if foo-addon not already installed : must install the most recent unstable version of the foo-addon
+   */
+  def "addons.(sh|bat) install foo-addon --unstable - not yet installed"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--unstable", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-43-RC1.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-43-RC1.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon is already installed : must not install anything
+   * TODO : if the last stable version is more recent than the most recent unstable version, we must install the stable version
+   */
+  def "addons.(sh|bat) install foo-addon --unstable - already installed"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon", "--unstable"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED == launchAddonsManager(
+        ["install", "foo-addon", "--unstable", "--verbose"]).exitValue()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
+   * catalog, check your add-on name [KO]"
+   */
+  def "addons.(sh|bat) install foo-addon --unstable - not found"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
+        ["install", "unknown-foo-addon", "--unstable", "--verbose"]).exitValue()
+  }
+
+  /**
    * if foo-addon not already installed : must install the most recent stable version of the foo-addon
    */
   def "[AM_INST_03] addons.(sh|bat) install foo-addon --force - not yet installed"() {
@@ -311,6 +356,54 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   }
 
   /**
+   * if foo-addon not already installed : must install the most recent unstable version of the foo-addon
+   */
+  def "addons.(sh|bat) install foo-addon --unstable --force - not yet installed"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "foo-addon", "--unstable", "--force", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-43-RC1.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-43-RC1.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon is already installed : must enforce to reinstall the foo-addon with its more recent development version
+   * TODO : if the last stable version is more recent than the most recent unstable version, we must install / reinstall the stable
+   * version
+   */
+  def "addons.(sh|bat) install foo-addon --unstable --force - already installed"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon", "--unstable"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "foo-addon", "--unstable", "--force", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-43-RC1.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-43-RC1.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
+   * catalog, check your add-on name [KO]"
+   */
+  def "addons.(sh|bat) install foo-addon --unstable --force - not found"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
+        ["install", "unknown-foo-addon", "--unstable", "--force", "--verbose"]).exitValue()
+  }
+
+  /**
    * if foo-addon not already installed : must install the version 42 of the foo-addon
    */
   def "[AM_INST_05] addons.(sh|bat) install foo-addon:42 - not yet installed"() {
@@ -393,6 +486,49 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
         ["install", "unknown-foo-addon:43-SNAPSHOT", "--snapshots", "--verbose"]).exitValue()
+  }
+
+  /**
+   * if foo-addon not already installed : must install the 43-RC1 version of the foo-addon
+   */
+  def "addons.(sh|bat) install foo-addon:43-RC1 --unstable - not yet installed"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "foo-addon:43-RC1", "--unstable", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-43-RC1.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-43-RC1.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon is already installed : must not install anything
+   */
+  def "addons.(sh|bat) install foo-addon:43-RC1 --unstable - already installed"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon:43-RC1", "--unstable"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED == launchAddonsManager(
+        ["install", "foo-addon", "--unstable", "--verbose"]).exitValue()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
+   * catalog, check your add-on name [KO]"
+   */
+  def "addons.(sh|bat) install foo-addon:43-RC1 --unstable - not found"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
+        ["install", "unknown-foo-addon:43-RC1", "--unstable", "--verbose"]).exitValue()
   }
 
   /**
@@ -484,6 +620,52 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
         ["install", "unknown-foo-addon:43-SNAPSHOT", "--snapshots", "--force", "--verbose"]).exitValue()
+  }
+
+  /**
+   * if foo-addon not already installed : must install the 43-RC1 version of the foo-addon
+   */
+  def "addons.(sh|bat) install foo-addon:43-RC1 --unstable --force - not yet installed"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "foo-addon:43-RC1", "--unstable", "--force", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-43-RC1.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-43-RC1.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon is already installed : must enforce to reinstall the foo-addon with its 43-RC1 version
+   */
+  def "addons.(sh|bat) install foo-addon:43-RC1 --unstable --force - already installed"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon", "--unstable"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "foo-addon:43-RC1", "--unstable", "--force", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(plfSettings().librariesDirectory, "foo-addon-43-RC1.jar").exists()
+    new File(plfSettings().webappsDirectory, "foo-addon-43-RC1.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
+   * catalog, check your add-on name [KO]"
+   */
+  def "addons.(sh|bat) install foo-addon:43-RC1 --unstable --force - not found"() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
+        ["install", "unknown-foo-addon:43-RC1", "--unstable", "--force", "--verbose"]).exitValue()
   }
 
   /**

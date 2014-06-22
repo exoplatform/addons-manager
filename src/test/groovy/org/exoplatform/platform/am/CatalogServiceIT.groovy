@@ -44,7 +44,7 @@ class CatalogServiceIT extends IntegrationTestsSpecification {
     when:
     List<Addon> catalog = catalogService.parseJSONAddonsList(new File(testDataDir(), "catalog.json").text)
     then:
-    catalog.size() == 5
+    catalog.size() == 6
   }
 
   def "parseJSONAddonsList removes invalid entries"() {

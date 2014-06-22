@@ -59,6 +59,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
+    !cliArgs.commandList.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
@@ -76,6 +77,7 @@ class CommandLineParserTest extends Specification {
     cliArgs.commandList.noCache
     !cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
+    !cliArgs.commandList.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
@@ -93,6 +95,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.noCache
     cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
+    !cliArgs.commandList.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
@@ -110,6 +113,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
+    !cliArgs.commandList.unstable
     !cliArgs.help
     cliArgs.verbose
     where:
@@ -130,6 +134,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
     cliArgs.commandList.snapshots
+    !cliArgs.commandList.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
@@ -147,6 +152,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
     cliArgs.commandList.snapshots
+    !cliArgs.commandList.unstable
     !cliArgs.help
     cliArgs.verbose
     where:
@@ -155,6 +161,45 @@ class CommandLineParserTest extends Specification {
         ["list", "--verbose", "--snapshots"],
         ["-v", "list", "--snapshots"],
         ["--verbose", "list", "--snapshots"]
+    ]
+  }
+
+  def "Test command line parameters to list all add-ons including unstables"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.LIST == cliArgs.command
+    !cliArgs.commandList.catalog
+    !cliArgs.commandList.noCache
+    !cliArgs.commandList.offline
+    !cliArgs.commandList.snapshots
+    cliArgs.commandList.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["list", "--unstable"]
+    ]
+  }
+
+  def "Test command line parameters to list all add-ons including unstables with verbose logs"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.LIST == cliArgs.command
+    !cliArgs.commandList.catalog
+    !cliArgs.commandList.noCache
+    !cliArgs.commandList.offline
+    !cliArgs.commandList.snapshots
+    cliArgs.commandList.unstable
+    !cliArgs.help
+    cliArgs.verbose
+    where:
+    args << [
+        ["list", "-v", "--unstable"],
+        ["list", "--verbose", "--unstable"],
+        ["-v", "list", "--unstable"],
+        ["--verbose", "list", "--unstable"]
     ]
   }
 
@@ -167,6 +212,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
+    !cliArgs.commandList.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
@@ -198,6 +244,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.offline
     !cliArgs.commandInstall.snapshots
+    !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
@@ -218,6 +265,7 @@ class CommandLineParserTest extends Specification {
     cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.offline
     !cliArgs.commandInstall.snapshots
+    !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
@@ -238,6 +286,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandInstall.noCache
     cliArgs.commandInstall.offline
     !cliArgs.commandInstall.snapshots
+    !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
@@ -257,6 +306,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.offline
     !cliArgs.commandInstall.snapshots
+    !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
@@ -276,6 +326,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.offline
     !cliArgs.commandInstall.snapshots
+    !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
@@ -296,12 +347,34 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.offline
     cliArgs.commandInstall.snapshots
+    !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
     args << [
         ["install", "my-addon", "--snapshots"],
         ["install", "my-addon:42-SNAPSHOT", "--snapshots"],
+    ]
+  }
+
+  def "Test command line parameters to install an unstable version of an add-on"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INSTALL == cliArgs.command
+    "my-addon".equals(cliArgs.commandInstall.addonId)
+    !cliArgs.commandInstall.catalog
+    !cliArgs.commandInstall.force
+    !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.offline
+    !cliArgs.commandInstall.snapshots
+    cliArgs.commandInstall.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["install", "my-addon", "--unstable"],
+        ["install", "my-addon:42-RC1", "--unstable"],
     ]
   }
 
@@ -316,6 +389,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.offline
     !cliArgs.commandInstall.snapshots
+    !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:

@@ -12,6 +12,19 @@
   },
   {
     "id": "foo-addon",
+    "version": "43-RC1",
+    "unstable": true,
+    "name": "Fake addon",
+    "description": "A fake addon",
+    "releaseDate": "2014-07-18T00:00:00.000Z",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-43-RC1.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss"
+  },
+  {
+    "id": "foo-addon",
     "version": "42",
     "name": "Fake addon",
     "description": "A fake addon",
