@@ -313,6 +313,53 @@ class CatalogService {
     if (!addonObj.downloadUrl) {
       LOG.debug("No downloadUrl for add-on ${anAddon}")
       errors++
+    } else {
+      try {
+        new URL(addonObj.downloadUrl)
+      } catch (MalformedURLException mue) {
+        LOG.debug("Invalid downloadUrl for add-on ${anAddon}")
+        errors++
+      }
+    }
+    if (addonObj.sourceUrl) {
+      try {
+        new URL(addonObj.sourceUrl)
+      } catch (MalformedURLException mue) {
+        // Not critical. Just a debug error
+        LOG.debug("Invalid sourceUrl for add-on ${anAddon}")
+      }
+    }
+    if (addonObj.screenshotUrl) {
+      try {
+        new URL(addonObj.screenshotUrl)
+      } catch (MalformedURLException mue) {
+        // Not critical. Just a debug error
+        LOG.debug("Invalid screenshotUrl for add-on ${anAddon}")
+      }
+    }
+    if (addonObj.thumbnailUrl) {
+      try {
+        new URL(addonObj.thumbnailUrl)
+      } catch (MalformedURLException mue) {
+        // Not critical. Just a debug error
+        LOG.debug("Invalid thumbnailUrl for add-on ${anAddon}")
+      }
+    }
+    if (addonObj.documentationUrl) {
+      try {
+        new URL(addonObj.documentationUrl)
+      } catch (MalformedURLException mue) {
+        // Not critical. Just a debug error
+        LOG.debug("Invalid documentationUrl for add-on ${anAddon}")
+      }
+    }
+    if (addonObj.licenseUrl) {
+      try {
+        new URL(addonObj.licenseUrl)
+      } catch (MalformedURLException mue) {
+        // Not critical. Just a debug error
+        LOG.debug("Invalid licenseUrl for add-on ${anAddon}")
+      }
     }
     if (!addonObj.vendor) {
       LOG.debug("No vendor for add-on ${anAddon}")
