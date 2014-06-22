@@ -32,11 +32,9 @@ class CatalogServiceTest extends Specification {
   CatalogService catalogService = new CatalogService()
 
   /**
-   * It is possible to place a local catalog under addons/local.json, this catalog will be merged with the central.
-   * At merge, de-duplication of add-on entries of the local and remote catalogs is done using id:version as the identifier.
-   * In case of duplication, the remote entry takes precedence
+   * At merge, de-duplication of add-on entries of the local and remote catalogs is done using  ID, Version, Distributions,
+   * Application Servers as the identifier. In case of duplication, the remote entry takes precedence
    */
   def "[AM_CAT_05] It is possible to place a local catalog under addons/local.json, this catalog will be merged with the central."() {
-    
   }
 }
