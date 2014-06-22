@@ -39,7 +39,16 @@ class PlatformSettings {
    * Application Server types on which PLF add-ons can be managed
    */
   enum AppServerType {
-    TOMCAT, JBOSSEAP, UNKNOWN
+    TOMCAT("lib", "webapps"),
+    JBOSSEAP("standalone/deployments/platform.ear/lib", "standalone/deployments/platform.ear"),
+    UNKNOWN("", "")
+    final String librariesPath
+    final String webappsPath
+
+    AppServerType(String librariesPath, String webappsPath) {
+      this.librariesPath = librariesPath
+      this.webappsPath = webappsPath
+    }
   }
 
   /**
@@ -106,26 +115,12 @@ class PlatformSettings {
       throw new AddonsManagerException("Erroneous setup, cannot computes the distribution type.")
     }
 
-    switch (this.appServerType) {
-      case AppServerType.TOMCAT:
-        this.librariesDirectory = new File(homeDirectory, "lib")
-        break
-      case AppServerType.JBOSSEAP:
-        this.librariesDirectory = new File(homeDirectory, "standalone/deployments/platform.ear/lib")
-        break
-    }
+    this.librariesDirectory = new File(homeDirectory, this.appServerType.librariesPath)
     if (!this.librariesDirectory.isDirectory()) {
       throw new AddonsManagerException("Erroneous setup, platform libraries directory (${this.librariesDirectory}) is invalid.")
     }
 
-    switch (appServerType) {
-      case AppServerType.TOMCAT:
-        this.webappsDirectory = new File(homeDirectory, "webapps")
-        break
-      case AppServerType.JBOSSEAP:
-        this.webappsDirectory = new File(homeDirectory, "standalone/deployments/platform.ear")
-        break
-    }
+    this.webappsDirectory = new File(homeDirectory, this.appServerType.webappsPath)
     if (!this.webappsDirectory.isDirectory()) {
       throw new AddonsManagerException(
           "Erroneous setup, platform web applications directory (${this.webappsDirectory}) is invalid.")
