@@ -107,6 +107,8 @@ class CommandLineParameters {
     boolean unstable
     @Parameter(names = ["--installed"], description = "List all add-ons installed locally")
     boolean installed
+    @Parameter(names = ["--outdated"], description = "List all add-ons installed locally for which a newer version is available")
+    boolean outdated
     @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog

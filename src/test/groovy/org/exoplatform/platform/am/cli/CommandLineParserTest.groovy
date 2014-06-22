@@ -59,6 +59,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
+    !cliArgs.commandList.outdated
     !cliArgs.commandList.snapshots
     !cliArgs.commandList.unstable
     !cliArgs.help
@@ -78,6 +79,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.installed
     cliArgs.commandList.noCache
     !cliArgs.commandList.offline
+    !cliArgs.commandList.outdated
     !cliArgs.commandList.snapshots
     !cliArgs.commandList.unstable
     !cliArgs.help
@@ -97,6 +99,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     cliArgs.commandList.offline
+    !cliArgs.commandList.outdated
     !cliArgs.commandList.snapshots
     !cliArgs.commandList.unstable
     !cliArgs.help
@@ -116,6 +119,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
+    !cliArgs.commandList.outdated
     !cliArgs.commandList.snapshots
     !cliArgs.commandList.unstable
     !cliArgs.help
@@ -138,6 +142,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
+    !cliArgs.commandList.outdated
     cliArgs.commandList.snapshots
     !cliArgs.commandList.unstable
     !cliArgs.help
@@ -157,6 +162,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
+    !cliArgs.commandList.outdated
     cliArgs.commandList.snapshots
     !cliArgs.commandList.unstable
     !cliArgs.help
@@ -179,6 +185,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
+    !cliArgs.commandList.outdated
     !cliArgs.commandList.snapshots
     cliArgs.commandList.unstable
     !cliArgs.help
@@ -198,6 +205,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
+    !cliArgs.commandList.outdated
     !cliArgs.commandList.snapshots
     cliArgs.commandList.unstable
     !cliArgs.help
@@ -220,6 +228,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandList.noCache
     !cliArgs.commandList.installed
     !cliArgs.commandList.offline
+    !cliArgs.commandList.outdated
     !cliArgs.commandList.snapshots
     !cliArgs.commandList.unstable
     !cliArgs.help
@@ -250,6 +259,7 @@ class CommandLineParserTest extends Specification {
     cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
+    !cliArgs.commandList.outdated
     !cliArgs.commandList.snapshots
     !cliArgs.commandList.unstable
     !cliArgs.help
@@ -257,6 +267,26 @@ class CommandLineParserTest extends Specification {
     where:
     args << [
         ["list","--installed"],
+    ]
+  }
+
+  def "Test command line parameters to list installed add-ons with newest version(s) available"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.LIST == cliArgs.command
+    !cliArgs.commandList.catalog
+    !cliArgs.commandList.installed
+    !cliArgs.commandList.noCache
+    !cliArgs.commandList.offline
+    cliArgs.commandList.outdated
+    !cliArgs.commandList.snapshots
+    !cliArgs.commandList.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["list","--outdated"],
     ]
   }
 

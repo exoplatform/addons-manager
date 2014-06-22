@@ -116,7 +116,47 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * List installed add-ons(stable, unstable or development) for which a newer version is available based on release date indicated in the catalog.
    */
   def "[AM_LIST_09] addon.(sh|bat) list --outdated"() {
-    // TODO : Not yet implemented
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon:40"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--outdated", "--verbose"]).exitValue()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * List installed add-ons(stable, unstable or development) for which a newer version (snapshots included) is available based on
+   * release date indicated in the catalog.
+   */
+  def "addon.(sh|bat) list --outdated --snapshots"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon:40"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--outdated", "--snapshots", "--verbose"]).exitValue()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * List installed add-ons(stable, unstable or development) for which a newer version (unstable included) is available based on
+   * release date indicated in the catalog.
+   */
+  def "addon.(sh|bat) list --outdated --unstable"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon:40"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--outdated", "--unstable", "--verbose"]).exitValue()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
   }
 
   /**
