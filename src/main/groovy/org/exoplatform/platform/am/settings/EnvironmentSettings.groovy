@@ -64,7 +64,7 @@ class EnvironmentSettings {
     if (!catalogsCacheDirectory.exists()) {
       FileUtils.mkdirs(catalogsCacheDirectory)
     }
-    statusesDirectory = new File(addonsDirectory, manager.archivesDirectoryName)
+    statusesDirectory = new File(addonsDirectory, manager.statusesDirectoryName)
     if (!statusesDirectory.exists()) {
       FileUtils.mkdirs(statusesDirectory)
     }
