@@ -41,7 +41,7 @@ class AddonService {
    */
   private static final Logger LOG = Logger.get()
 
-  final static STATUS_FILE_EXT=".status"
+  final static STATUS_FILE_EXT = ".status"
 
   EnvironmentSettings env
 
@@ -135,6 +135,7 @@ class AddonService {
         builder(
             id: addon.id,
             version: addon.version,
+            unstable: addon.unstable,
             name: addon.name,
             description: addon.description,
             releaseDate: addon.releaseDate,
@@ -144,9 +145,13 @@ class AddonService {
             documentationUrl: addon.documentationUrl,
             downloadUrl: addon.downloadUrl,
             vendor: addon.vendor,
+            author: addon.author,
+            authorEmail: addon.authorEmail,
             license: addon.license,
+            licenseUrl: addon.licenseUrl,
             supportedDistributions: addon.supportedDistributions,
             supportedApplicationServers: addon.supportedApplicationServers,
+            compatibility: addon.compatibility,
             installedLibraries: addon.installedLibraries,
             installedWebapps: addon.installedWebapps
         )
