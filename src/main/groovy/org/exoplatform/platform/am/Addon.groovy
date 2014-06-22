@@ -19,37 +19,34 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
-
 import groovy.transform.Canonical
 import org.exoplatform.platform.am.settings.PlatformSettings
 
 @Canonical(includes = ['id', 'version'])
 class Addon {
 
-  private final static String NA = "N/A"
-
-  String id = NA
-  String version = NA
-  Boolean unstable = Boolean.FALSE
-  String name = NA
-  String description = NA
-  String releaseDate = NA
-  String sourceUrl = NA
-  String screenshotUrl = NA
-  String thumbnailUrl = NA
-  String documentationUrl = NA
-  String downloadUrl = NA
-  String vendor = NA
-  String author = NA
-  String authorEmail = NA
-  String license = NA
-  String licenseUrl = NA
-  Boolean mustAcceptLicense = Boolean.FALSE
-  List<PlatformSettings.DistributionType> supportedDistributions = Collections.EMPTY_LIST
-  List<PlatformSettings.AppServerType> supportedApplicationServers = Collections.EMPTY_LIST
-  String compatibility = NA
-  List<String> installedLibraries = Collections.EMPTY_LIST
-  List<String> installedWebapps = Collections.EMPTY_LIST
+  String id
+  String version
+  Boolean unstable
+  String name
+  String description
+  String releaseDate
+  String sourceUrl
+  String screenshotUrl
+  String thumbnailUrl
+  String documentationUrl
+  String downloadUrl
+  String vendor
+  String author
+  String authorEmail
+  String license
+  String licenseUrl
+  Boolean mustAcceptLicense
+  List<PlatformSettings.DistributionType> supportedDistributions
+  List<PlatformSettings.AppServerType> supportedApplicationServers
+  String compatibility
+  List<String> installedLibraries
+  List<String> installedWebapps
 
   boolean isSnapshot() {
     return version =~ '.*SNAPSHOT$'

@@ -234,7 +234,7 @@ class CatalogService {
     Addon addonObj = new Addon(
         id: anAddon.id,
         version: anAddon.version);
-    addonObj.unstable = anAddon.unstable ? anAddon.unstable : Boolean.FALSE
+    addonObj.unstable = anAddon.unstable
     addonObj.name = anAddon.name
     addonObj.description = anAddon.description
     addonObj.releaseDate = anAddon.releaseDate
@@ -248,7 +248,7 @@ class CatalogService {
     addonObj.authorEmail = anAddon.authorEmail
     addonObj.license = anAddon.license
     addonObj.licenseUrl = anAddon.licenseUrl
-    addonObj.mustAcceptLicense = anAddon.mustAcceptLicense ? anAddon.mustAcceptLicense : Boolean.FALSE
+    addonObj.mustAcceptLicense = anAddon.mustAcceptLicense
     if (anAddon.supportedDistributions instanceof String) {
       addonObj.supportedDistributions = anAddon.supportedDistributions.split(',').collect {
         String it ->
