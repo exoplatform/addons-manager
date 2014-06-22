@@ -134,8 +134,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.verbose
     where:
     args << [
-        ["list", "--snapshots"],
-        ["list", "-s"],
+        ["list", "--snapshots"]
     ]
   }
 
@@ -155,11 +154,7 @@ class CommandLineParserTest extends Specification {
         ["list", "-v", "--snapshots"],
         ["list", "--verbose", "--snapshots"],
         ["-v", "list", "--snapshots"],
-        ["--verbose", "list", "--snapshots"],
-        ["list", "-v", "-s"],
-        ["list", "--verbose", "-s"],
-        ["-v", "list", "-s"],
-        ["--verbose", "list", "-s"],
+        ["--verbose", "list", "--snapshots"]
     ]
   }
 
@@ -287,8 +282,6 @@ class CommandLineParserTest extends Specification {
     args << [
         ["install", "my-addon", "--force"],
         ["install", "my-addon:42", "--force"],
-        ["install", "my-addon", "-f"],
-        ["install", "my-addon:42", "-f"],
     ]
   }
 
@@ -309,8 +302,6 @@ class CommandLineParserTest extends Specification {
     args << [
         ["install", "my-addon", "--snapshots"],
         ["install", "my-addon:42-SNAPSHOT", "--snapshots"],
-        ["install", "my-addon", "-s"],
-        ["install", "my-addon:42-SNAPSHOT", "-s"],
     ]
   }
 
