@@ -41,6 +41,8 @@ class AddonService {
    */
   private static final Logger LOG = Logger.get()
 
+  final static STATUS_FILE_EXT=".status"
+
   EnvironmentSettings env
 
   CatalogService catalogService = new CatalogService()
@@ -58,7 +60,7 @@ class AddonService {
   }
 
   File getAddonStatusFile(String addonId) {
-    return new File(env.statusesDirectory, "${addonId}.status")
+    return new File(env.statusesDirectory, "${addonId}${STATUS_FILE_EXT}")
   }
 
 

@@ -56,6 +56,7 @@ class CommandLineParserTest extends Specification {
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
     !cliArgs.commandList.catalog
+    !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
@@ -74,6 +75,7 @@ class CommandLineParserTest extends Specification {
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
     !cliArgs.commandList.catalog
+    !cliArgs.commandList.installed
     cliArgs.commandList.noCache
     !cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
@@ -92,6 +94,7 @@ class CommandLineParserTest extends Specification {
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
     !cliArgs.commandList.catalog
+    !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
@@ -110,6 +113,7 @@ class CommandLineParserTest extends Specification {
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
     !cliArgs.commandList.catalog
+    !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
@@ -131,6 +135,7 @@ class CommandLineParserTest extends Specification {
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
     !cliArgs.commandList.catalog
+    !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
     cliArgs.commandList.snapshots
@@ -149,6 +154,7 @@ class CommandLineParserTest extends Specification {
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
     !cliArgs.commandList.catalog
+    !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
     cliArgs.commandList.snapshots
@@ -164,12 +170,13 @@ class CommandLineParserTest extends Specification {
     ]
   }
 
-  def "Test command line parameters to list all add-ons including unstables"(String[] args) {
+  def "Test command line parameters to list all add-ons including unstable"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
     !cliArgs.commandList.catalog
+    !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
@@ -188,6 +195,7 @@ class CommandLineParserTest extends Specification {
     then:
     CommandLineParameters.Command.LIST == cliArgs.command
     !cliArgs.commandList.catalog
+    !cliArgs.commandList.installed
     !cliArgs.commandList.noCache
     !cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
@@ -210,6 +218,7 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters.Command.LIST == cliArgs.command
     validCatalogUrl.equals(cliArgs.commandList.catalog.toString())
     !cliArgs.commandList.noCache
+    !cliArgs.commandList.installed
     !cliArgs.commandList.offline
     !cliArgs.commandList.snapshots
     !cliArgs.commandList.unstable
@@ -231,6 +240,26 @@ class CommandLineParserTest extends Specification {
         ["list", "--catalog=${invalidCatalogUrl}"],
     ]
   }
+
+  def "Test command line parameters to list installed add-ons"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.LIST == cliArgs.command
+    !cliArgs.commandList.catalog
+    cliArgs.commandList.installed
+    !cliArgs.commandList.noCache
+    !cliArgs.commandList.offline
+    !cliArgs.commandList.snapshots
+    !cliArgs.commandList.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["list","--installed"],
+    ]
+  }
+
 
   def "Test command line parameters to install the latest version of an add-on"(String[] args) {
     when:

@@ -105,6 +105,8 @@ class CommandLineParameters {
     boolean snapshots
     @Parameter(names = ["--unstable"], description = "List also unstable add-ons")
     boolean unstable
+    @Parameter(names = ["--installed"], description = "List all add-ons installed locally")
+    boolean installed
     @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog

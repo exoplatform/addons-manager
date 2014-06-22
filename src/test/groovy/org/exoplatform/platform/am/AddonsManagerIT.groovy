@@ -107,7 +107,9 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * list each add-on installed locally (stable and development versions)
    */
   def "[AM_LIST_08] add-on.(sh|bat) list --installed"() {
-    // TODO : Not yet implemented
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--installed", "--verbose"]).exitValue()
   }
 
   /**
