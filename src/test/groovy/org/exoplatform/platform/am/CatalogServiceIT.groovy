@@ -20,6 +20,7 @@
  */
 package org.exoplatform.platform.am
 
+import groovy.json.JsonException
 import org.exoplatform.platform.am.utils.Logger
 import spock.lang.Shared
 
@@ -52,6 +53,13 @@ class CatalogServiceIT extends IntegrationTestsSpecification {
     List<Addon> catalog = catalogService.parseJSONAddonsList(new File(testDataDir(), "catalog-with-invalid-entries.json").text)
     then:
     catalog.size() == 1
+  }
+
+  def "parseJSONAddonsList cannot read invalid JSON"() {
+    when:
+    catalogService.parseJSONAddonsList(new File(testDataDir(), "catalog-unreadable.json").text)
+    then:
+    thrown JsonException
   }
 
 }

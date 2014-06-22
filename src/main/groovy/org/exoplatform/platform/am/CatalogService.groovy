@@ -133,8 +133,12 @@ class CatalogService {
       LOG.withStatus("Reading catalog ${catalogFile}") {
         catalogContent = catalogFile.text
       }
-      LOG.withStatus("Loading add-ons list") {
-        addons.addAll(parseJSONAddonsList(catalogContent))
+      try {
+        LOG.withStatus("Loading add-ons list") {
+          addons.addAll(parseJSONAddonsList(catalogContent))
+        }
+      } catch (groovy.json.JsonException je) {
+        LOG.warn("Invalid JSON content in file : ${catalogFile}", je)
       }
     } else {
       LOG.debug("No local catalog to load from ${catalogFile}")
@@ -182,14 +186,21 @@ class CatalogService {
             throw new AddonsManagerException("Catalog ${catalogUrl} not found", fne)
           }
         }
-        LOG.withStatus("Loading add-ons list") {
-          addons.addAll(parseJSONAddonsList(catalogContent))
-        }
-        if (!noCache) {
-          // Everything was ok, let's store the cache
-          LOG.withStatus("Updating local cache") {
-            FileUtils.copyFile(tempFile, catalogCacheFile, false)
+        try {
+          LOG.withStatus("Loading add-ons list") {
+            addons.addAll(parseJSONAddonsList(catalogContent))
           }
+          if (!noCache) {
+            // Everything was ok, let's store the cache
+            LOG.withStatus("Updating local cache") {
+              FileUtils.copyFile(tempFile, catalogCacheFile, false)
+            }
+          }
+        } catch (groovy.json.JsonException je) {
+          LOG.warn("Invalid JSON content from URL : ${catalogUrl}", je)
+        } finally {
+          // Delete the temp file
+          tempFile.delete()
         }
       } else {
         if (catalogCacheFile.exists()) {
@@ -198,9 +209,13 @@ class CatalogService {
           LOG.withStatus("Reading catalog cache for ${catalogUrl}") {
             catalogContent = catalogCacheFile.text
           }
-          LOG.withStatus("Loading add-ons list") {
-            catalogContent = catalogCacheFile.text
-            addons.addAll(parseJSONAddonsList(catalogContent))
+          try {
+            LOG.withStatus("Loading add-ons list") {
+              addons.addAll(parseJSONAddonsList(catalogContent))
+            }
+          } catch (groovy.json.JsonException je) {
+            LOG.warn("Invalid JSON content in cache file : ${catalogCacheFile}. Deleting it.", je)
+            catalogCacheFile.delete()
           }
         } else {
           LOG.warn("No remote catalog cache and offline mode activated")
