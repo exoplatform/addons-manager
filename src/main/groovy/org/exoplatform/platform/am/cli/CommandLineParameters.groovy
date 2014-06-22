@@ -106,7 +106,7 @@ class CommandLineParameters {
     @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog
-    @Parameter(names = ["--no-cache"], description = "Discard the central catalog local cache")
+    @Parameter(names = ["--no-cache"], description = "Discard the remote catalog local cache")
     boolean noCache
     @Parameter(names = ["--offline"], description = "Do not download anything")
     boolean offline
@@ -128,7 +128,7 @@ class CommandLineParameters {
     @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog
-    @Parameter(names = ["--no-cache"], description = "Discard the central catalog local cache")
+    @Parameter(names = ["--no-cache"], description = "Discard the remote catalog local cache")
     boolean noCache
     @Parameter(names = ["--offline"], description = "Do not download anything")
     boolean offline

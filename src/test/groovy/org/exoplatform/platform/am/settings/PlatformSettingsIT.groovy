@@ -41,7 +41,7 @@ class PlatformSettingsIT extends IntegrationTestsSpecification {
     setup:
     def expectedAppServerType =
         plfHome().name.contains("jboss") ?
-            PlatformSettings.AppServerType.JBOSSEAP : PlatformSettings.AppServerType.TOMCAT
+            PlatformSettings.AppServerType.JBOSS : PlatformSettings.AppServerType.TOMCAT
     expect:
     expectedAppServerType == plfSettings().appServerType
   }

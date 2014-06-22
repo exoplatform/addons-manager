@@ -66,11 +66,13 @@ try {
   switch (commandLineParameters.command) {
     case CommandLineParameters.Command.LIST:
       List<Addon> addons = catalogService.loadAddons(
-          commandLineParameters.commandList.catalog ? commandLineParameters.commandList.catalog : env.centralCatalogUrl,
+          commandLineParameters.commandList.catalog ? commandLineParameters.commandList.catalog : env.remoteCatalogUrl,
           commandLineParameters.commandList.noCache,
           env.catalogsCacheDirectory,
           commandLineParameters.commandList.offline,
-          env.localAddonsCatalogFile)
+          env.localAddonsCatalogFile,
+          env.platform.distributionType,
+          env.platform.appServerType)
       if (addons.size() > 0) {
         log.info "\n@|bold Available add-ons:|@"
         addons.findAll { !it.isSnapshot() || commandLineParameters.commandList.snapshots }.groupBy { it.id }.each {
@@ -84,17 +86,19 @@ try {
     ${env.manager.scriptName} install @|yellow addon|@
   """)
       } else {
-        log.warn("No add-on found in central and local catalogs")
+        log.warn("No add-on found in remote and local catalogs")
       }
       break
     case CommandLineParameters.Command.INSTALL:
       Addon addon
       List<Addon> addons = catalogService.loadAddons(
-          commandLineParameters.commandInstall.catalog ? commandLineParameters.commandInstall.catalog : env.centralCatalogUrl,
+          commandLineParameters.commandInstall.catalog ? commandLineParameters.commandInstall.catalog : env.remoteCatalogUrl,
           commandLineParameters.commandInstall.noCache,
           env.catalogsCacheDirectory,
           commandLineParameters.commandInstall.offline,
-          env.localAddonsCatalogFile)
+          env.localAddonsCatalogFile,
+          env.platform.distributionType,
+          env.platform.appServerType)
       if (commandLineParameters.commandInstall.addonVersion == null) {
         // Let's find the first add-on with the given id (including or not snapshots depending of the option)
         addon = addons.find {

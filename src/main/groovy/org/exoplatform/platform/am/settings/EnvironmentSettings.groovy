@@ -73,9 +73,9 @@ class EnvironmentSettings {
 
   /**
    * Returns the URL to the remote catalog
-   * @return the URL of the central catalog
+   * @return the URL of the remote catalog
    */
-  URL getCentralCatalogUrl() {
-    return new URL(manager.centralCatalogUrl)
+  URL getRemoteCatalogUrl() {
+    return new URL(manager.remoteCatalogUrl)
   }
 }

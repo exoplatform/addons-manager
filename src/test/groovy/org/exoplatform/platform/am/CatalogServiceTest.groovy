@@ -20,6 +20,7 @@
  */
 package org.exoplatform.platform.am
 
+import org.exoplatform.platform.am.settings.PlatformSettings
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -31,10 +32,73 @@ class CatalogServiceTest extends Specification {
   @Shared
   CatalogService catalogService = new CatalogService()
 
+  @Shared
+  Addon addon1 = new Addon(
+      id: "addon1", version: "42",
+      supportedApplicationServers: [PlatformSettings.AppServerType.JBOSS, PlatformSettings.AppServerType.TOMCAT],
+      supportedDistributions: [PlatformSettings.DistributionType.COMMUNITY, PlatformSettings.DistributionType.ENTERPRISE])
+
+  @Shared
+  Addon addon2 = new Addon(
+      id: "addon2", version: "42",
+      supportedApplicationServers: [PlatformSettings.AppServerType.JBOSS],
+      supportedDistributions: [PlatformSettings.DistributionType.ENTERPRISE])
+
+  @Shared
+  Addon addon3 = new Addon(
+      id: "addon3", version: "42",
+      supportedApplicationServers: [PlatformSettings.AppServerType.TOMCAT],
+      supportedDistributions: [PlatformSettings.DistributionType.COMMUNITY])
+
+  @Shared
+  Addon addon4 = new Addon(
+      id: "addon4", version: "42",
+      supportedApplicationServers: [PlatformSettings.AppServerType.TOMCAT],
+      supportedDistributions: [PlatformSettings.DistributionType.ENTERPRISE])
+  @Shared
+  Addon addon4b = new Addon(
+      id: "addon4", version: "43",
+      supportedApplicationServers: [PlatformSettings.AppServerType.TOMCAT],
+      supportedDistributions: [PlatformSettings.DistributionType.ENTERPRISE])
+  @Shared
+  Addon addon5 = new Addon(
+      id: "addon5", version: "42",
+      supportedApplicationServers: [PlatformSettings.AppServerType.TOMCAT],
+      supportedDistributions: [PlatformSettings.DistributionType.ENTERPRISE])
+
   /**
-   * At merge, de-duplication of add-on entries of the local and remote catalogs is done using  ID, Version, Distributions,
-   * Application Servers as the identifier. In case of duplication, the remote entry takes precedence
+   * [AM_CAT_07] At merge, de-duplication of add-on entries of the local and remote catalogs is done using  ID, Version,
+   * Distributions, Application Servers as the identifier. In case of duplication, the remote entry takes precedence
    */
-  def "[AM_CAT_05] It is possible to place a local catalog under addons/local.json, this catalog will be merged with the central."() {
+  def "mergeCatalogs must implement [AM_CAT_07]"() {
+    when:
+    List<Addon> remoteCatalog = [addon1, addon2, addon3, addon4]
+    List<Addon> localCatalog = [addon1, addon4b, addon5]
+    then:
+    catalogService.mergeCatalogs(remoteCatalog, localCatalog, PlatformSettings.DistributionType.ENTERPRISE,
+                                 PlatformSettings.AppServerType.TOMCAT) == [addon1, addon4, addon4b, addon5]
+  }
+
+  def "filterCatalog must keep addons supporting a given application server and distribution type"() {
+    when:
+    List<Addon> addonsCatalog = [addon1, addon2, addon3, addon4]
+    then:
+    // addons 1 and 3 are supporting appsrv tomcat on community edition
+    catalogService.filterCatalog(addonsCatalog,
+                                 PlatformSettings.DistributionType.COMMUNITY,
+                                 PlatformSettings.AppServerType.TOMCAT) == [addon1, addon3]
+    // addons 1 and 3 are supporting appsrv tomcat on enterprise edition
+    catalogService.filterCatalog(addonsCatalog,
+                                 PlatformSettings.DistributionType.ENTERPRISE,
+                                 PlatformSettings.AppServerType.TOMCAT) == [addon1, addon4]
+    // addon 1 is supporting appsrv jboss on community edition
+    // TODO : The current model doesn't let us know that it is an impossible combination
+    catalogService.filterCatalog(addonsCatalog,
+                                 PlatformSettings.DistributionType.COMMUNITY,
+                                 PlatformSettings.AppServerType.JBOSS) == [addon1]
+    // addons 1 and 2 are supporting appsrv jboss on enterprise edition
+    catalogService.filterCatalog(addonsCatalog,
+                                 PlatformSettings.DistributionType.ENTERPRISE,
+                                 PlatformSettings.AppServerType.JBOSS) == [addon1, addon2]
   }
 }

@@ -124,7 +124,7 @@ abstract class IntegrationTestsSpecification extends Specification {
       commandToExecute << "${System.getProperty('jacocoAgent')}"
     }
     commandToExecute << "-D${PlatformSettings.PLATFORM_HOME_SYS_PROP}=${plfHome().absolutePath}"
-    commandToExecute << "-D${AddonsManagerSettings.PROPERTY_PREFIX}.centralCatalogUrl=${webServerRootUrl()}/catalog.json"
+    commandToExecute << "-D${AddonsManagerSettings.PROPERTY_PREFIX}.remoteCatalogUrl=${webServerRootUrl()}/catalog.json"
     commandToExecute << "-jar" << testedArtifact().absolutePath
     commandToExecute.addAll(params)
     println "Command launched : ${commandToExecute.join(' ')}"

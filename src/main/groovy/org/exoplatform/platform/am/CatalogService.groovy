@@ -22,6 +22,7 @@ package org.exoplatform.platform.am
 
 import groovy.json.JsonSlurper
 import groovy.time.TimeCategory
+import org.exoplatform.platform.am.settings.PlatformSettings
 import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.FileUtils
 import org.exoplatform.platform.am.utils.Logger
@@ -51,34 +52,68 @@ class CatalogService {
    * Merge addons loaded from a remote and a local catalog
    * @param remoteCatalogUrl The remote catalog URL
    * @param noCache If the 1h cache must be used for the remote catalog
+   * @param catalogsCacheDirectory The directory where are cached remote catalogs
    * @param offline If the operation must be done offline (nothing will be downloaded)
    * @param localCatalogFile The local catalog file
-   * @param catalogsCacheDirectory The directory where are cached remote catalogs
-   * @return
+   * @param distributionType The distribution type which addons listed must be compatible with
+   * @param appServerType The application seerver type which addons listed must be compatible with
+   * @return a list of addons
    */
-  List<Addon> loadAddons(URL remoteCatalogUrl, boolean noCache,
-                         File catalogsCacheDirectory, boolean offline,
-                         File localCatalogFile
+  List<Addon> loadAddons(URL remoteCatalogUrl,
+                         boolean noCache,
+                         File catalogsCacheDirectory,
+                         boolean offline,
+                         File localCatalogFile,
+                         PlatformSettings.DistributionType distributionType,
+                         PlatformSettings.AppServerType appServerType
   ) {
     return mergeCatalogs(
         loadAddonsFromUrl(remoteCatalogUrl, noCache, offline, catalogsCacheDirectory),
-        loadAddonsFromFile(localCatalogFile))
+        loadAddonsFromFile(localCatalogFile),
+        distributionType,
+        appServerType)
   }
 
   /**
    * [AM_CAT_07] At merge, de-duplication of add-on entries of the local and remote catalogs is
    * done using ID, Version, Distributions, Application Servers as the identifier.
    * In case of duplication, the remote entry takes precedence
-   * @param centralCatalog
+   * @param remoteCatalog
    * @param localCatalog
-   * @return
+   * @param distributionType The distribution type which addons listed must be compatible with
+   * @param appServerType The application seerver type which addons listed must be compatible with
+   * @return a list of addons
    */
-  protected List<Addon> mergeCatalogs(final List<Addon> centralCatalog, final List<Addon> localCatalog) {
-    List<Addon> mergedCatalog = centralCatalog.clone()
-    localCatalog.findAll { !centralCatalog.contains(it) }.each { mergedCatalog.add(it) }
+  protected List<Addon> mergeCatalogs(
+      final List<Addon> remoteCatalog,
+      final List<Addon> localCatalog,
+      PlatformSettings.DistributionType distributionType,
+      PlatformSettings.AppServerType appServerType) {
+    // Let's keep on entries that are interesting us
+    List<Addon> filteredCentralCatalog=filterCatalog(remoteCatalog,distributionType,appServerType)
+    List<Addon> filteredLocalCatalog=filterCatalog(localCatalog,distributionType,appServerType)
+    // Let's initiate a new list from the filtered list of the remote catalog
+    List<Addon> mergedCatalog = filteredCentralCatalog.clone()
+    // Let's add entries from the filtered local catalog which aren't already in the catalog (based on id+version identifiers)
+    localCatalog.findAll { !mergedCatalog.contains(it) }.each { mergedCatalog.add(it) }
     return mergedCatalog
   }
 
+  /**
+   * Returns all add-ons supporting a distributionType+appServerType
+   * @param catalog The catalog to filter entries
+   * @param distributionType The distribution type to support
+   * @param appServerType The application server type to support
+   * @return
+   */
+  protected List<Addon> filterCatalog(
+      final List<Addon> catalog,
+      PlatformSettings.DistributionType distributionType,
+      PlatformSettings.AppServerType appServerType) {
+    return catalog.findAll {
+      it.supportedDistributions.contains(distributionType) && it.supportedApplicationServers.contains(appServerType)
+    }
+  }
   /**
    * Load add-ons list from a local file (JSON formatted)
    * @param catalogFile
@@ -118,22 +153,22 @@ class CatalogService {
     String catalogContent
     File catalogCacheFile = new File(catalogCacheDir, getCacheFilename(catalogUrl));
     LOG.debug("Remote catalog cache file for ${catalogUrl} : ${catalogCacheFile}")
-    // If there is no local cache of the central catalog or if it is older than 1h
+    // If there is no local cache of the remote catalog or if it is older than 1h
     use([TimeCategory]) {
       if ((noCache || !catalogCacheFile.exists() ||
           new Date(catalogCacheFile.lastModified()) < 1.hours.ago)
           && !offline
       ) {
         LOG.debug("Loading catalog from ${catalogUrl}")
-        // Load the central list
+        // Load the remote list
         File tempFile
         LOG.withStatus("Downloading catalog ${catalogUrl}") {
           try {
-            // Create a temporary file in which we will download the central catalog
-            tempFile = File.createTempFile("addons-manager-central-catalog", ".json", catalogCacheDir)
+            // Create a temporary file in which we will download the remote catalog
+            tempFile = File.createTempFile("addons-manager-remote-catalog", ".json", catalogCacheDir)
             // Don't forget to always delete it even in case of error
             tempFile.deleteOnExit()
-            // Download the central catalog
+            // Download the remote catalog
             FileUtils.downloadFile(catalogUrl, tempFile)
             // Read the catalog content
             catalogContent = tempFile.text
@@ -153,7 +188,7 @@ class CatalogService {
       } else {
         if (catalogCacheFile.exists()) {
           // Let's load add-ons from the cache
-          LOG.debug("Loading central catalog from cache ${catalogCacheFile}")
+          LOG.debug("Loading remote catalog from cache ${catalogCacheFile}")
           LOG.withStatus("Reading catalog cache for ${catalogUrl}") {
             catalogContent = catalogCacheFile.text
           }
@@ -194,14 +229,22 @@ class CatalogService {
     addonObj.licenseUrl = anAddon.licenseUrl ? anAddon.licenseUrl : 'N/A'
     addonObj.mustAcceptLicense = anAddon.mustAcceptLicense ? anAddon.mustAcceptLicense : 'N/A'
     if (anAddon.supportedDistributions instanceof String) {
-      addonObj.supportedDistributions = anAddon.supportedDistributions.split(',')
+      addonObj.supportedDistributions = anAddon.supportedDistributions.split(',').collect {
+        String it -> PlatformSettings.DistributionType.valueOf(it.trim().toUpperCase())
+      }
     } else {
-      addonObj.supportedDistributions = anAddon.supportedDistributions ? anAddon.supportedDistributions : []
+      addonObj.supportedDistributions = anAddon.supportedDistributions ? anAddon.supportedDistributions.collect {
+        String it -> PlatformSettings.DistributionType.valueOf(it.trim().toUpperCase())
+      } : []
     }
     if (anAddon.supportedApplicationServers instanceof String) {
-      addonObj.supportedApplicationServers = anAddon.supportedApplicationServers.split(',')
+      addonObj.supportedApplicationServers = anAddon.supportedApplicationServers.split(',').collect {
+        String it -> PlatformSettings.AppServerType.valueOf(it.trim().toUpperCase())
+      }
     } else {
-      addonObj.supportedApplicationServers = anAddon.supportedApplicationServers ? anAddon.supportedApplicationServers : []
+      addonObj.supportedApplicationServers = anAddon.supportedApplicationServers ? anAddon.supportedApplicationServers.collect {
+        String it -> PlatformSettings.AppServerType.valueOf(it.trim().toUpperCase())
+      } : []
     }
     addonObj.compatibility = anAddon.compatibility ? anAddon.compatibility : 'N/A'
     addonObj.installedLibraries = anAddon.installedLibraries ? anAddon.installedLibraries : []

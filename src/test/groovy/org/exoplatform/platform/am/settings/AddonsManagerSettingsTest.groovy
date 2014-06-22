@@ -45,7 +45,7 @@ class AddonsManagerSettingsTest extends Specification {
     managerSettings.addonsDirectoryPath
     managerSettings.archivesDirectoryName
     managerSettings.catalogsCacheDirectoryName
-    managerSettings.centralCatalogUrl
+    managerSettings.remoteCatalogUrl
     managerSettings.localAddonsCatalogFilename
     managerSettings.scriptBaseName
     managerSettings.scriptName
@@ -60,7 +60,7 @@ class AddonsManagerSettingsTest extends Specification {
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.addonsDirectoryPath", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.archivesDirectoryName", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.catalogsCacheDirectoryName", "foo")
-    System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.centralCatalogUrl", "foo")
+    System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.remoteCatalogUrl", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.localAddonsCatalogFilename", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.scriptBaseName", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.statusesDirectoryName", "foo")
@@ -71,7 +71,7 @@ class AddonsManagerSettingsTest extends Specification {
     "foo".equals(managerSettings.addonsDirectoryPath)
     "foo".equals(managerSettings.archivesDirectoryName)
     "foo".equals(managerSettings.catalogsCacheDirectoryName)
-    "foo".equals(managerSettings.centralCatalogUrl)
+    "foo".equals(managerSettings.remoteCatalogUrl)
     "foo".equals(managerSettings.localAddonsCatalogFilename)
     "foo".equals(managerSettings.scriptBaseName)
     "foo".equals(managerSettings.statusesDirectoryName)
@@ -82,7 +82,7 @@ class AddonsManagerSettingsTest extends Specification {
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.addonsDirectoryPath")
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.archivesDirectoryName")
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.catalogsCacheDirectoryName")
-    System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.centralCatalogUrl")
+    System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.remoteCatalogUrl")
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.localAddonsCatalogFilename")
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.scriptBaseName")
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.statusesDirectoryName")
