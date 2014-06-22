@@ -21,8 +21,9 @@
 package org.exoplatform.platform.am
 
 import groovy.transform.Canonical
+import org.exoplatform.platform.am.settings.PlatformSettings
 
-@Canonical(includes = ['id', 'version', 'supportedDistributions', 'supportedApplicationServers'])
+@Canonical(includes = ['id', 'version'])
 class Addon {
 
   private final static String NA = "N/A"
@@ -44,8 +45,8 @@ class Addon {
   String license = NA
   String licenseUrl = NA
   Boolean mustAcceptLicense = Boolean.FALSE
-  List<String> supportedDistributions = Collections.EMPTY_LIST
-  List<String> supportedApplicationServers = Collections.EMPTY_LIST
+  List<PlatformSettings.DistributionType> supportedDistributions = Collections.EMPTY_LIST
+  List<PlatformSettings.AppServerType> supportedApplicationServers = Collections.EMPTY_LIST
   String compatibility = NA
   List<String> installedLibraries = Collections.EMPTY_LIST
   List<String> installedWebapps = Collections.EMPTY_LIST
