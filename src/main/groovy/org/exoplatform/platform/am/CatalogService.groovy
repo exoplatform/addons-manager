@@ -77,7 +77,7 @@ class CatalogService {
         loadAddonsFromUrl(remoteCatalogUrl, noCache, offline, catalogsCacheDirectory),
         loadAddonsFromFile(localCatalogFile),
         distributionType,
-        appServerType).findAll { !ADDONS_MANAGER_CATALOG_ID.equals(it.id) }
+        appServerType).findAll { !ADDONS_MANAGER_CATALOG_ID.equals(it.id) }.sort().reverse()
   }
 
   /**

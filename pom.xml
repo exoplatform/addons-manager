@@ -53,6 +53,7 @@
     <!-- **************************************** -->
     <!-- Project Dependencies -->
     <!-- **************************************** -->
+    <aether-util.version>1.0.0.v20140518</aether-util.version>
     <groovy.version>2.3.3</groovy.version>
     <jcommander.version>1.35</jcommander.version>
     <jline.version>2.12</jline.version>
@@ -95,6 +96,11 @@
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-xml</artifactId>
       <version>${groovy.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-util</artifactId>
+      <version>${aether-util.version}</version>
     </dependency>
     <!-- groovy-groovydoc is required for the site generation -->
     <!-- We don't want to bundle it -->
@@ -313,12 +319,6 @@
           <plugin>
             <groupId>org.apache.tomcat.maven</groupId>
             <artifactId>tomcat7-maven-plugin</artifactId>
-            <configuration>
-              <port>${webserver.http.port}</port>
-              <path>/</path>
-              <warDirectory>${project.build.directory}/test-data</warDirectory>
-              <ignorePackaging>true</ignorePackaging>
-            </configuration>
             <executions>
               <execution>
                 <id>start-tomcat</id>
@@ -338,6 +338,12 @@
                 </goals>
               </execution>
             </executions>
+            <configuration>
+              <port>${webserver.http.port}</port>
+              <path>/</path>
+              <warDirectory>${project.build.directory}/test-data</warDirectory>
+              <ignorePackaging>true</ignorePackaging>
+            </configuration>
           </plugin>
         </plugins>
       </build>
