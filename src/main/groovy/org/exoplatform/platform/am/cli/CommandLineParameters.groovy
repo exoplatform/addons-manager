@@ -129,10 +129,12 @@ class CommandLineParameters {
   class InstallCommandParameters {
     @Parameter(names = ["--force"], description = "Enforce to download again and reinstall an add-on already deployed")
     boolean force
-    @Parameter(names = ["--snapshots"], description = "Allows to install add-on in SNAPSHOTs version")
+    @Parameter(names = ["--snapshots"], description = "Allow to install add-on in SNAPSHOTs version")
     boolean snapshots
-    @Parameter(names = ["--unstable"], description = "Allows to install add-on in unstable version")
+    @Parameter(names = ["--unstable"], description = "Allow to install add-on in unstable version")
     boolean unstable
+    @Parameter(names = ["--no-compat"], description = "Disable compatibility check")
+    boolean noCompat
     @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog

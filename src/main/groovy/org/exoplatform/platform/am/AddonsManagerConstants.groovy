@@ -54,6 +54,11 @@ class AddonsManagerConstants {
    */
   static final int RETURN_CODE_ADDON_ALREADY_INSTALLED = 5
 
+  /**
+   * Command line return code when trying to install an add-on on a PLF version incompatible
+   */
+  static final int RETURN_CODE_ADDON_INCOMPATIBLE = 6
+
   static final String STATUS_OK = "OK"
   static final String STATUS_KO = "KO"
 }

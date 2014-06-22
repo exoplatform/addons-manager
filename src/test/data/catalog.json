@@ -8,7 +8,8 @@
     "vendor": "eXo",
     "license": "LGPLv3",
     "supportedDistributions": "community,enterprise",
-    "supportedApplicationServers": "tomcat,jboss"
+    "supportedApplicationServers": "tomcat,jboss",
+    "compatibility": "[4.0.0,)"
   },
   {
     "id": "foo-addon",
@@ -21,7 +22,8 @@
     "vendor": "eXo",
     "license": "LGPLv3",
     "supportedDistributions": "community,enterprise",
-    "supportedApplicationServers": "tomcat,jboss"
+    "supportedApplicationServers": "tomcat,jboss",
+    "compatibility": "[4.0.0,)"
   },
   {
     "id": "foo-addon",
@@ -33,7 +35,8 @@
     "vendor": "eXo",
     "license": "LGPLv3",
     "supportedDistributions": "community,enterprise",
-    "supportedApplicationServers": "tomcat,jboss"
+    "supportedApplicationServers": "tomcat,jboss",
+    "compatibility": "[4.0.0,)"
   },
   {
     "id": "foo-addon",
@@ -44,7 +47,8 @@
     "vendor": "eXo",
     "license": "LGPLv3",
     "supportedDistributions": "community,enterprise",
-    "supportedApplicationServers": "tomcat,jboss"
+    "supportedApplicationServers": "tomcat,jboss",
+    "compatibility": "[4.0.0,)"
   },
   {
     "id": "foo-addon",
@@ -56,7 +60,7 @@
     "vendor": "eXo",
     "license": "LGPLv3",
     "supportedDistributions": "community,enterprise",
-    "supportedApplicationServers": "tomcat,jboss"
+    "supportedApplicationServers": "tomcat,jboss",
   },
   {
     "id": "foo-addon",
@@ -68,6 +72,19 @@
     "vendor": "eXo",
     "license": "LGPLv3",
     "supportedDistributions": "community,enterprise",
-    "supportedApplicationServers": "tomcat,jboss"
+    "supportedApplicationServers": "tomcat,jboss",
+    "compatibility": "[4.0.0,)"
+  },
+  {
+    "id": "incompatible-foo-addon",
+    "version": "42",
+    "name": "Fake addon",
+    "description": "A fake addon compatible with PLF 300+",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-42.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss",
+    "compatibility": "[300,)"
   }
 ]

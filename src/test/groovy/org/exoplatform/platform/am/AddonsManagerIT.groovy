@@ -716,14 +716,23 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * version of eXo Platform. Use --no-compat to ignore this compatibility check and install anyway.
    */
   def "[AM_INST_09] The add-ons manager does a compatibility check using the compatibility values prior to install an add-on."() {
-    // TODO : Not yet implemented
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_INCOMPATIBLE == launchAddonsManager(
+        ["install", "incompatible-foo-addon:42", "--verbose"]).exitValue()
   }
 
   /**
    * installs foo-addon version 1.2 ignoring the compatiblity check
    */
   def "[AM_INST_10] addons.(sh|bat) install foo-addon --no-compat"() {
-    // TODO : Not yet implemented
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "incompatible-foo-addon:42", "--no-compat", "--verbose"]).exitValue()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "incompatible-foo-addon"])
   }
 
   /**

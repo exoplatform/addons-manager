@@ -24,11 +24,12 @@ import groovy.json.StreamingJsonBuilder
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
+import org.eclipse.aether.util.version.GenericVersionScheme
+import org.eclipse.aether.version.Version
+import org.eclipse.aether.version.VersionConstraint
+import org.eclipse.aether.version.VersionScheme
 import org.exoplatform.platform.am.settings.EnvironmentSettings
-import org.exoplatform.platform.am.utils.AddonAlreadyInstalledException
-import org.exoplatform.platform.am.utils.AddonsManagerException
-import org.exoplatform.platform.am.utils.FileUtils
-import org.exoplatform.platform.am.utils.Logger
+import org.exoplatform.platform.am.utils.*
 
 /**
  * All services related to add-ons
@@ -68,7 +69,19 @@ class AddonService {
     return getAddonStatusFile(addon).exists()
   }
 
-  void install(Addon addon, boolean force, boolean noCache, boolean offline) {
+  void install(Addon addon, boolean force, boolean noCache, boolean offline, boolean noCompat) {
+    // if a compatibility rule is defined
+    if (addon.compatibility && !noCompat) {
+      VersionScheme versionScheme = new GenericVersionScheme()
+      Version plfVersion = versionScheme.parseVersion(env.platform.version)
+      VersionConstraint addonConstraint = versionScheme.parseVersionConstraint(addon.compatibility)
+      LOG.debug("Checking compatibility for PLF version ${plfVersion} with constraint ${addonConstraint}")
+      if (!addonConstraint.containsVersion(plfVersion)) {
+        throw new CompatibilityException(addon, env.platform.version)
+      }
+    } else {
+      LOG.debug("Compatibility check deactivated")
+    }
     if (isInstalled(addon)) {
       if (!force) {
         throw new AddonAlreadyInstalledException(addon)

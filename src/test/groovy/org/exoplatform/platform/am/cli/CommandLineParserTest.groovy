@@ -301,6 +301,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandInstall.catalog
     !cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.noCompat
     !cliArgs.commandInstall.offline
     !cliArgs.commandInstall.snapshots
     !cliArgs.commandInstall.unstable
@@ -322,6 +323,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandInstall.catalog
     !cliArgs.commandInstall.force
     cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.noCompat
     !cliArgs.commandInstall.offline
     !cliArgs.commandInstall.snapshots
     !cliArgs.commandInstall.unstable
@@ -343,6 +345,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandInstall.catalog
     !cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.noCompat
     cliArgs.commandInstall.offline
     !cliArgs.commandInstall.snapshots
     !cliArgs.commandInstall.unstable
@@ -363,6 +366,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandInstall.catalog
     !cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.noCompat
     !cliArgs.commandInstall.offline
     !cliArgs.commandInstall.snapshots
     !cliArgs.commandInstall.unstable
@@ -383,6 +387,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandInstall.catalog
     cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.noCompat
     !cliArgs.commandInstall.offline
     !cliArgs.commandInstall.snapshots
     !cliArgs.commandInstall.unstable
@@ -404,6 +409,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandInstall.catalog
     !cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.noCompat
     !cliArgs.commandInstall.offline
     cliArgs.commandInstall.snapshots
     !cliArgs.commandInstall.unstable
@@ -425,6 +431,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandInstall.catalog
     !cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.noCompat
     !cliArgs.commandInstall.offline
     !cliArgs.commandInstall.snapshots
     cliArgs.commandInstall.unstable
@@ -437,6 +444,27 @@ class CommandLineParserTest extends Specification {
     ]
   }
 
+  def "Test command line parameters to install an add-on without compatibility checks"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INSTALL == cliArgs.command
+    "my-addon".equals(cliArgs.commandInstall.addonId)
+    !cliArgs.commandInstall.catalog
+    !cliArgs.commandInstall.force
+    !cliArgs.commandInstall.noCache
+    cliArgs.commandInstall.noCompat
+    !cliArgs.commandInstall.offline
+    !cliArgs.commandInstall.snapshots
+    !cliArgs.commandInstall.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["install", "my-addon", "--no-compat"],
+    ]
+  }
+
   def "Test command line parameters to install an add-on with a valid catalog parameter"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
@@ -446,6 +474,7 @@ class CommandLineParserTest extends Specification {
     validCatalogUrl.equals(cliArgs.commandInstall.catalog.toString())
     !cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.noCompat
     !cliArgs.commandInstall.offline
     !cliArgs.commandInstall.snapshots
     !cliArgs.commandInstall.unstable

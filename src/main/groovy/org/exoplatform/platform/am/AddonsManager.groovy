@@ -26,6 +26,7 @@ import org.exoplatform.platform.am.cli.CommandLineParsingException
 import org.exoplatform.platform.am.settings.EnvironmentSettings
 import org.exoplatform.platform.am.utils.AddonAlreadyInstalledException
 import org.exoplatform.platform.am.utils.AddonsManagerException
+import org.exoplatform.platform.am.utils.CompatibilityException
 import org.exoplatform.platform.am.utils.Console
 import org.exoplatform.platform.am.utils.Logger
 
@@ -194,7 +195,8 @@ To install an add-on:
           addon,
           commandLineParameters.commandInstall.force,
           commandLineParameters.commandInstall.noCache,
-          commandLineParameters.commandInstall.offline)
+          commandLineParameters.commandInstall.offline,
+          commandLineParameters.commandInstall.noCompat)
       break
     case CommandLineParameters.Command.UNINSTALL:
       File statusFile = addonService.getAddonStatusFile(commandLineParameters.commandUninstall.addonId)
@@ -217,6 +219,9 @@ To install an add-on:
 } catch (AddonAlreadyInstalledException aaie) {
   log.error aaie.message
   returnCode = AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED
+} catch (CompatibilityException aie) {
+  log.error aie.message
+  returnCode = AddonsManagerConstants.RETURN_CODE_ADDON_INCOMPATIBLE
 } catch (AddonsManagerException ame) {
   log.error ame.message
   returnCode = AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR
