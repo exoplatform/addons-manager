@@ -25,6 +25,7 @@ import groovy.time.TimeCategory
 import org.exoplatform.platform.am.settings.PlatformSettings
 import org.exoplatform.platform.am.utils.AddonsManagerException
 import org.exoplatform.platform.am.utils.FileUtils
+import org.exoplatform.platform.am.utils.InvalidJSONException
 import org.exoplatform.platform.am.utils.Logger
 
 import java.security.MessageDigest
@@ -76,7 +77,7 @@ class CatalogService {
         loadAddonsFromUrl(remoteCatalogUrl, noCache, offline, catalogsCacheDirectory),
         loadAddonsFromFile(localCatalogFile),
         distributionType,
-        appServerType).findAll{!ADDONS_MANAGER_CATALOG_ID.equals(it.id)}
+        appServerType).findAll { !ADDONS_MANAGER_CATALOG_ID.equals(it.id) }
   }
 
   /**
@@ -216,45 +217,107 @@ class CatalogService {
    */
   protected Addon fromJSON(anAddon) {
     Addon addonObj = new Addon(
-        id: anAddon.id ? anAddon.id : 'N/A',
-        version: anAddon.version ? anAddon.version : 'N/A');
+        id: anAddon.id,
+        version: anAddon.version);
     addonObj.unstable = anAddon.unstable ? anAddon.unstable : Boolean.FALSE
-    addonObj.name = anAddon.name ? anAddon.name : 'N/A'
-    addonObj.description = anAddon.description ? anAddon.description : 'N/A'
-    addonObj.releaseDate = anAddon.releaseDate ? anAddon.releaseDate : 'N/A'
-    addonObj.sourceUrl = anAddon.sourceUrl ? anAddon.sourceUrl : 'N/A'
-    addonObj.screenshotUrl = anAddon.screenshotUrl ? anAddon.screenshotUrl : 'N/A'
-    addonObj.thumbnailUrl = anAddon.thumbnailUrl ? anAddon.thumbnailUrl : 'N/A'
-    addonObj.documentationUrl = anAddon.documentationUrl ? anAddon.documentationUrl : 'N/A'
-    addonObj.downloadUrl = anAddon.downloadUrl ? anAddon.downloadUrl : 'N/A'
-    addonObj.vendor = anAddon.vendor ? anAddon.vendor : 'N/A'
-    addonObj.author = anAddon.author ? anAddon.author : 'N/A'
-    addonObj.authorEmail = anAddon.authorEmail ? anAddon.authorEmail : 'N/A'
-    addonObj.license = anAddon.license ? anAddon.license : 'N/A'
-    addonObj.licenseUrl = anAddon.licenseUrl ? anAddon.licenseUrl : 'N/A'
-    addonObj.mustAcceptLicense = anAddon.mustAcceptLicense ? anAddon.mustAcceptLicense : 'N/A'
+    addonObj.name = anAddon.name
+    addonObj.description = anAddon.description
+    addonObj.releaseDate = anAddon.releaseDate
+    addonObj.sourceUrl = anAddon.sourceUrl
+    addonObj.screenshotUrl = anAddon.screenshotUrl
+    addonObj.thumbnailUrl = anAddon.thumbnailUrl
+    addonObj.documentationUrl = anAddon.documentationUrl
+    addonObj.downloadUrl = anAddon.downloadUrl
+    addonObj.vendor = anAddon.vendor
+    addonObj.author = anAddon.author
+    addonObj.authorEmail = anAddon.authorEmail
+    addonObj.license = anAddon.license
+    addonObj.licenseUrl = anAddon.licenseUrl
+    addonObj.mustAcceptLicense = anAddon.mustAcceptLicense ? anAddon.mustAcceptLicense : Boolean.FALSE
     if (anAddon.supportedDistributions instanceof String) {
       addonObj.supportedDistributions = anAddon.supportedDistributions.split(',').collect {
-        String it -> PlatformSettings.DistributionType.valueOf(it.trim().toUpperCase())
+        String it ->
+          try {
+            PlatformSettings.DistributionType.valueOf(it.trim().toUpperCase())
+          } catch (IllegalArgumentException iae) {
+            LOG.debug("Unknown distribution type for add-on ${addonObj} : ${it}")
+            PlatformSettings.DistributionType.UNKNOWN
+          }
       }
     } else {
       addonObj.supportedDistributions = anAddon.supportedDistributions ? anAddon.supportedDistributions.collect {
-        String it -> PlatformSettings.DistributionType.valueOf(it.trim().toUpperCase())
+        String it ->
+          try {
+            PlatformSettings.DistributionType.valueOf(it.trim().toUpperCase())
+          } catch (IllegalArgumentException iae) {
+            LOG.debug("Unknown distribution type for add-on ${addonObj} : ${it}")
+            PlatformSettings.DistributionType.UNKNOWN
+          }
       } : []
     }
+    addonObj.supportedDistributions.removeAll(PlatformSettings.DistributionType.UNKNOWN)
     if (anAddon.supportedApplicationServers instanceof String) {
       addonObj.supportedApplicationServers = anAddon.supportedApplicationServers.split(',').collect {
-        String it -> PlatformSettings.AppServerType.valueOf(it.trim().toUpperCase())
+        String it ->
+          try {
+            PlatformSettings.AppServerType.valueOf(it.trim().toUpperCase())
+          }
+          catch (IllegalArgumentException iae) {
+            LOG.debug("Unknown application server type for add-on ${addonObj} : ${it}")
+            PlatformSettings.AppServerType.UNKNOWN
+          }
       }
     } else {
       addonObj.supportedApplicationServers = anAddon.supportedApplicationServers ? anAddon.supportedApplicationServers.collect {
-        String it -> PlatformSettings.AppServerType.valueOf(it.trim().toUpperCase())
+        String it ->
+          try {
+            PlatformSettings.AppServerType.valueOf(it.trim().toUpperCase())
+          } catch (IllegalArgumentException iae) {
+            LOG.debug("Unknown application server type for add-on ${addonObj} : ${it}")
+            PlatformSettings.AppServerType.UNKNOWN
+          }
       } : []
     }
-    addonObj.compatibility = anAddon.compatibility ? anAddon.compatibility : 'N/A'
-    addonObj.installedLibraries = anAddon.installedLibraries ? anAddon.installedLibraries : []
-    addonObj.installedWebapps = anAddon.installedWebapps ? anAddon.installedWebapps : []
-    // TODO : Add some validations here
+    addonObj.supportedApplicationServers.removeAll(PlatformSettings.AppServerType.UNKNOWN)
+    addonObj.compatibility = anAddon.compatibility
+    addonObj.installedLibraries = anAddon.installedLibraries
+    addonObj.installedWebapps = anAddon.installedWebapps
+    int errors = 0
+    if (!addonObj.id) {
+      LOG.debug("No id for add-on ${anAddon}")
+      errors++
+    }
+    if (!addonObj.version) {
+      LOG.debug("No version for add-on ${anAddon}")
+      errors++
+    }
+    if (!addonObj.name) {
+      LOG.debug("No name for add-on ${anAddon}")
+      errors++
+    }
+    if (!addonObj.downloadUrl) {
+      LOG.debug("No downloadUrl for add-on ${anAddon}")
+      errors++
+    }
+    if (!addonObj.vendor) {
+      LOG.debug("No vendor for add-on ${anAddon}")
+      errors++
+    }
+    if (!addonObj.license) {
+      LOG.debug("No license for add-on ${anAddon}")
+      errors++
+    }
+    if (addonObj.supportedApplicationServers.size() == 0) {
+      LOG.debug("No supportedApplicationServers for add-on ${anAddon}")
+      errors++
+    }
+    if (addonObj.supportedDistributions.size() == 0) {
+      LOG.debug("No supportedDistributions for add-on ${anAddon}")
+      errors++
+    }
+    if (errors > 0) {
+      throw new InvalidJSONException(anAddon)
+    }
     return addonObj
   }
 
@@ -266,7 +329,11 @@ class CatalogService {
   protected List<Addon> parseJSONAddonsList(String text) {
     List<Addon> addonsList = new ArrayList<Addon>();
     new JsonSlurper().parseText(text).each { anAddon ->
-      addonsList.add(fromJSON(anAddon))
+      try {
+        addonsList.add(fromJSON(anAddon))
+      } catch (InvalidJSONException ije) {
+        LOG.debug(ije.message)
+      }
     }
     return addonsList
   }

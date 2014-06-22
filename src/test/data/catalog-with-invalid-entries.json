@@ -1,0 +1,80 @@
+[
+  {
+    "id": "wellformed-addon",
+    "version": "42",
+    "name": "Fake addon",
+    "description": "A fake addon",
+    "releaseDate": "2014-06-18T00:00:00.000Z",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-42.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss"
+  },
+  {
+    "id": "foo-addon",
+    "version": "43-SNAPSHOT",
+    "name": "No downloadUrl",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss"
+  },
+  {
+    "id": "foo-addon",
+    "name": "No version",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-42.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss"
+  },
+  {
+    "version": "42-SNAPSHOT",
+    "name": "No id",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-42-SNAPSHOT.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss"
+  },
+  {
+    "id": "foo-addon",
+    "version": "41",
+    "name": "Invalid supportedDistributions",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-41.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "foo,bar",
+    "supportedApplicationServers": "tomcat,jboss"
+  },
+  {
+    "id": "foo-addon",
+    "version": "40",
+    "name": "Invalid supportedApplicationServers",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-40.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "foo,bar"
+  },
+  {
+    "id": "foo-addon",
+    "version": "40",
+    "name": "No vendor",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-40.zip",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss"
+  },
+  {
+    "id": "foo-addon",
+    "version": "40",
+    "name": "No license",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-40.zip",
+    "vendor": "eXo",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss"
+  }
+
+]
