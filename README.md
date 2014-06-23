@@ -47,6 +47,26 @@ Display all available addons including development versions (snapshots) :
 
     addons.sh list --snapshots
 
+Display all available addons including unstable versions (alpha, beta, ...) :
+
+    addons.sh list --unstable
+
+Display all installed addons in your platform server :
+
+    addons.sh list --installed
+
+Display all installed addons with an existing more recent stable version :
+
+    addons.sh list --outdated
+
+Display all installed addons with an existing more recent stable or snapshot version :
+
+    addons.sh list --outdated  --snapshots
+
+Display all installed addons with an existing more recent stable or unstable version :
+
+    addons.sh list --outdated --unstable
+
 Install the latest stable version of the add-on ```foo```
 
     addons.sh install foo
@@ -54,6 +74,10 @@ Install the latest stable version of the add-on ```foo```
 Install the latest stable or development version of the add-on ```foo```
 
     addons.sh install foo --snapshots
+
+Install the latest stable or unstable version of the add-on ```foo```
+
+    addons.sh install foo --unstable
 
 Install the version ```42.0``` of the add-on ```foo```
 
