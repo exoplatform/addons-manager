@@ -42,6 +42,8 @@ class AddonService {
    */
   private static final Logger LOG = Logger.get()
 
+  private VersionScheme versionScheme = new GenericVersionScheme()
+
   final static STATUS_FILE_EXT = ".status"
 
   EnvironmentSettings env
@@ -72,7 +74,6 @@ class AddonService {
   void install(Addon addon, boolean force, boolean noCache, boolean offline, boolean noCompat) {
     // if a compatibility rule is defined
     if (addon.compatibility && !noCompat) {
-      VersionScheme versionScheme = new GenericVersionScheme()
       Version plfVersion = versionScheme.parseVersion(env.platform.version)
       VersionConstraint addonConstraint = versionScheme.parseVersionConstraint(addon.compatibility)
       LOG.debug("Checking compatibility for PLF version ${plfVersion} with constraint ${addonConstraint}")
@@ -235,5 +236,44 @@ class AddonService {
   private processFileInplace(File file, Closure processText) {
     String text = file.text
     file.write(processText(text))
+  }
+
+  /**
+   * Find in the list {@code addons} all addons with the same identifier {@link Addon#id} and a higher version number
+   * {@link Addon#version} than {@code addonRef}
+   * @param addonRef The addon reference
+   * @param addons The list to filter
+   * @return A list of addons
+   */
+  List<Addon> findNewerAddons(Addon addonRef, List<Addon> addons) {
+    assert addonRef
+    assert addonRef.id
+    assert addonRef.version
+    return addons.findAll { it.id == addonRef.id && it > addonRef }
+  }
+
+  /**
+   * Find in the list {@code addons} the addon with the identifier {@code addonId} and the highest version number
+   * @param addonId The addon identifier
+   * @param addons The list to filter
+   * @return The addon matching constraints or null if none.
+   */
+  Addon findNewestAddon(String addonId, List<Addon> addons) {
+    assert addonId
+    return addons.findAll { it.id == addonId }.max()
+  }
+
+  /**
+   * Filter entries in {@code addons} to keep only stable versions. Return also snapshot versions if {@code allowSnapshot} is
+   * true and unstable versions if {@code allowUnstable} is true
+   * @param addons The list of addons to filter
+   * @param allowSnapshot Also return addons with snapshot versions (-SNAPSHOT)
+   * @param allowUnstable Also return addons with unstable versions (alpha, beta, RC, ...)
+   * @return the list of addons.
+   */
+  List<Addon> filterAddons(List<Addon> addons, boolean allowSnapshot, boolean allowUnstable) {
+    return addons.findAll {
+      !it.unstable && !it.isSnapshot() || it.unstable && !it.isSnapshot() && allowUnstable || it.isSnapshot() && allowSnapshot
+    }
   }
 }
