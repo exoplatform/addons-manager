@@ -27,10 +27,10 @@ import spock.lang.Specification
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class CatalogServiceTest extends Specification {
+class AddonServiceTest extends Specification {
 
   @Shared
-  CatalogService catalogService = CatalogService.getInstance()
+  AddonService addonService = AddonService.getInstance()
 
   @Shared
   Addon addon1 = new Addon(
@@ -75,7 +75,7 @@ class CatalogServiceTest extends Specification {
     List<Addon> remoteCatalog = [addon1, addon2, addon3, addon4]
     List<Addon> localCatalog = [addon1, addon4b, addon5]
     then:
-    catalogService.mergeCatalogs(remoteCatalog, localCatalog, PlatformSettings.DistributionType.ENTERPRISE,
+    addonService.mergeCatalogs(remoteCatalog, localCatalog, PlatformSettings.DistributionType.ENTERPRISE,
                                  PlatformSettings.AppServerType.TOMCAT) == [addon1, addon4, addon4b, addon5]
   }
 
@@ -84,28 +84,28 @@ class CatalogServiceTest extends Specification {
     List<Addon> addonsCatalog = [addon1, addon2, addon3, addon4]
     then:
     // addons 1 and 3 are supporting appsrv tomcat on community edition
-    catalogService.filterCatalog(addonsCatalog,
+    addonService.filterAddons(addonsCatalog,
                                  PlatformSettings.DistributionType.COMMUNITY,
                                  PlatformSettings.AppServerType.TOMCAT) == [addon1, addon3]
     // addons 1 and 3 are supporting appsrv tomcat on enterprise edition
-    catalogService.filterCatalog(addonsCatalog,
+    addonService.filterAddons(addonsCatalog,
                                  PlatformSettings.DistributionType.ENTERPRISE,
                                  PlatformSettings.AppServerType.TOMCAT) == [addon1, addon4]
     // addon 1 is supporting appsrv jboss on community edition
     // TODO : The current model doesn't let us know that it is an impossible combination
-    catalogService.filterCatalog(addonsCatalog,
+    addonService.filterAddons(addonsCatalog,
                                  PlatformSettings.DistributionType.COMMUNITY,
                                  PlatformSettings.AppServerType.JBOSS) == [addon1]
     // addons 1 and 2 are supporting appsrv jboss on enterprise edition
-    catalogService.filterCatalog(addonsCatalog,
+    addonService.filterAddons(addonsCatalog,
                                  PlatformSettings.DistributionType.ENTERPRISE,
                                  PlatformSettings.AppServerType.JBOSS) == [addon1, addon2]
   }
 
   def "getCacheFilename must always return the same value for a given URL"() {
     when:
-    def filename1 = catalogService.getCacheFilename(new URL("http://www.exoplatform.com"))
-    def filename2 = catalogService.getCacheFilename(new URL("http://www.exoplatform.com"))
+    def filename1 = addonService.getCacheFilename(new URL("http://www.exoplatform.com"))
+    def filename2 = addonService.getCacheFilename(new URL("http://www.exoplatform.com"))
     then:
     filename1 == filename2
   }

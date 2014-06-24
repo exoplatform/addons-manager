@@ -20,7 +20,9 @@
  */
 package org.exoplatform.platform.am
 
+import groovy.json.JsonSlurper
 import groovy.json.StreamingJsonBuilder
+import groovy.time.TimeCategory
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
@@ -28,8 +30,12 @@ import org.eclipse.aether.util.version.GenericVersionScheme
 import org.eclipse.aether.version.Version
 import org.eclipse.aether.version.VersionConstraint
 import org.eclipse.aether.version.VersionScheme
+import org.exoplatform.platform.am.cli.CommandLineParameters
 import org.exoplatform.platform.am.settings.EnvironmentSettings
+import org.exoplatform.platform.am.settings.PlatformSettings
 import org.exoplatform.platform.am.utils.*
+
+import java.security.MessageDigest
 
 /**
  * All services related to add-ons
@@ -41,6 +47,12 @@ class AddonService {
    * Logger
    */
   private static final Logger LOG = Logger.getInstance()
+  /**
+   * The identifier used in the catalog for the addons manager
+   */
+  private static final String ADDONS_MANAGER_CATALOG_ID = "exo-addons-manager"
+
+  static final STATUS_FILE_EXT = ".status"
 
   /**
    * Singleton
@@ -57,9 +69,74 @@ class AddonService {
 
   private VersionScheme versionScheme = new GenericVersionScheme()
 
-  final static STATUS_FILE_EXT = ".status"
 
   private AddonService() {
+  }
+
+  int listAddons(EnvironmentSettings env, CommandLineParameters.ListCommandParameters parameters) {
+    return listAddons(
+        env,
+        parameters.unstable,
+        parameters.snapshots,
+        parameters.installed,
+        parameters.outdated,
+        parameters.noCache,
+        parameters.offline,
+        parameters.catalog
+    )
+  }
+
+  int installAddon(
+      EnvironmentSettings env,
+      CommandLineParameters.InstallCommandParameters parameters) {
+    Addon addon
+    List<Addon> addons = loadAddons(
+        parameters.catalog ? parameters.catalog : env.remoteCatalogUrl,
+        parameters.noCache,
+        env.catalogsCacheDirectory,
+        parameters.offline,
+        env.localAddonsCatalogFile,
+        env.platform.distributionType,
+        env.platform.appServerType)
+    if (parameters.addonVersion == null) {
+      // Let's find the first add-on with the given id (including or not snapshots depending of the option)
+      addon = addons.find {
+        (!it.isSnapshot() || parameters.snapshots) && (!it.unstable || parameters.unstable) && parameters.addonId.equals(it.id)
+      }
+      if (addon == null) {
+        LOG.error("No add-on with identifier ${parameters.addonId} found")
+        return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
+      }
+    } else {
+      // Let's find the add-on with the given id and version
+      addon = addons.find {
+        parameters.addonId.equals(
+            it.id) && parameters.addonVersion.equalsIgnoreCase(
+            it.version)
+      }
+      if (addon == null) {
+        LOG.error(
+            "No add-on with identifier ${parameters.addonId} and version ${parameters.addonVersion} found")
+        return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
+      }
+    }
+    installAddon(env, addon, parameters.force, parameters.noCache, parameters.offline, parameters.noCompat)
+    return AddonsManagerConstants.RETURN_CODE_OK
+  }
+
+  int uninstallAddon(EnvironmentSettings env, CommandLineParameters.UninstallCommandParameters parameters) {
+    File statusFile = getAddonStatusFile(env.statusesDirectory, parameters.addonId)
+    if (statusFile.exists()) {
+      Addon addon
+      LOG.withStatus("Loading add-on details") {
+        addon = parseJSONAddon(statusFile.text);
+      }
+      uninstallAddon(env, addon)
+      return AddonsManagerConstants.RETURN_CODE_OK
+    } else {
+      LOG.error("Add-on not installed. It cannot be uninstalled.")
+      return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED
+    }
   }
 
   /**
@@ -69,7 +146,7 @@ class AddonService {
    * @param addons The list to filter
    * @return A list of addons
    */
-  List<Addon> findNewerAddons(Addon addonRef, List<Addon> addons) {
+  protected List<Addon> findNewerAddons(Addon addonRef, List<Addon> addons) {
     assert addonRef
     assert addonRef.id
     assert addonRef.version
@@ -82,7 +159,7 @@ class AddonService {
    * @param addons The list to filter
    * @return The addon matching constraints or null if none.
    */
-  Addon findNewestAddon(String addonId, List<Addon> addons) {
+  protected Addon findNewestAddon(String addonId, List<Addon> addons) {
     assert addonId
     return addons.findAll { it.id == addonId }.max()
   }
@@ -95,17 +172,125 @@ class AddonService {
    * @param allowUnstable Also return addons with unstable versions (alpha, beta, RC, ...)
    * @return the list of addons.
    */
-  List<Addon> filterAddons(List<Addon> addons, boolean allowSnapshot, boolean allowUnstable) {
+  protected List<Addon> filterAddons(List<Addon> addons, boolean allowSnapshot, boolean allowUnstable) {
     return addons.findAll {
       !it.unstable && !it.isSnapshot() || it.unstable && !it.isSnapshot() && allowUnstable || it.isSnapshot() && allowSnapshot
     }
   }
 
-  File getAddonStatusFile(File statusesDirectory, String addonId) {
+  protected File getAddonStatusFile(File statusesDirectory, String addonId) {
     return new File(statusesDirectory, "${addonId}${STATUS_FILE_EXT}")
   }
 
-  void install(EnvironmentSettings env, Addon addon, boolean force, boolean noCache, boolean offline, boolean noCompat) {
+  protected int listAddons(
+      EnvironmentSettings env,
+      Boolean unstable,
+      Boolean snapshots,
+      Boolean installed,
+      Boolean outdated,
+      Boolean noCache,
+      Boolean offline,
+      URL catalog
+  ) {
+    if (installed) {
+      // Display only installed add-ons
+      List<Addon> installedAddons = env.statusesDirectory.list(
+          { dir, file -> file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/ } as FilenameFilter
+      ).toList().collect { it -> parseJSONAddon(new File(env.statusesDirectory, it).text) }
+      if (installedAddons.size() > 0) {
+        LOG.info "\n@|bold Installed add-ons:|@"
+        installedAddons.each {
+          LOG.info String.format(
+              "\n+ @|bold,yellow %-${installedAddons.id*.size().max() + installedAddons.version*.size().max()}s|@ : @|bold %s|@, %s",
+              "${it.id} ${it.version}", it.name, it.description)
+        }
+        LOG.info String.format("""
+To uninstall an add-on:
+    ${env.manager.scriptName} uninstall @|yellow <addonId>|@
+  """)
+      } else {
+        LOG.info "No add-on installed"
+      }
+    } else if (outdated) {
+      List<Addon> installedAddons = env.statusesDirectory.list(
+          { dir, file -> file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/ } as FilenameFilter
+      ).toList().collect { it -> parseJSONAddon(new File(env.statusesDirectory, it).text) }
+      List<Addon> availableAddons = loadAddons(
+          catalog ? catalog : env.remoteCatalogUrl,
+          noCache,
+          env.catalogsCacheDirectory,
+          offline,
+          env.localAddonsCatalogFile,
+          env.platform.distributionType,
+          env.platform.appServerType).findAll {
+        !it.unstable && !it.isSnapshot() ||
+            it.unstable && !it.isSnapshot() && unstable ||
+            it.isSnapshot() && snapshots
+      }
+      List<Addon> outdatedAddons = installedAddons.findAll { installedAddon ->
+        availableAddons
+            .findAll { availableAddon -> availableAddon.id == installedAddon.id && availableAddon > installedAddon }.size() > 0
+      }
+      if (outdatedAddons.size() > 0) {
+        LOG.info "\n@|bold Outdated add-ons:|@"
+        outdatedAddons.groupBy { it.id }.each {
+          Addon anAddon = it.value.first()
+          LOG.info String.format(
+              "\n+ @|bold,yellow %-${outdatedAddons.id*.size().max() + outdatedAddons.version*.size().max() + 1}s|@ : @|bold %s|@, %s",
+              "${anAddon.id} ${anAddon.version}", anAddon.name, anAddon.description)
+          LOG.info String.format(
+              "     Newest Version(s) : %s",
+              availableAddons.findAll { availableAddon -> availableAddon.id == anAddon.id && availableAddon > anAddon }
+                  .collect { newestAddon -> "@|yellow ${newestAddon.version}|@"
+              }.join(', '))
+        }
+        LOG.info String.format("""
+To update an add-on:
+    ${env.manager.scriptName} install @|yellow <addonId:[version]>|@ --force
+  """)
+      } else {
+        LOG.warn "No outdated add-on found"
+      }
+    } else {
+      // Display add-ons in remote+local catalogs
+      List<Addon> availableAddons = loadAddons(
+          catalog ? catalog : env.remoteCatalogUrl,
+          noCache,
+          env.catalogsCacheDirectory,
+          offline,
+          env.localAddonsCatalogFile,
+          env.platform.distributionType,
+          env.platform.appServerType).findAll {
+        !it.unstable && !it.isSnapshot() ||
+            it.unstable && !it.isSnapshot() && unstable ||
+            it.isSnapshot() && snapshots
+      }
+      if (availableAddons.size() > 0) {
+        LOG.info "\n@|bold Available add-ons:|@"
+        availableAddons.groupBy { it.id }.each {
+          Addon anAddon = it.value.first()
+          LOG.info String.format("\n+ @|bold,yellow %-${availableAddons.id*.size().max()}s|@ : @|bold %s|@, %s", anAddon.id,
+                                 anAddon.name, anAddon.description)
+          LOG.info String.format("     Available Version(s) : %s", it.value.collect { "@|yellow ${it.version}|@" }.join(', '))
+        }
+        LOG.info String.format("""
+To install an add-on:
+    ${env.manager.scriptName} install @|yellow <addonId:[version]>|@
+  """)
+      } else {
+        LOG.warn "No add-on found in remote and local catalogs"
+      }
+    }
+    return AddonsManagerConstants.RETURN_CODE_OK
+  }
+
+  protected void installAddon(
+      EnvironmentSettings env,
+      Addon addon,
+      boolean force,
+      boolean noCache,
+      boolean offline,
+      boolean noCompat) {
     // if a compatibility rule is defined
     if (addon.compatibility && !noCompat) {
       Version plfVersion = versionScheme.parseVersion(env.platform.version)
@@ -121,8 +306,8 @@ class AddonService {
       if (!force) {
         throw new AddonAlreadyInstalledException(addon)
       } else {
-        Addon oldAddon = CatalogService.getInstance().parseJSONAddon(getAddonStatusFile(env.statusesDirectory, addon).text);
-        uninstall(env, oldAddon)
+        Addon oldAddon = parseJSONAddon(getAddonStatusFile(env.statusesDirectory, addon).text);
+        uninstallAddon(env, oldAddon)
       }
     }
     if (noCache && getLocalArchive(env.archivesDirectory, addon).exists()) {
@@ -210,7 +395,7 @@ class AddonService {
     LOG.withStatusOK("Add-on ${addon.name} ${addon.version} installed.")
   }
 
-  void uninstall(EnvironmentSettings env, Addon addon) {
+  protected void uninstallAddon(EnvironmentSettings env, Addon addon) {
     LOG.info("Uninstalling @|yellow ${addon.name} ${addon.version}|@")
 
     addon.installedLibraries.each {
@@ -284,5 +469,369 @@ class AddonService {
   protected processFileInplace(File file, Closure processText) {
     String text = file.text
     file.write(processText(text))
+  }
+
+/**
+ * Parse a JSON String representing an Add-on to build an {@link Addon} object
+ * @param text the JSON text to parse
+ * @return an Addon object
+ */
+  protected Addon parseJSONAddon(String text) {
+    return fromJSON(new JsonSlurper().parseText(text))
+  }
+
+  /**
+   * Merge addons loaded from a remote and a local catalog
+   * @param remoteCatalogUrl The remote catalog URL
+   * @param noCache If the 1h cache must be used for the remote catalog
+   * @param catalogsCacheDirectory The directory where are cached remote catalogs
+   * @param offline If the operation must be done offline (nothing will be downloaded)
+   * @param localCatalogFile The local catalog file
+   * @param distributionType The distribution type which addons listed must be compatible with
+   * @param appServerType The application seerver type which addons listed must be compatible with
+   * @return a list of addons
+   */
+  protected List<Addon> loadAddons(URL remoteCatalogUrl,
+                                   boolean noCache,
+                                   File catalogsCacheDirectory,
+                                   boolean offline,
+                                   File localCatalogFile,
+                                   PlatformSettings.DistributionType distributionType,
+                                   PlatformSettings.AppServerType appServerType
+  ) {
+    return mergeCatalogs(
+        loadAddonsFromUrl(remoteCatalogUrl, noCache, offline, catalogsCacheDirectory),
+        loadAddonsFromFile(localCatalogFile),
+        distributionType,
+        appServerType).findAll { !ADDONS_MANAGER_CATALOG_ID.equals(it.id) }.sort().reverse()
+  }
+
+  /**
+   * [AM_CAT_07] At merge, de-duplication of add-on entries of the local and remote catalogs is
+   * done using ID, Version, Distributions, Application Servers as the identifier.
+   * In case of duplication, the remote entry takes precedence
+   * @param remoteCatalog
+   * @param localCatalog
+   * @param distributionType The distribution type which addons listed must be compatible with
+   * @param appServerType The application seerver type which addons listed must be compatible with
+   * @return a list of addons
+   */
+  protected List<Addon> mergeCatalogs(
+      final List<Addon> remoteCatalog,
+      final List<Addon> localCatalog,
+      PlatformSettings.DistributionType distributionType,
+      PlatformSettings.AppServerType appServerType) {
+    // Let's keep on entries that are interesting us
+    List<Addon> filteredCentralCatalog = filterAddons(remoteCatalog, distributionType, appServerType)
+    List<Addon> filteredLocalCatalog = filterAddons(localCatalog, distributionType, appServerType)
+    // Let's initiate a new list from the filtered list of the remote catalog
+    List<Addon> mergedCatalog = filteredCentralCatalog.clone()
+    // Let's add entries from the filtered local catalog which aren't already in the catalog (based on id+version identifiers)
+    filteredLocalCatalog.findAll { !mergedCatalog.contains(it) }.each { mergedCatalog.add(it) }
+    return mergedCatalog
+  }
+
+  /**
+   * Returns all add-ons supporting a distributionType+appServerType
+   * @param addons The catalog to filter entries
+   * @param distributionType The distribution type to support
+   * @param appServerType The application server type to support
+   * @return
+   */
+  protected List<Addon> filterAddons(
+      final List<Addon> addons,
+      PlatformSettings.DistributionType distributionType,
+      PlatformSettings.AppServerType appServerType) {
+    return addons.findAll {
+      it.supportedDistributions.contains(distributionType) && it.supportedApplicationServers.contains(appServerType)
+    }
+  }
+
+  /**
+   * Load add-ons list from a local file (JSON formatted)
+   * @param catalogFile
+   * @return a list of Add-ons. Empty if the file doesn't exist.
+   */
+  protected List<Addon> loadAddonsFromFile(File catalogFile) {
+    List<Addon> addons = new ArrayList<Addon>()
+    String catalogContent
+    if (catalogFile.exists()) {
+      LOG.debug("Loading catalog from ${catalogFile}")
+      LOG.withStatus("Reading catalog ${catalogFile}") {
+        catalogContent = catalogFile.text
+      }
+      try {
+        LOG.withStatus("Loading add-ons list") {
+          addons.addAll(parseJSONAddonsList(catalogContent))
+        }
+      } catch (groovy.json.JsonException je) {
+        LOG.warn("Invalid JSON content in file : ${catalogFile}", je)
+      }
+    } else {
+      LOG.debug("No local catalog to load from ${catalogFile}")
+    }
+    return addons
+  }
+
+  /**
+   * Load add-ons list from a remote Url (JSON formatted)
+   * @param catalogUrl
+   * @param noCache
+   * @param offline
+   * @param catalogCacheDir
+   * @return a list of Add-ons
+   */
+  protected List<Addon> loadAddonsFromUrl(
+      URL catalogUrl,
+      boolean noCache,
+      boolean offline,
+      File catalogCacheDir) {
+    List<Addon> addons = new ArrayList<Addon>()
+    String catalogContent
+    File catalogCacheFile = new File(catalogCacheDir, getCacheFilename(catalogUrl));
+    LOG.debug("Remote catalog cache file for ${catalogUrl} : ${catalogCacheFile}")
+    // If there is no local cache of the remote catalog or if it is older than 1h
+    use([TimeCategory]) {
+      if ((noCache || !catalogCacheFile.exists() ||
+          new Date(catalogCacheFile.lastModified()) < 1.hours.ago)
+          && !offline
+      ) {
+        LOG.debug("Loading catalog from ${catalogUrl}")
+        // Load the remote list
+        File tempFile
+        LOG.withStatus("Downloading catalog ${catalogUrl}") {
+          try {
+            // Create a temporary file in which we will download the remote catalog
+            tempFile = File.createTempFile("addons-manager-remote-catalog", ".json", catalogCacheDir)
+            // Don't forget to always delete it even in case of error
+            tempFile.deleteOnExit()
+            // Download the remote catalog
+            FileUtils.downloadFile(catalogUrl, tempFile)
+            // Read the catalog content
+            catalogContent = tempFile.text
+          } catch (FileNotFoundException fne) {
+            throw new AddonsManagerException("Catalog ${catalogUrl} not found", fne)
+          }
+        }
+        try {
+          LOG.withStatus("Loading add-ons list") {
+            addons.addAll(parseJSONAddonsList(catalogContent))
+          }
+          // Everything was ok, let's store the cache
+          LOG.withStatus("Updating local cache") {
+            FileUtils.copyFile(tempFile, catalogCacheFile, false)
+          }
+        } catch (groovy.json.JsonException je) {
+          LOG.warn("Invalid JSON content from URL : ${catalogUrl}", je)
+        } finally {
+          // Delete the temp file
+          tempFile.delete()
+        }
+      } else {
+        if (catalogCacheFile.exists()) {
+          // Let's load add-ons from the cache
+          LOG.debug("Loading remote catalog from cache ${catalogCacheFile}")
+          LOG.withStatus("Reading catalog cache for ${catalogUrl}") {
+            catalogContent = catalogCacheFile.text
+          }
+          try {
+            LOG.withStatus("Loading add-ons list") {
+              addons.addAll(parseJSONAddonsList(catalogContent))
+            }
+          } catch (groovy.json.JsonException je) {
+            LOG.warn("Invalid JSON content in cache file : ${catalogCacheFile}. Deleting it.", je)
+            catalogCacheFile.delete()
+          }
+        } else {
+          LOG.warn("No remote catalog cache and offline mode activated")
+        }
+      }
+    }
+    return addons
+  }
+
+  /**
+   * Loads an Addon from its object representation created by the JsonSlurper
+   * @param anAddon An Object built from JsonSlurper
+   * @return an Addon
+   */
+  protected Addon fromJSON(anAddon) {
+    Addon addonObj = new Addon(
+        id: anAddon.id,
+        version: anAddon.version);
+    addonObj.unstable = anAddon.unstable
+    addonObj.name = anAddon.name
+    addonObj.description = anAddon.description
+    addonObj.releaseDate = anAddon.releaseDate
+    addonObj.sourceUrl = anAddon.sourceUrl
+    addonObj.screenshotUrl = anAddon.screenshotUrl
+    addonObj.thumbnailUrl = anAddon.thumbnailUrl
+    addonObj.documentationUrl = anAddon.documentationUrl
+    addonObj.downloadUrl = anAddon.downloadUrl
+    addonObj.vendor = anAddon.vendor
+    addonObj.author = anAddon.author
+    addonObj.authorEmail = anAddon.authorEmail
+    addonObj.license = anAddon.license
+    addonObj.licenseUrl = anAddon.licenseUrl
+    addonObj.mustAcceptLicense = anAddon.mustAcceptLicense
+    if (anAddon.supportedDistributions instanceof String) {
+      addonObj.supportedDistributions = anAddon.supportedDistributions.split(',').collect {
+        String it ->
+          try {
+            PlatformSettings.DistributionType.valueOf(it.trim().toUpperCase())
+          } catch (IllegalArgumentException iae) {
+            LOG.debug("Unknown distribution type for add-on ${addonObj} : ${it}")
+            PlatformSettings.DistributionType.UNKNOWN
+          }
+      }
+    } else {
+      addonObj.supportedDistributions = anAddon.supportedDistributions ? anAddon.supportedDistributions.collect {
+        String it ->
+          try {
+            PlatformSettings.DistributionType.valueOf(it.trim().toUpperCase())
+          } catch (IllegalArgumentException iae) {
+            LOG.debug("Unknown distribution type for add-on ${addonObj} : ${it}")
+            PlatformSettings.DistributionType.UNKNOWN
+          }
+      } : []
+    }
+    addonObj.supportedDistributions.removeAll(PlatformSettings.DistributionType.UNKNOWN)
+    if (anAddon.supportedApplicationServers instanceof String) {
+      addonObj.supportedApplicationServers = anAddon.supportedApplicationServers.split(',').collect {
+        String it ->
+          try {
+            PlatformSettings.AppServerType.valueOf(it.trim().toUpperCase())
+          }
+          catch (IllegalArgumentException iae) {
+            LOG.debug("Unknown application server type for add-on ${addonObj} : ${it}")
+            PlatformSettings.AppServerType.UNKNOWN
+          }
+      }
+    } else {
+      addonObj.supportedApplicationServers = anAddon.supportedApplicationServers ? anAddon.supportedApplicationServers.collect {
+        String it ->
+          try {
+            PlatformSettings.AppServerType.valueOf(it.trim().toUpperCase())
+          } catch (IllegalArgumentException iae) {
+            LOG.debug("Unknown application server type for add-on ${addonObj} : ${it}")
+            PlatformSettings.AppServerType.UNKNOWN
+          }
+      } : []
+    }
+    addonObj.supportedApplicationServers.removeAll(PlatformSettings.AppServerType.UNKNOWN)
+    addonObj.compatibility = anAddon.compatibility
+    addonObj.installedLibraries = anAddon.installedLibraries
+    addonObj.installedWebapps = anAddon.installedWebapps
+    int errors = 0
+    if (!addonObj.id) {
+      LOG.debug("No id for add-on ${anAddon}")
+      errors++
+    }
+    if (!addonObj.version) {
+      LOG.debug("No version for add-on ${anAddon}")
+      errors++
+    }
+    if (!addonObj.name) {
+      LOG.debug("No name for add-on ${anAddon}")
+      errors++
+    }
+    if (!addonObj.downloadUrl) {
+      LOG.debug("No downloadUrl for add-on ${anAddon}")
+      errors++
+    } else {
+      try {
+        new URL(addonObj.downloadUrl)
+      } catch (MalformedURLException mue) {
+        LOG.debug("Invalid downloadUrl for add-on ${anAddon}")
+        errors++
+      }
+    }
+    if (addonObj.sourceUrl) {
+      try {
+        new URL(addonObj.sourceUrl)
+      } catch (MalformedURLException mue) {
+        // Not critical. Just a debug error
+        LOG.debug("Invalid sourceUrl for add-on ${anAddon}")
+      }
+    }
+    if (addonObj.screenshotUrl) {
+      try {
+        new URL(addonObj.screenshotUrl)
+      } catch (MalformedURLException mue) {
+        // Not critical. Just a debug error
+        LOG.debug("Invalid screenshotUrl for add-on ${anAddon}")
+      }
+    }
+    if (addonObj.thumbnailUrl) {
+      try {
+        new URL(addonObj.thumbnailUrl)
+      } catch (MalformedURLException mue) {
+        // Not critical. Just a debug error
+        LOG.debug("Invalid thumbnailUrl for add-on ${anAddon}")
+      }
+    }
+    if (addonObj.documentationUrl) {
+      try {
+        new URL(addonObj.documentationUrl)
+      } catch (MalformedURLException mue) {
+        // Not critical. Just a debug error
+        LOG.debug("Invalid documentationUrl for add-on ${anAddon}")
+      }
+    }
+    if (addonObj.licenseUrl) {
+      try {
+        new URL(addonObj.licenseUrl)
+      } catch (MalformedURLException mue) {
+        // Not critical. Just a debug error
+        LOG.debug("Invalid licenseUrl for add-on ${anAddon}")
+      }
+    }
+    if (!addonObj.vendor) {
+      LOG.debug("No vendor for add-on ${anAddon}")
+      errors++
+    }
+    if (!addonObj.license) {
+      LOG.debug("No license for add-on ${anAddon}")
+      errors++
+    }
+    if (addonObj.supportedApplicationServers.size() == 0) {
+      LOG.debug("No supportedApplicationServers for add-on ${anAddon}")
+      errors++
+    }
+    if (addonObj.supportedDistributions.size() == 0) {
+      LOG.debug("No supportedDistributions for add-on ${anAddon}")
+      errors++
+    }
+    if (errors > 0) {
+      throw new InvalidJSONException(anAddon)
+    }
+    return addonObj
+  }
+
+  /**
+   * Loads a list of Addon from its JSON text representation
+   * @param text The JSON text to parse
+   * @return A List of addons
+   */
+  protected List<Addon> parseJSONAddonsList(String text) {
+    List<Addon> addonsList = new ArrayList<Addon>();
+    new JsonSlurper().parseText(text).each { anAddon ->
+      try {
+        addonsList.add(fromJSON(anAddon))
+      } catch (InvalidJSONException ije) {
+        LOG.debug(ije.message)
+      }
+    }
+    return addonsList
+  }
+
+  /**
+   * Build the cache filename from the URL using a MD5 conversion
+   * @param catalogUrl The catalog URL
+   * @return The filename associated to the given URL
+   */
+  protected String getCacheFilename(URL catalogUrl) {
+    return new BigInteger(1, MessageDigest.getInstance("MD5").digest(catalogUrl.toString().getBytes()))
+        .toString(16).padLeft(32, "0").toUpperCase() + ".json"
   }
 }

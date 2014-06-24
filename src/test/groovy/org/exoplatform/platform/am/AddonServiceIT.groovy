@@ -27,7 +27,7 @@ import spock.lang.Shared
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class CatalogServiceIT extends IntegrationTestsSpecification {
+class AddonServiceIT extends IntegrationTestsSpecification {
 
   /**
    * Logger
@@ -40,15 +40,15 @@ class CatalogServiceIT extends IntegrationTestsSpecification {
   }
 
   @Shared
-  CatalogService catalogService = CatalogService.getInstance()
+  AddonService addonService = AddonService.getInstance()
 
   def "One call of loadAddonsFromUrl online with cache"() {
     setup:
     File tmpDir = File.createTempDir()
     URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
-    File catalogCache = new File(tmpDir, catalogService.getCacheFilename(catalogUrl))
+    File catalogCache = new File(tmpDir, addonService.getCacheFilename(catalogUrl))
     when:
-    List<Addon> addons = catalogService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
+    List<Addon> addons = addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
     then:
     // We correctly received the addons list
     addons != null
@@ -64,9 +64,9 @@ class CatalogServiceIT extends IntegrationTestsSpecification {
     setup:
     File tmpDir = File.createTempDir()
     URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
-    File catalogCache = new File(tmpDir, catalogService.getCacheFilename(catalogUrl))
+    File catalogCache = new File(tmpDir, addonService.getCacheFilename(catalogUrl))
     when:
-    List<Addon> addons = catalogService.loadAddonsFromUrl(catalogUrl, true, true, tmpDir)
+    List<Addon> addons = addonService.loadAddonsFromUrl(catalogUrl, true, true, tmpDir)
     then:
     // We receive an empty list of addons
     addons != null
@@ -81,14 +81,14 @@ class CatalogServiceIT extends IntegrationTestsSpecification {
     setup:
     File tmpDir = File.createTempDir()
     URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
-    File catalogCache = new File(tmpDir, catalogService.getCacheFilename(catalogUrl))
+    File catalogCache = new File(tmpDir, addonService.getCacheFilename(catalogUrl))
     // We call it a first time
-    catalogService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
+    addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
     long firstCallCatalogCacheDate = catalogCache.lastModified()
     // Let's wait 1 sec before the second call to be sure we can detect the update
     sleep(1000)
     when:
-    List<Addon> addons = catalogService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
+    List<Addon> addons = addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
     then:
     // We correctly received the addons list
     addons != null
@@ -106,14 +106,14 @@ class CatalogServiceIT extends IntegrationTestsSpecification {
     setup:
     File tmpDir = File.createTempDir()
     URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
-    File catalogCache = new File(tmpDir, catalogService.getCacheFilename(catalogUrl))
+    File catalogCache = new File(tmpDir, addonService.getCacheFilename(catalogUrl))
     // We call it a first time
-    catalogService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
+    addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
     long firstCallCatalogCacheDate = catalogCache.lastModified()
     // Let's wait 1 sec before the second call to be sure we can detect the update
     sleep(1000)
     when:
-    List<Addon> addons = catalogService.loadAddonsFromUrl(catalogUrl, true, false, tmpDir)
+    List<Addon> addons = addonService.loadAddonsFromUrl(catalogUrl, true, false, tmpDir)
     then:
     // We correctly received the addons list
     addons != null
@@ -129,21 +129,21 @@ class CatalogServiceIT extends IntegrationTestsSpecification {
 
   def "parseJSONAddonsList can read a valid catalog"() {
     when:
-    List<Addon> catalog = catalogService.parseJSONAddonsList(new File(getTestDataDir(), "catalog.json").text)
+    List<Addon> catalog = addonService.parseJSONAddonsList(new File(getTestDataDir(), "catalog.json").text)
     then:
     catalog.size() == NB_ADDONS_CATALOG_JSON
   }
 
   def "parseJSONAddonsList removes invalid entries"() {
     when:
-    List<Addon> catalog = catalogService.parseJSONAddonsList(new File(getTestDataDir(), "catalog-with-invalid-entries.json").text)
+    List<Addon> catalog = addonService.parseJSONAddonsList(new File(getTestDataDir(), "catalog-with-invalid-entries.json").text)
     then:
     catalog.size() == 1
   }
 
   def "parseJSONAddonsList cannot read invalid JSON"() {
     when:
-    catalogService.parseJSONAddonsList(new File(getTestDataDir(), "catalog-unreadable.json").text)
+    addonService.parseJSONAddonsList(new File(getTestDataDir(), "catalog-unreadable.json").text)
     then:
     thrown JsonException
   }

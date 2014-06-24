@@ -58,155 +58,16 @@ try {
   }
 
   AddonService addonService = AddonService.getInstance()
-  CatalogService catalogService = CatalogService.getInstance()
 
   switch (commandLineParameters.command) {
     case CommandLineParameters.Command.LIST:
-      if (commandLineParameters.commandList.installed) {
-        // Display only installed add-ons
-        List<Addon> installedAddons = env.statusesDirectory.list(
-            { dir, file -> file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/ } as FilenameFilter
-        ).toList().collect { it -> catalogService.parseJSONAddon(new File(env.statusesDirectory, it).text) }
-        if (installedAddons.size() > 0) {
-          log.info "\n@|bold Installed add-ons:|@"
-          installedAddons.each {
-            log.info String.format(
-                "\n+ @|bold,yellow %-${installedAddons.id*.size().max() + installedAddons.version*.size().max()}s|@ : @|bold %s|@, %s",
-                "${it.id} ${it.version}", it.name, it.description)
-          }
-          log.info String.format("""
-To uninstall an add-on:
-      ${env.manager.scriptName} uninstall @|yellow <addonId>|@
-    """)
-        } else {
-          log.info "No add-on installed"
-        }
-      } else if (commandLineParameters.commandList.outdated) {
-        List<Addon> installedAddons = env.statusesDirectory.list(
-            { dir, file -> file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/ } as FilenameFilter
-        ).toList().collect { it -> catalogService.parseJSONAddon(new File(env.statusesDirectory, it).text) }
-        List<Addon> availableAddons = catalogService.loadAddons(
-            commandLineParameters.commandList.catalog ? commandLineParameters.commandList.catalog : env.remoteCatalogUrl,
-            commandLineParameters.commandList.noCache,
-            env.catalogsCacheDirectory,
-            commandLineParameters.commandList.offline,
-            env.localAddonsCatalogFile,
-            env.platform.distributionType,
-            env.platform.appServerType).findAll {
-          !it.unstable && !it.isSnapshot() ||
-              it.unstable && !it.isSnapshot() && commandLineParameters.commandList.unstable ||
-              it.isSnapshot() && commandLineParameters.commandList.snapshots
-        }
-        List<Addon> outdatedAddons = installedAddons.findAll { installedAddon ->
-          availableAddons
-              .findAll { availableAddon -> availableAddon.id == installedAddon.id && availableAddon > installedAddon }.size() > 0
-        }
-        if (outdatedAddons.size() > 0) {
-          log.info "\n@|bold Outdated add-ons:|@"
-          outdatedAddons.groupBy { it.id }.each {
-            Addon anAddon = it.value.first()
-            log.info String.format(
-                "\n+ @|bold,yellow %-${outdatedAddons.id*.size().max() + outdatedAddons.version*.size().max() + 1}s|@ : @|bold %s|@, %s",
-                "${anAddon.id} ${anAddon.version}", anAddon.name, anAddon.description)
-            log.info String.format(
-                "     Newest Version(s) : %s",
-                availableAddons.findAll { availableAddon -> availableAddon.id == anAddon.id && availableAddon > anAddon }
-                    .collect { newestAddon -> "@|yellow ${newestAddon.version}|@"
-                }.join(', '))
-          }
-          log.info String.format("""
-To update an add-on:
-      ${env.manager.scriptName} install @|yellow <addonId:[version]>|@ --force
-    """)
-        } else {
-          log.warn "No outdated add-on found"
-        }
-      } else {
-        // Display add-ons in remote+local catalogs
-        List<Addon> availableAddons = catalogService.loadAddons(
-            commandLineParameters.commandList.catalog ? commandLineParameters.commandList.catalog : env.remoteCatalogUrl,
-            commandLineParameters.commandList.noCache,
-            env.catalogsCacheDirectory,
-            commandLineParameters.commandList.offline,
-            env.localAddonsCatalogFile,
-            env.platform.distributionType,
-            env.platform.appServerType).findAll {
-          !it.unstable && !it.isSnapshot() ||
-              it.unstable && !it.isSnapshot() && commandLineParameters.commandList.unstable ||
-              it.isSnapshot() && commandLineParameters.commandList.snapshots
-        }
-        if (availableAddons.size() > 0) {
-          log.info "\n@|bold Available add-ons:|@"
-          availableAddons.groupBy { it.id }.each {
-            Addon anAddon = it.value.first()
-            log.info String.format("\n+ @|bold,yellow %-${availableAddons.id*.size().max()}s|@ : @|bold %s|@, %s", anAddon.id,
-                                   anAddon.name, anAddon.description)
-            log.info String.format("     Available Version(s) : %s", it.value.collect { "@|yellow ${it.version}|@" }.join(', '))
-          }
-          log.info String.format("""
-To install an add-on:
-      ${env.manager.scriptName} install @|yellow <addonId:[version]>|@
-    """)
-        } else {
-          log.warn "No add-on found in remote and local catalogs"
-        }
-      }
+      returnCode = addonService.listAddons(env, commandLineParameters.commandList)
       break
     case CommandLineParameters.Command.INSTALL:
-      Addon addon
-      List<Addon> addons = catalogService.loadAddons(
-          commandLineParameters.commandInstall.catalog ? commandLineParameters.commandInstall.catalog : env.remoteCatalogUrl,
-          commandLineParameters.commandInstall.noCache,
-          env.catalogsCacheDirectory,
-          commandLineParameters.commandInstall.offline,
-          env.localAddonsCatalogFile,
-          env.platform.distributionType,
-          env.platform.appServerType)
-      if (commandLineParameters.commandInstall.addonVersion == null) {
-        // Let's find the first add-on with the given id (including or not snapshots depending of the option)
-        addon = addons.find {
-          (!it.isSnapshot() || commandLineParameters.commandInstall.snapshots) && (!it.unstable || commandLineParameters
-              .commandInstall.unstable) && commandLineParameters.commandInstall.addonId.equals(it.id)
-        }
-        if (addon == null) {
-          log.error("No add-on with identifier ${commandLineParameters.commandInstall.addonId} found")
-          returnCode = AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
-          break
-        }
-      } else {
-        // Let's find the add-on with the given id and version
-        addon = addons.find {
-          commandLineParameters.commandInstall.addonId.equals(
-              it.id) && commandLineParameters.commandInstall.addonVersion.equalsIgnoreCase(
-              it.version)
-        }
-        if (addon == null) {
-          log.error(
-              "No add-on with identifier ${commandLineParameters.commandInstall.addonId} and version ${commandLineParameters.commandInstall.addonVersion} found")
-          returnCode = AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
-          break
-        }
-      }
-      addonService.install(
-          env,
-          addon,
-          commandLineParameters.commandInstall.force,
-          commandLineParameters.commandInstall.noCache,
-          commandLineParameters.commandInstall.offline,
-          commandLineParameters.commandInstall.noCompat)
+      returnCode = addonService.installAddon(env, commandLineParameters.commandInstall)
       break
     case CommandLineParameters.Command.UNINSTALL:
-      File statusFile = addonService.getAddonStatusFile(env.statusesDirectory, commandLineParameters.commandUninstall.addonId)
-      if (statusFile.exists()) {
-        Addon addon
-        log.withStatus("Loading add-on details") {
-          addon = catalogService.parseJSONAddon(statusFile.text);
-        }
-        addonService.uninstall(env, addon)
-      } else {
-        log.error("Add-on not installed. It cannot be uninstalled.")
-        returnCode = AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED
-      }
+      returnCode = addonService.uninstallAddon(env, commandLineParameters.commandUninstall)
       break
   }
 } catch (CommandLineParsingException clpe) {
