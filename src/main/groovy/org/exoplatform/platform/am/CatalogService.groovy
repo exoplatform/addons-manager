@@ -43,7 +43,7 @@ class CatalogService {
   /**
    * The identifier used in the catalog for the addons manager
    */
-  public static final String ADDONS_MANAGER_CATALOG_ID = "exo-addons-manager"
+  private static final String ADDONS_MANAGER_CATALOG_ID = "exo-addons-manager"
 
   /**
    * Parse a JSON String representing an Add-on to build an {@link Addon} object
@@ -120,6 +120,7 @@ class CatalogService {
       it.supportedDistributions.contains(distributionType) && it.supportedApplicationServers.contains(appServerType)
     }
   }
+
   /**
    * Load add-ons list from a local file (JSON formatted)
    * @param catalogFile
@@ -190,11 +191,9 @@ class CatalogService {
           LOG.withStatus("Loading add-ons list") {
             addons.addAll(parseJSONAddonsList(catalogContent))
           }
-          if (!noCache) {
-            // Everything was ok, let's store the cache
-            LOG.withStatus("Updating local cache") {
-              FileUtils.copyFile(tempFile, catalogCacheFile, false)
-            }
+          // Everything was ok, let's store the cache
+          LOG.withStatus("Updating local cache") {
+            FileUtils.copyFile(tempFile, catalogCacheFile, false)
           }
         } catch (groovy.json.JsonException je) {
           LOG.warn("Invalid JSON content from URL : ${catalogUrl}", je)

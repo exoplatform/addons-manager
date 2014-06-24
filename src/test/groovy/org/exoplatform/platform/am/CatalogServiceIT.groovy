@@ -33,6 +33,7 @@ class CatalogServiceIT extends IntegrationTestsSpecification {
    * Logger
    */
   private static final Logger LOG = Logger.get()
+  private static final int NB_ADDONS_CATALOG_JSON = 7
 
   def setupSpec() {
     LOG.enableDebug()
@@ -40,6 +41,91 @@ class CatalogServiceIT extends IntegrationTestsSpecification {
 
   @Shared
   CatalogService catalogService = new CatalogService()
+
+  def "One call of loadAddonsFromUrl online with cache"() {
+    setup:
+    File tmpDir = File.createTempDir()
+    URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
+    File catalogCache = new File(tmpDir, catalogService.getCacheFilename(catalogUrl))
+    when:
+    List<Addon> addons = catalogService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
+    then:
+    // We correctly received the addons list
+    addons != null
+    addons.size() == NB_ADDONS_CATALOG_JSON
+    // And the catalog cache is filled
+    catalogCache.exists()
+    catalogCache.text == new File(getTestDataDir(), "catalog.json").text
+    cleanup:
+    tmpDir.deleteDir()
+  }
+
+  def "One call of loadAddonsFromUrl offline without cache"() {
+    setup:
+    File tmpDir = File.createTempDir()
+    URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
+    File catalogCache = new File(tmpDir, catalogService.getCacheFilename(catalogUrl))
+    when:
+    List<Addon> addons = catalogService.loadAddonsFromUrl(catalogUrl, true, true, tmpDir)
+    then:
+    // We receive an empty list of addons
+    addons != null
+    addons.size() == 0
+    // And the catalog cache mustn't exist
+    !catalogCache.exists()
+    cleanup:
+    tmpDir.deleteDir()
+  }
+
+  def "Two successive calls of loadAddonsFromUrl online with cache"() {
+    setup:
+    File tmpDir = File.createTempDir()
+    URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
+    File catalogCache = new File(tmpDir, catalogService.getCacheFilename(catalogUrl))
+    // We call it a first time
+    catalogService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
+    long firstCallCatalogCacheDate = catalogCache.lastModified()
+    // Let's wait 1 sec before the second call to be sure we can detect the update
+    sleep(1000)
+    when:
+    List<Addon> addons = catalogService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
+    then:
+    // We correctly received the addons list
+    addons != null
+    addons.size() == NB_ADDONS_CATALOG_JSON
+    // And the catalog cache is filled
+    catalogCache.exists()
+    catalogCache.text == new File(getTestDataDir(), "catalog.json").text
+    // And the catalog cache mustn't have been updated by the second call
+    firstCallCatalogCacheDate == catalogCache.lastModified()
+    cleanup:
+    tmpDir.deleteDir()
+  }
+
+  def "Two successive calls of loadAddonsFromUrl online without cache"() {
+    setup:
+    File tmpDir = File.createTempDir()
+    URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
+    File catalogCache = new File(tmpDir, catalogService.getCacheFilename(catalogUrl))
+    // We call it a first time
+    catalogService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
+    long firstCallCatalogCacheDate = catalogCache.lastModified()
+    // Let's wait 1 sec before the second call to be sure we can detect the update
+    sleep(1000)
+    when:
+    List<Addon> addons = catalogService.loadAddonsFromUrl(catalogUrl, true, false, tmpDir)
+    then:
+    // We correctly received the addons list
+    addons != null
+    addons.size() == NB_ADDONS_CATALOG_JSON
+    // And the catalog cache is filled
+    catalogCache.exists()
+    catalogCache.text == new File(getTestDataDir(), "catalog.json").text
+    // And the catalog cache must have been updated by the second call
+    firstCallCatalogCacheDate != catalogCache.lastModified()
+    cleanup:
+    tmpDir.deleteDir()
+  }
 
   def "parseJSONAddonsList can read a valid catalog"() {
     when:
