@@ -101,4 +101,12 @@ class CatalogServiceTest extends Specification {
                                  PlatformSettings.DistributionType.ENTERPRISE,
                                  PlatformSettings.AppServerType.JBOSS) == [addon1, addon2]
   }
+
+  def "getCacheFilename must always return the same value for a given URL"() {
+    when:
+    def filename1 = catalogService.getCacheFilename(new URL("http://www.exoplatform.com"))
+    def filename2 = catalogService.getCacheFilename(new URL("http://www.exoplatform.com"))
+    then:
+    filename1 == filename2
+  }
 }
