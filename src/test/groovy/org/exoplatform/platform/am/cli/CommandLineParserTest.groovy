@@ -266,7 +266,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.verbose
     where:
     args << [
-        ["list","--installed"],
+        ["list", "--installed"],
     ]
   }
 
@@ -286,7 +286,7 @@ class CommandLineParserTest extends Specification {
     !cliArgs.verbose
     where:
     args << [
-        ["list","--outdated"],
+        ["list", "--outdated"],
     ]
   }
 

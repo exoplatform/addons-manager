@@ -19,20 +19,27 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.utils
+
 import jline.TerminalFactory
 import org.fusesource.jansi.AnsiRenderer
 import spock.lang.Shared
 import spock.lang.Specification
+
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class LoggerTest extends Specification {
 
-  @Shared ByteArrayOutputStream outbaos
-  @Shared ByteArrayOutputStream errbaos
-  @Shared ByteArrayInputStream inbais
-  @Shared Console console
-  @Shared Logger logger
+  @Shared
+  ByteArrayOutputStream outbaos
+  @Shared
+  ByteArrayOutputStream errbaos
+  @Shared
+  ByteArrayInputStream inbais
+  @Shared
+  Console console
+  @Shared
+  Logger logger
 
   def setupSpec() {
     outbaos = new ByteArrayOutputStream()
@@ -74,7 +81,8 @@ class LoggerTest extends Specification {
     when:
     logger.debug("This @|blue is|@ a test")
     then:
-    assert AnsiRenderer.render("@|${Logger.Level.DEBUG.color} ${Logger.Level.DEBUG.prefix}This is a test|@\n").contentEquals(outbaos.toString())
+    assert AnsiRenderer.render("@|${Logger.Level.DEBUG.color} ${Logger.Level.DEBUG.prefix}This is a test|@\n").contentEquals(
+        outbaos.toString())
   }
 
   def "Debug activated without ANSI"() {
@@ -128,7 +136,8 @@ class LoggerTest extends Specification {
     when:
     logger.warn("This @|blue is|@ a test")
     then:
-    assert AnsiRenderer.render("@|${Logger.Level.WARN.color} ${Logger.Level.WARN.prefix}This is a test|@\n").contentEquals(outbaos.toString())
+    assert AnsiRenderer.render("@|${Logger.Level.WARN.color} ${Logger.Level.WARN.prefix}This is a test|@\n").contentEquals(
+        outbaos.toString())
   }
 
   def "Warn without ANSI"() {
@@ -154,7 +163,8 @@ class LoggerTest extends Specification {
     when:
     logger.error("This @|blue is|@ a test")
     then:
-    assert AnsiRenderer.render("@|${Logger.Level.ERROR.color} ${Logger.Level.ERROR.prefix}This is a test|@\n").contentEquals(outbaos.toString())
+    assert AnsiRenderer.render("@|${Logger.Level.ERROR.color} ${Logger.Level.ERROR.prefix}This is a test|@\n").contentEquals(
+        outbaos.toString())
   }
 
   def "Error without ANSI"() {

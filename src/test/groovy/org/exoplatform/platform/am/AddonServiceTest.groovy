@@ -76,7 +76,7 @@ class AddonServiceTest extends Specification {
     List<Addon> localCatalog = [addon1, addon4b, addon5]
     then:
     addonService.mergeCatalogs(remoteCatalog, localCatalog, PlatformSettings.DistributionType.ENTERPRISE,
-                                 PlatformSettings.AppServerType.TOMCAT) == [addon1, addon4, addon4b, addon5]
+                               PlatformSettings.AppServerType.TOMCAT) == [addon1, addon4, addon4b, addon5]
   }
 
   def "filterCatalog must keep addons supporting a given application server and distribution type"() {
@@ -85,21 +85,21 @@ class AddonServiceTest extends Specification {
     then:
     // addons 1 and 3 are supporting appsrv tomcat on community edition
     addonService.filterAddons(addonsCatalog,
-                                 PlatformSettings.DistributionType.COMMUNITY,
-                                 PlatformSettings.AppServerType.TOMCAT) == [addon1, addon3]
+                              PlatformSettings.DistributionType.COMMUNITY,
+                              PlatformSettings.AppServerType.TOMCAT) == [addon1, addon3]
     // addons 1 and 3 are supporting appsrv tomcat on enterprise edition
     addonService.filterAddons(addonsCatalog,
-                                 PlatformSettings.DistributionType.ENTERPRISE,
-                                 PlatformSettings.AppServerType.TOMCAT) == [addon1, addon4]
+                              PlatformSettings.DistributionType.ENTERPRISE,
+                              PlatformSettings.AppServerType.TOMCAT) == [addon1, addon4]
     // addon 1 is supporting appsrv jboss on community edition
     // TODO : The current model doesn't let us know that it is an impossible combination
     addonService.filterAddons(addonsCatalog,
-                                 PlatformSettings.DistributionType.COMMUNITY,
-                                 PlatformSettings.AppServerType.JBOSS) == [addon1]
+                              PlatformSettings.DistributionType.COMMUNITY,
+                              PlatformSettings.AppServerType.JBOSS) == [addon1]
     // addons 1 and 2 are supporting appsrv jboss on enterprise edition
     addonService.filterAddons(addonsCatalog,
-                                 PlatformSettings.DistributionType.ENTERPRISE,
-                                 PlatformSettings.AppServerType.JBOSS) == [addon1, addon2]
+                              PlatformSettings.DistributionType.ENTERPRISE,
+                              PlatformSettings.AppServerType.JBOSS) == [addon1, addon2]
   }
 
   def "getCacheFilename must always return the same value for a given URL"() {
