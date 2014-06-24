@@ -117,7 +117,7 @@ class CatalogService {
     // Let's initiate a new list from the filtered list of the remote catalog
     List<Addon> mergedCatalog = filteredCentralCatalog.clone()
     // Let's add entries from the filtered local catalog which aren't already in the catalog (based on id+version identifiers)
-    localCatalog.findAll { !mergedCatalog.contains(it) }.each { mergedCatalog.add(it) }
+    filteredLocalCatalog.findAll { !mergedCatalog.contains(it) }.each { mergedCatalog.add(it) }
     return mergedCatalog
   }
 
