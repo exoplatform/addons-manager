@@ -30,6 +30,19 @@ import org.fusesource.jansi.AnsiString
  */
 class Logger {
 
+  /**
+   * Singleton
+   */
+  private static final Logger singleton = new Logger()
+
+  /**
+   * Factory
+   * @return The {@link Logger} singleton instance
+   */
+  static Logger getInstance() {
+    return singleton
+  }
+
   private final Console console
 
   /**
@@ -208,13 +221,6 @@ class Logger {
       console.out.println new AnsiString(AnsiRenderer.render("${padding}${statusStr}")).plain
     }
 
-  }
-
-  // Factory
-  private static Logger instance = new Logger()
-
-  static Logger get() {
-    Logger.instance
   }
 
 }

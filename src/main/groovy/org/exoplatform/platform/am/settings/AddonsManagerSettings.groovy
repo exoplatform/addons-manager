@@ -31,7 +31,7 @@ class AddonsManagerSettings extends Properties {
   /**
    * Logger
    */
-  private static final Logger LOG = Logger.get()
+  private static final Logger LOG = Logger.getInstance()
 
   static final String ADDONS_MANAGER_PROPERTIES = "org/exoplatform/platform/am/settings/am.properties"
   static final String PROPERTY_PREFIX = "am"

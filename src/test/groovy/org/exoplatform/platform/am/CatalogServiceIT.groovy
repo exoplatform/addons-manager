@@ -32,7 +32,7 @@ class CatalogServiceIT extends IntegrationTestsSpecification {
   /**
    * Logger
    */
-  private static final Logger LOG = Logger.get()
+  private static final Logger LOG = Logger.getInstance()
   private static final int NB_ADDONS_CATALOG_JSON = 7
 
   def setupSpec() {
@@ -40,7 +40,7 @@ class CatalogServiceIT extends IntegrationTestsSpecification {
   }
 
   @Shared
-  CatalogService catalogService = new CatalogService()
+  CatalogService catalogService = CatalogService.getInstance()
 
   def "One call of loadAddonsFromUrl online with cache"() {
     setup:

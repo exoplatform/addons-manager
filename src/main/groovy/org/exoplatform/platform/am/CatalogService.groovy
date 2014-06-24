@@ -38,7 +38,7 @@ class CatalogService {
   /**
    * Logger
    */
-  private static final Logger LOG = Logger.get()
+  private static final Logger LOG = Logger.getInstance()
 
   /**
    * The identifier used in the catalog for the addons manager
@@ -46,6 +46,22 @@ class CatalogService {
   private static final String ADDONS_MANAGER_CATALOG_ID = "exo-addons-manager"
 
   /**
+   * Singleton
+   */
+  private static final CatalogService singleton = new CatalogService()
+
+  /**
+   * Factory
+   * @return The {@link CatalogService} singleton instance
+   */
+  static CatalogService getInstance() {
+    return singleton
+  }
+
+  private CatalogService() {
+  }
+
+/**
    * Parse a JSON String representing an Add-on to build an {@link Addon} object
    * @param text the JSON text to parse
    * @return an Addon object

@@ -32,7 +32,7 @@ class FileUtils {
   /**
    * Logger
    */
-  private static final Logger LOG = Logger.get()
+  private static final Logger LOG = Logger.getInstance()
 
   /**
    * Downloads a file following redirects if required

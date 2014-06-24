@@ -30,7 +30,7 @@ import spock.lang.Specification
 class CatalogServiceTest extends Specification {
 
   @Shared
-  CatalogService catalogService = new CatalogService()
+  CatalogService catalogService = CatalogService.getInstance()
 
   @Shared
   Addon addon1 = new Addon(

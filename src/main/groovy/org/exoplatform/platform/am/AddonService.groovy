@@ -40,38 +40,72 @@ class AddonService {
   /**
    * Logger
    */
-  private static final Logger LOG = Logger.get()
+  private static final Logger LOG = Logger.getInstance()
+
+  /**
+   * Singleton
+   */
+  private static final AddonService singleton = new AddonService()
+
+  /**
+   * Factory
+   * @return The {@link AddonService} singleton instance
+   */
+  static AddonService getInstance() {
+    return singleton
+  }
 
   private VersionScheme versionScheme = new GenericVersionScheme()
 
   final static STATUS_FILE_EXT = ".status"
 
-  EnvironmentSettings env
-
-  CatalogService catalogService = new CatalogService()
-
-  AddonService(EnvironmentSettings env) {
-    this.env = env
+  private AddonService() {
   }
 
-  File getLocalArchive(Addon addon) {
-    return new File(env.archivesDirectory, "${addon.id}-${addon.version}.zip")
+  /**
+   * Find in the list {@code addons} all addons with the same identifier {@link Addon#id} and a higher version number
+   * {@link Addon#version} than {@code addonRef}
+   * @param addonRef The addon reference
+   * @param addons The list to filter
+   * @return A list of addons
+   */
+  List<Addon> findNewerAddons(Addon addonRef, List<Addon> addons) {
+    assert addonRef
+    assert addonRef.id
+    assert addonRef.version
+    return addons.findAll { it.id == addonRef.id && it > addonRef }
   }
 
-  File getAddonStatusFile(Addon addon) {
-    return getAddonStatusFile(addon.id)
+  /**
+   * Find in the list {@code addons} the addon with the identifier {@code addonId} and the highest version number
+   * @param addonId The addon identifier
+   * @param addons The list to filter
+   * @return The addon matching constraints or null if none.
+   */
+  Addon findNewestAddon(String addonId, List<Addon> addons) {
+    assert addonId
+    return addons.findAll { it.id == addonId }.max()
   }
 
-  File getAddonStatusFile(String addonId) {
-    return new File(env.statusesDirectory, "${addonId}${STATUS_FILE_EXT}")
+  /**
+   * Filter entries in {@code addons} to keep only stable versions. Return also snapshot versions if {@code allowSnapshot} is
+   * true and unstable versions if {@code allowUnstable} is true
+   * @param addons The list of addons to filter
+   * @param allowSnapshot Also return addons with snapshot versions (-SNAPSHOT)
+   * @param allowUnstable Also return addons with unstable versions (alpha, beta, RC, ...)
+   * @return the list of addons.
+   */
+  List<Addon> filterAddons(List<Addon> addons, boolean allowSnapshot, boolean allowUnstable) {
+    return addons.findAll {
+      !it.unstable && !it.isSnapshot() || it.unstable && !it.isSnapshot() && allowUnstable || it.isSnapshot() && allowSnapshot
+    }
   }
 
-
-  boolean isInstalled(Addon addon) {
-    return getAddonStatusFile(addon).exists()
+  File getAddonStatusFile(File statusesDirectory, String addonId) {
+    return new File(statusesDirectory, "${addonId}${STATUS_FILE_EXT}")
   }
 
-  void install(Addon addon, boolean force, boolean noCache, boolean offline, boolean noCompat) {
+  void install(EnvironmentSettings env, Addon addon, boolean force, boolean noCache, boolean offline, boolean noCompat) {
     // if a compatibility rule is defined
     if (addon.compatibility && !noCompat) {
       Version plfVersion = versionScheme.parseVersion(env.platform.version)
@@ -83,39 +117,41 @@ class AddonService {
     } else {
       LOG.debug("Compatibility check deactivated")
     }
-    if (isInstalled(addon)) {
+    if (isInstalled(env.statusesDirectory, addon)) {
       if (!force) {
         throw new AddonAlreadyInstalledException(addon)
       } else {
-        Addon oldAddon = catalogService.parseJSONAddon(getAddonStatusFile(addon).text);
-        uninstall(oldAddon)
+        Addon oldAddon = CatalogService.getInstance().parseJSONAddon(getAddonStatusFile(env.statusesDirectory, addon).text);
+        uninstall(env, oldAddon)
       }
     }
-    if (noCache && getLocalArchive(addon).exists()) {
+    if (noCache && getLocalArchive(env.archivesDirectory, addon).exists()) {
       LOG.withStatus("Deleting ${addon.name} ${addon.version} archive") {
-        getLocalArchive(addon).delete()
+        getLocalArchive(env.archivesDirectory, addon).delete()
       }
     }
     LOG.info("Installing @|yellow ${addon.name} ${addon.version}|@")
-    if (!getLocalArchive(addon).exists()) {
+    if (!getLocalArchive(env.archivesDirectory, addon).exists()) {
       // Let's download it
       if (addon.downloadUrl.startsWith("http")) {
         if (offline) throw new AddonsManagerException(
             "${addon.name} ${addon.version} archive not found locally and offline mode activated")
         LOG.withStatus("Downloading add-on ${addon.name} ${addon.version}") {
-          FileUtils.downloadFile(addon.downloadUrl, getLocalArchive(addon))
+          FileUtils.downloadFile(addon.downloadUrl, getLocalArchive(env.archivesDirectory, addon))
         }
       } else if (addon.downloadUrl.startsWith("file://")) {
         LOG.withStatus("Copying add-on ${addon.name} ${addon.version}") {
           FileUtils.copyFile(new File(env.addonsDirectory, addon.downloadUrl.replaceAll("file://", "")),
-                             getLocalArchive(addon))
+                             getLocalArchive(env.archivesDirectory, addon))
         }
       } else {
         throw new AddonsManagerException("Invalid or not supported download URL : ${addon.downloadUrl}")
       }
     }
-    addon.installedLibraries = FileUtils.flatExtractFromZip(getLocalArchive(addon), env.platform.librariesDirectory, '^.*jar$')
-    addon.installedWebapps = FileUtils.flatExtractFromZip(getLocalArchive(addon), env.platform.webappsDirectory, '^.*war$')
+    addon.installedLibraries = FileUtils.flatExtractFromZip(getLocalArchive(env.archivesDirectory, addon),
+                                                            env.platform.librariesDirectory, '^.*jar$')
+    addon.installedWebapps = FileUtils.flatExtractFromZip(getLocalArchive(env.archivesDirectory, addon),
+                                                          env.platform.webappsDirectory, '^.*war$')
     // Update application.xml if it exists
     File applicationDescriptorFile = new File(env.platform.webappsDirectory, "META-INF/application.xml")
     if (applicationDescriptorFile.exists()) {
@@ -143,8 +179,8 @@ class AddonService {
         serializeXml(applicationXmlContent)
       }
     }
-    LOG.withStatus("Recording installation details into ${getAddonStatusFile(addon).name}") {
-      new FileWriter(getAddonStatusFile(addon)).withWriter { w ->
+    LOG.withStatus("Recording installation details into ${getAddonStatusFile(env.statusesDirectory, addon).name}") {
+      new FileWriter(getAddonStatusFile(env.statusesDirectory, addon)).withWriter { w ->
         StreamingJsonBuilder builder = new StreamingJsonBuilder(w)
         builder(
             id: addon.id,
@@ -174,7 +210,7 @@ class AddonService {
     LOG.withStatusOK("Add-on ${addon.name} ${addon.version} installed.")
   }
 
-  void uninstall(Addon addon) {
+  void uninstall(EnvironmentSettings env, Addon addon) {
     LOG.info("Uninstalling @|yellow ${addon.name} ${addon.version}|@")
 
     addon.installedLibraries.each {
@@ -220,60 +256,33 @@ class AddonService {
           }
         }
     }
-    LOG.withStatus("Deleting installation details ${getAddonStatusFile(addon).name}") {
-      getAddonStatusFile(addon).delete()
-      assert !getAddonStatusFile(addon).exists()
+    LOG.withStatus("Deleting installation details ${getAddonStatusFile(env.statusesDirectory, addon).name}") {
+      getAddonStatusFile(env.statusesDirectory, addon).delete()
+      assert !getAddonStatusFile(env.statusesDirectory, addon).exists()
     }
     LOG.withStatusOK("Add-on ${addon.name} ${addon.version} uninstalled")
   }
 
-  private String serializeXml(GPathResult xml) {
+  protected File getLocalArchive(File archivesDirectory, Addon addon) {
+    return new File(archivesDirectory, "${addon.id}-${addon.version}.zip")
+  }
+
+  protected File getAddonStatusFile(File statusesDirectory, Addon addon) {
+    return getAddonStatusFile(statusesDirectory, addon.id)
+  }
+
+  protected boolean isInstalled(File statusesDirectory, Addon addon) {
+    return getAddonStatusFile(statusesDirectory, addon).exists()
+  }
+
+  protected String serializeXml(GPathResult xml) {
     XmlUtil.serialize(new StreamingMarkupBuilder().bind {
       mkp.yield xml
     })
   }
 
-  private processFileInplace(File file, Closure processText) {
+  protected processFileInplace(File file, Closure processText) {
     String text = file.text
     file.write(processText(text))
-  }
-
-  /**
-   * Find in the list {@code addons} all addons with the same identifier {@link Addon#id} and a higher version number
-   * {@link Addon#version} than {@code addonRef}
-   * @param addonRef The addon reference
-   * @param addons The list to filter
-   * @return A list of addons
-   */
-  List<Addon> findNewerAddons(Addon addonRef, List<Addon> addons) {
-    assert addonRef
-    assert addonRef.id
-    assert addonRef.version
-    return addons.findAll { it.id == addonRef.id && it > addonRef }
-  }
-
-  /**
-   * Find in the list {@code addons} the addon with the identifier {@code addonId} and the highest version number
-   * @param addonId The addon identifier
-   * @param addons The list to filter
-   * @return The addon matching constraints or null if none.
-   */
-  Addon findNewestAddon(String addonId, List<Addon> addons) {
-    assert addonId
-    return addons.findAll { it.id == addonId }.max()
-  }
-
-  /**
-   * Filter entries in {@code addons} to keep only stable versions. Return also snapshot versions if {@code allowSnapshot} is
-   * true and unstable versions if {@code allowUnstable} is true
-   * @param addons The list of addons to filter
-   * @param allowSnapshot Also return addons with snapshot versions (-SNAPSHOT)
-   * @param allowUnstable Also return addons with unstable versions (alpha, beta, RC, ...)
-   * @return the list of addons.
-   */
-  List<Addon> filterAddons(List<Addon> addons, boolean allowSnapshot, boolean allowUnstable) {
-    return addons.findAll {
-      !it.unstable && !it.isSnapshot() || it.unstable && !it.isSnapshot() && allowUnstable || it.isSnapshot() && allowSnapshot
-    }
   }
 }

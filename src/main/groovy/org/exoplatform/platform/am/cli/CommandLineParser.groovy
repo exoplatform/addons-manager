@@ -33,7 +33,7 @@ class CommandLineParser {
   /**
    * Logger
    */
-  private static final Logger LOG = Logger.get()
+  private static final Logger LOG = Logger.getInstance()
 
   /**
    * JCommander instance used to process args

@@ -32,7 +32,7 @@ class PlatformSettingsTest extends Specification {
   /**
    * Logger
    */
-  private static final Logger LOG = Logger.get()
+  private static final Logger LOG = Logger.getInstance()
 
   def setupSpec() {
     LOG.enableDebug()

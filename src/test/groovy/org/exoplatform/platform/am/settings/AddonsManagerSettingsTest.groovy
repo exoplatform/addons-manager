@@ -30,7 +30,7 @@ import spock.lang.Specification
 class AddonsManagerSettingsTest extends Specification {
 
   def setupSpec() {
-    Logger.get().enableDebug()
+    Logger.getInstance().enableDebug()
   }
 
   def cleanSpec() {
@@ -40,7 +40,7 @@ class AddonsManagerSettingsTest extends Specification {
   def "default properties are defined"() {
     setup:
     def managerSettings = new AddonsManagerSettings()
-    Logger.get().debug("Manager Settings", managerSettings, ["class"])
+    Logger.getInstance().debug("Manager Settings", managerSettings, ["class"])
     expect:
     managerSettings.addonsDirectoryPath
     managerSettings.archivesDirectoryName
@@ -66,7 +66,7 @@ class AddonsManagerSettingsTest extends Specification {
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.statusesDirectoryName", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.version", "foo")
     def managerSettings = new AddonsManagerSettings()
-    Logger.get().debug("Manager Settings", managerSettings, ["class"])
+    Logger.getInstance().debug("Manager Settings", managerSettings, ["class"])
     expect:
     "foo".equals(managerSettings.addonsDirectoryPath)
     "foo".equals(managerSettings.archivesDirectoryName)

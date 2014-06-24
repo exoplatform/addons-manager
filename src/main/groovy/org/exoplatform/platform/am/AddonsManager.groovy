@@ -24,11 +24,7 @@ import org.exoplatform.platform.am.cli.CommandLineParameters
 import org.exoplatform.platform.am.cli.CommandLineParser
 import org.exoplatform.platform.am.cli.CommandLineParsingException
 import org.exoplatform.platform.am.settings.EnvironmentSettings
-import org.exoplatform.platform.am.utils.AddonAlreadyInstalledException
-import org.exoplatform.platform.am.utils.AddonsManagerException
-import org.exoplatform.platform.am.utils.CompatibilityException
-import org.exoplatform.platform.am.utils.Console
-import org.exoplatform.platform.am.utils.Logger
+import org.exoplatform.platform.am.utils.*
 
 /*
  * Command line utility to manage Platform addons.
@@ -41,7 +37,7 @@ int returnCode = AddonsManagerConstants.RETURN_CODE_OK
 /**
  * Logger
  */
-Logger log = Logger.get()
+Logger log = Logger.getInstance()
 try {
 // Initialize environment settings
   env = new EnvironmentSettings()
@@ -61,8 +57,8 @@ try {
     System.exit AddonsManagerConstants.RETURN_CODE_OK
   }
 
-  AddonService addonService = new AddonService(env)
-  CatalogService catalogService = new CatalogService()
+  AddonService addonService = AddonService.getInstance()
+  CatalogService catalogService = CatalogService.getInstance()
 
   switch (commandLineParameters.command) {
     case CommandLineParameters.Command.LIST:
@@ -192,6 +188,7 @@ To install an add-on:
         }
       }
       addonService.install(
+          env,
           addon,
           commandLineParameters.commandInstall.force,
           commandLineParameters.commandInstall.noCache,
@@ -199,13 +196,13 @@ To install an add-on:
           commandLineParameters.commandInstall.noCompat)
       break
     case CommandLineParameters.Command.UNINSTALL:
-      File statusFile = addonService.getAddonStatusFile(commandLineParameters.commandUninstall.addonId)
+      File statusFile = addonService.getAddonStatusFile(env.statusesDirectory, commandLineParameters.commandUninstall.addonId)
       if (statusFile.exists()) {
         Addon addon
         log.withStatus("Loading add-on details") {
           addon = catalogService.parseJSONAddon(statusFile.text);
         }
-        addonService.uninstall(addon)
+        addonService.uninstall(env, addon)
       } else {
         log.error("Add-on not installed. It cannot be uninstalled.")
         returnCode = AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED
