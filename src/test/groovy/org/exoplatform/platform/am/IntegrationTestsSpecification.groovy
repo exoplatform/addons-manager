@@ -40,7 +40,7 @@ abstract class IntegrationTestsSpecification extends Specification {
   /**
    * @return the artifact (Jar File) to test
    */
-  File testedArtifact() {
+  File getTestedArtifact() {
     if (!_testedArtifact) {
       assertNotNull("Tested artifact path mustn't be null", System.getProperty("testedArtifactPath"))
       _testedArtifact = new File(System.getProperty("testedArtifactPath"))
@@ -55,7 +55,7 @@ abstract class IntegrationTestsSpecification extends Specification {
   /**
    * @return the directory where data used for tests are stored (addons, catalogs...)
    */
-  File testDataDir() {
+  File getTestDataDir() {
     if (!_testDataDir) {
       assertNotNull("Path to tests data mustn't be null", System.getProperty("testDataPath"))
       _testDataDir = new File(System.getProperty("testDataPath"))
@@ -71,7 +71,7 @@ abstract class IntegrationTestsSpecification extends Specification {
   /**
    * @return The directory where is installed the PLF instance to test
    */
-  File plfHome() {
+  File getPlatformHome() {
     if (!_plfHome) {
       assertNotNull("Integration tests directory path mustn't be null", System.getProperty("integrationTestsDirPath"))
       def integrationTestsDir = new File(System.getProperty("integrationTestsDirPath"))
@@ -90,9 +90,9 @@ abstract class IntegrationTestsSpecification extends Specification {
   /**
    * @return The PLF Settings for the instance to test
    */
-  PlatformSettings plfSettings() {
+  PlatformSettings getPlatformSettings() {
     if (!_plfSettings) {
-      _plfSettings = new PlatformSettings(plfHome())
+      _plfSettings = new PlatformSettings(getPlatformHome())
     }
     _plfSettings
   }
@@ -100,7 +100,7 @@ abstract class IntegrationTestsSpecification extends Specification {
   /**
    * @return The HTTP port on which the test serer must serve its content
    */
-  Integer webServerPort() {
+  Integer getWebServerPort() {
     assertNotNull("System property testWebServerHttpPort must be set", Integer.getInteger("testWebServerHttpPort"))
     Integer.getInteger("testWebServerHttpPort")
   }
@@ -108,8 +108,8 @@ abstract class IntegrationTestsSpecification extends Specification {
   /**
    * @return The root URL of the web server used for tests
    */
-  String webServerRootUrl() {
-    return "http://localhost:${webServerPort()}"
+  String getWebServerRootUrl() {
+    return "http://localhost:${getWebServerPort()}"
   }
 
   /**
@@ -123,9 +123,9 @@ abstract class IntegrationTestsSpecification extends Specification {
     if (System.getProperty('jacocoAgent') != null) {
       commandToExecute << "${System.getProperty('jacocoAgent')}"
     }
-    commandToExecute << "-D${PlatformSettings.PLATFORM_HOME_SYS_PROP}=${plfHome().absolutePath}"
-    commandToExecute << "-D${AddonsManagerSettings.PROPERTY_PREFIX}.remoteCatalogUrl=${webServerRootUrl()}/catalog.json"
-    commandToExecute << "-jar" << testedArtifact().absolutePath
+    commandToExecute << "-D${PlatformSettings.PLATFORM_HOME_SYS_PROP}=${getPlatformHome().absolutePath}"
+    commandToExecute << "-D${AddonsManagerSettings.PROPERTY_PREFIX}.remoteCatalogUrl=${getWebServerRootUrl()}/catalog.json"
+    commandToExecute << "-jar" << getTestedArtifact().absolutePath
     commandToExecute.addAll(params)
     println "Command launched : ${commandToExecute.join(' ')}"
     Process process = commandToExecute.execute()

@@ -43,21 +43,21 @@ class CatalogServiceIT extends IntegrationTestsSpecification {
 
   def "parseJSONAddonsList can read a valid catalog"() {
     when:
-    List<Addon> catalog = catalogService.parseJSONAddonsList(new File(testDataDir(), "catalog.json").text)
+    List<Addon> catalog = catalogService.parseJSONAddonsList(new File(getTestDataDir(), "catalog.json").text)
     then:
-    catalog.size() == 7
+    catalog.size() == NB_ADDONS_CATALOG_JSON
   }
 
   def "parseJSONAddonsList removes invalid entries"() {
     when:
-    List<Addon> catalog = catalogService.parseJSONAddonsList(new File(testDataDir(), "catalog-with-invalid-entries.json").text)
+    List<Addon> catalog = catalogService.parseJSONAddonsList(new File(getTestDataDir(), "catalog-with-invalid-entries.json").text)
     then:
     catalog.size() == 1
   }
 
   def "parseJSONAddonsList cannot read invalid JSON"() {
     when:
-    catalogService.parseJSONAddonsList(new File(testDataDir(), "catalog-unreadable.json").text)
+    catalogService.parseJSONAddonsList(new File(getTestDataDir(), "catalog-unreadable.json").text)
     then:
     thrown JsonException
   }

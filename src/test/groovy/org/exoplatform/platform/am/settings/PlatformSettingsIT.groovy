@@ -26,32 +26,32 @@ class PlatformSettingsIT extends IntegrationTestsSpecification {
 
   def "validate Settings"() {
     expect:
-    plfSettings()
+    getPlatformSettings()
   }
 
   def "validate Version"() {
     setup:
     def expectedVersion =
-        plfHome().name.replaceAll("platform-", "").replaceAll("community-", "").replaceAll("-jboss-standalone", "")
+        getPlatformHome().name.replaceAll("platform-", "").replaceAll("community-", "").replaceAll("-jboss-standalone", "")
     expect:
-    expectedVersion == plfSettings().version
+    expectedVersion == getPlatformSettings().version
   }
 
   def "Validate AppServer Type"() {
     setup:
     def expectedAppServerType =
-        plfHome().name.contains("jboss") ?
+        getPlatformHome().name.contains("jboss") ?
             PlatformSettings.AppServerType.JBOSS : PlatformSettings.AppServerType.TOMCAT
     expect:
-    expectedAppServerType == plfSettings().appServerType
+    expectedAppServerType == getPlatformSettings().appServerType
   }
 
   def "Validate Distribution Type"() {
     setup:
     def expectedDistributionType =
-        plfHome().name.contains("community") ?
+        getPlatformHome().name.contains("community") ?
             PlatformSettings.DistributionType.COMMUNITY : PlatformSettings.DistributionType.ENTERPRISE
     expect:
-    expectedDistributionType == plfSettings().distributionType
+    expectedDistributionType == getPlatformSettings().distributionType
   }
 }
