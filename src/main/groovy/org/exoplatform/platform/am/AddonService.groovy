@@ -52,7 +52,7 @@ class AddonService {
    */
   private static final String ADDONS_MANAGER_CATALOG_ID = "exo-addons-manager"
 
-  static final STATUS_FILE_EXT = ".status"
+  private static final STATUS_FILE_EXT = ".status"
 
   /**
    * Singleton
