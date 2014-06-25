@@ -19,6 +19,7 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
+
 import groovy.json.JsonSlurper
 import groovy.json.StreamingJsonBuilder
 import groovy.time.TimeCategory
@@ -35,6 +36,7 @@ import org.exoplatform.platform.am.settings.PlatformSettings
 import org.exoplatform.platform.am.utils.*
 
 import java.security.MessageDigest
+
 /**
  * All services related to add-ons
  * @author Arnaud Héritier <aheritier@exoplatform.com>
@@ -80,16 +82,25 @@ class AddonService {
    * @return a return code defined in {@link AddonsManagerConstants}
    */
   int listAddons(EnvironmentSettings env, CommandLineParameters.ListCommandParameters parameters) {
-    return listAddons(
-        env,
-        parameters.unstable,
-        parameters.snapshots,
-        parameters.installed,
-        parameters.outdated,
-        parameters.noCache,
-        parameters.offline,
-        parameters.catalog
-    )
+    if (parameters.installed) {
+      return listInstalledAddons(env)
+    } else if (parameters.outdated) {
+      return listOutdatedAddons(
+          env,
+          parameters.unstable,
+          parameters.snapshots,
+          parameters.noCache,
+          parameters.offline,
+          parameters.catalog)
+    } else {
+      return listAddonsFromCatalogs(
+          env,
+          parameters.unstable,
+          parameters.snapshots,
+          parameters.noCache,
+          parameters.offline,
+          parameters.catalog)
+    }
   }
 
   /**
@@ -157,104 +168,113 @@ class AddonService {
     }
   }
 
-  protected int listAddons(
+  protected int listInstalledAddons(EnvironmentSettings env) {
+    // Display only installed add-ons
+    List<Addon> installedAddons = env.statusesDirectory.list(
+        { dir, file -> file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/ } as FilenameFilter
+    ).toList().collect { it -> parseJSONAddon(new File(env.statusesDirectory, it).text) }
+    if (installedAddons.size() > 0) {
+      LOG.info "\n@|bold Installed add-ons:|@"
+      installedAddons.each {
+        LOG.info String.format(
+            "\n+ @|bold,yellow %-${installedAddons.id*.size().max() + installedAddons.version*.size().max()}s|@ : @|bold %s|@, %s",
+            "${it.id} ${it.version}", it.name, it.description)
+      }
+      LOG.info String.format("""
+To uninstall an add-on:
+    ${env.manager.scriptName} uninstall @|yellow <addonId>|@
+  """)
+    } else {
+      LOG.info "No add-on installed"
+    }
+    return AddonsManagerConstants.RETURN_CODE_OK
+  }
+
+  protected int listOutdatedAddons(
       EnvironmentSettings env,
       Boolean unstable,
       Boolean snapshots,
-      Boolean installed,
-      Boolean outdated,
       Boolean noCache,
       Boolean offline,
       URL catalog
   ) {
-    if (installed) {
-      // Display only installed add-ons
-      List<Addon> installedAddons = env.statusesDirectory.list(
-          { dir, file -> file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/ } as FilenameFilter
-      ).toList().collect { it -> parseJSONAddon(new File(env.statusesDirectory, it).text) }
-      if (installedAddons.size() > 0) {
-        LOG.info "\n@|bold Installed add-ons:|@"
-        installedAddons.each {
-          LOG.info String.format(
-              "\n+ @|bold,yellow %-${installedAddons.id*.size().max() + installedAddons.version*.size().max()}s|@ : @|bold %s|@, %s",
-              "${it.id} ${it.version}", it.name, it.description)
-        }
-        LOG.info String.format("""
-To uninstall an add-on:
-    ${env.manager.scriptName} uninstall @|yellow <addonId>|@
-  """)
-      } else {
-        LOG.info "No add-on installed"
+    List<Addon> installedAddons = env.statusesDirectory.list(
+        { dir, file -> file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/ } as FilenameFilter
+    ).toList().collect { it -> parseJSONAddon(new File(env.statusesDirectory, it).text) }
+    List<Addon> availableAddons = loadAddons(
+        catalog ? catalog : env.remoteCatalogUrl,
+        noCache,
+        env.catalogsCacheDirectory,
+        offline,
+        env.localAddonsCatalogFile,
+        env.platform.distributionType,
+        env.platform.appServerType).findAll {
+      !it.unstable && !it.isSnapshot() ||
+          it.unstable && !it.isSnapshot() && unstable ||
+          it.isSnapshot() && snapshots
+    }
+    List<Addon> outdatedAddons = installedAddons.findAll { installedAddon ->
+      availableAddons
+          .findAll { availableAddon -> availableAddon.id == installedAddon.id && availableAddon > installedAddon }.size() > 0
+    }
+    if (outdatedAddons.size() > 0) {
+      LOG.info "\n@|bold Outdated add-ons:|@"
+      outdatedAddons.groupBy { it.id }.each {
+        Addon anAddon = it.value.first()
+        LOG.info String.format(
+            "\n+ @|bold,yellow %-${outdatedAddons.id*.size().max() + outdatedAddons.version*.size().max() + 1}s|@ : @|bold %s|@, %s",
+            "${anAddon.id} ${anAddon.version}", anAddon.name, anAddon.description)
+        LOG.info String.format(
+            "     Newest Version(s) : %s",
+            availableAddons.findAll { availableAddon -> availableAddon.id == anAddon.id && availableAddon > anAddon }
+                .collect { newestAddon -> "@|yellow ${newestAddon.version}|@"
+            }.join(', '))
       }
-    } else if (outdated) {
-      List<Addon> installedAddons = env.statusesDirectory.list(
-          { dir, file -> file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/ } as FilenameFilter
-      ).toList().collect { it -> parseJSONAddon(new File(env.statusesDirectory, it).text) }
-      List<Addon> availableAddons = loadAddons(
-          catalog ? catalog : env.remoteCatalogUrl,
-          noCache,
-          env.catalogsCacheDirectory,
-          offline,
-          env.localAddonsCatalogFile,
-          env.platform.distributionType,
-          env.platform.appServerType).findAll {
-        !it.unstable && !it.isSnapshot() ||
-            it.unstable && !it.isSnapshot() && unstable ||
-            it.isSnapshot() && snapshots
-      }
-      List<Addon> outdatedAddons = installedAddons.findAll { installedAddon ->
-        availableAddons
-            .findAll { availableAddon -> availableAddon.id == installedAddon.id && availableAddon > installedAddon }.size() > 0
-      }
-      if (outdatedAddons.size() > 0) {
-        LOG.info "\n@|bold Outdated add-ons:|@"
-        outdatedAddons.groupBy { it.id }.each {
-          Addon anAddon = it.value.first()
-          LOG.info String.format(
-              "\n+ @|bold,yellow %-${outdatedAddons.id*.size().max() + outdatedAddons.version*.size().max() + 1}s|@ : @|bold %s|@, %s",
-              "${anAddon.id} ${anAddon.version}", anAddon.name, anAddon.description)
-          LOG.info String.format(
-              "     Newest Version(s) : %s",
-              availableAddons.findAll { availableAddon -> availableAddon.id == anAddon.id && availableAddon > anAddon }
-                  .collect { newestAddon -> "@|yellow ${newestAddon.version}|@"
-              }.join(', '))
-        }
-        LOG.info String.format("""
-To update an add-on:
-    ${env.manager.scriptName} install @|yellow <addonId:[version]>|@ --force
-  """)
-      } else {
-        LOG.warn "No outdated add-on found"
-      }
+      LOG.info String.format("""
+    To update an add-on:
+        ${env.manager.scriptName} install @|yellow <addonId:[version]>|@ --force
+      """)
     } else {
-      // Display add-ons in remote+local catalogs
-      List<Addon> availableAddons = loadAddons(
-          catalog ? catalog : env.remoteCatalogUrl,
-          noCache,
-          env.catalogsCacheDirectory,
-          offline,
-          env.localAddonsCatalogFile,
-          env.platform.distributionType,
-          env.platform.appServerType).findAll {
-        !it.unstable && !it.isSnapshot() ||
-            it.unstable && !it.isSnapshot() && unstable ||
-            it.isSnapshot() && snapshots
+      LOG.warn "No outdated add-on found"
+    }
+    return AddonsManagerConstants.RETURN_CODE_OK
+  }
+
+  protected int listAddonsFromCatalogs(
+      EnvironmentSettings env,
+      Boolean unstable,
+      Boolean snapshots,
+      Boolean noCache,
+      Boolean offline,
+      URL catalog
+  ) {
+    // Display add-ons in remote+local catalogs
+    List<Addon> availableAddons = loadAddons(
+        catalog ? catalog : env.remoteCatalogUrl,
+        noCache,
+        env.catalogsCacheDirectory,
+        offline,
+        env.localAddonsCatalogFile,
+        env.platform.distributionType,
+        env.platform.appServerType).findAll {
+      !it.unstable && !it.isSnapshot() ||
+          it.unstable && !it.isSnapshot() && unstable ||
+          it.isSnapshot() && snapshots
+    }
+    if (availableAddons.size() > 0) {
+      LOG.info "\n@|bold Available add-ons:|@"
+      availableAddons.groupBy { it.id }.each {
+        Addon anAddon = it.value.first()
+        LOG.info String.format("\n+ @|bold,yellow %-${availableAddons.id*.size().max()}s|@ : @|bold %s|@, %s", anAddon.id,
+                               anAddon.name, anAddon.description)
+        LOG.info String.format("     Available Version(s) : %s", it.value.collect { "@|yellow ${it.version}|@" }.join(', '))
       }
-      if (availableAddons.size() > 0) {
-        LOG.info "\n@|bold Available add-ons:|@"
-        availableAddons.groupBy { it.id }.each {
-          Addon anAddon = it.value.first()
-          LOG.info String.format("\n+ @|bold,yellow %-${availableAddons.id*.size().max()}s|@ : @|bold %s|@, %s", anAddon.id,
-                                 anAddon.name, anAddon.description)
-          LOG.info String.format("     Available Version(s) : %s", it.value.collect { "@|yellow ${it.version}|@" }.join(', '))
-        }
-        LOG.info String.format("""
+      LOG.info String.format("""
 To install an add-on:
     ${env.manager.scriptName} install @|yellow <addonId:[version]>|@
   """)
-      } else {
-        LOG.warn "No add-on found in remote and local catalogs"
-      }
+    } else {
+      LOG.warn "No add-on found in remote and local catalogs"
     }
     return AddonsManagerConstants.RETURN_CODE_OK
   }
