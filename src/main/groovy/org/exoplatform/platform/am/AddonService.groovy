@@ -201,41 +201,45 @@ To uninstall an add-on:
     List<Addon> installedAddons = env.statusesDirectory.list(
         { dir, file -> file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/ } as FilenameFilter
     ).toList().collect { it -> parseJSONAddon(new File(env.statusesDirectory, it).text) }
-    List<Addon> availableAddons = loadAddons(
-        catalog ? catalog : env.remoteCatalogUrl,
-        noCache,
-        env.catalogsCacheDirectory,
-        offline,
-        env.localAddonsCatalogFile,
-        env.platform.distributionType,
-        env.platform.appServerType).findAll {
-      !it.unstable && !it.isSnapshot() ||
-          it.unstable && !it.isSnapshot() && unstable ||
-          it.isSnapshot() && snapshots
-    }
-    List<Addon> outdatedAddons = installedAddons.findAll { installedAddon ->
-      availableAddons
-          .findAll { availableAddon -> availableAddon.id == installedAddon.id && availableAddon > installedAddon }.size() > 0
-    }
-    if (outdatedAddons.size() > 0) {
-      LOG.info "\n@|bold Outdated add-ons:|@"
-      outdatedAddons.groupBy { it.id }.each {
-        Addon anAddon = it.value.first()
-        LOG.info String.format(
-            "\n+ @|bold,yellow %-${outdatedAddons.id*.size().max() + outdatedAddons.version*.size().max() + 1}s|@ : @|bold %s|@, %s",
-            "${anAddon.id} ${anAddon.version}", anAddon.name, anAddon.description)
-        LOG.info String.format(
-            "     Newest Version(s) : %s",
-            availableAddons.findAll { availableAddon -> availableAddon.id == anAddon.id && availableAddon > anAddon }
-                .collect { newestAddon -> "@|yellow ${newestAddon.version}|@"
-            }.join(', '))
+    if (installedAddons.size() > 0) {
+      List<Addon> availableAddons = loadAddons(
+          catalog ? catalog : env.remoteCatalogUrl,
+          noCache,
+          env.catalogsCacheDirectory,
+          offline,
+          env.localAddonsCatalogFile,
+          env.platform.distributionType,
+          env.platform.appServerType).findAll {
+        !it.unstable && !it.isSnapshot() ||
+            it.unstable && !it.isSnapshot() && unstable ||
+            it.isSnapshot() && snapshots
       }
-      LOG.info String.format("""
+      List<Addon> outdatedAddons = installedAddons.findAll { installedAddon ->
+        availableAddons
+            .findAll { availableAddon -> availableAddon.id == installedAddon.id && availableAddon > installedAddon }.size() > 0
+      }
+      if (outdatedAddons.size() > 0) {
+        LOG.info "\n@|bold Outdated add-ons:|@"
+        outdatedAddons.groupBy { it.id }.each {
+          Addon anAddon = it.value.first()
+          LOG.info String.format(
+              "\n+ @|bold,yellow %-${outdatedAddons.id*.size().max() + outdatedAddons.version*.size().max() + 1}s|@ : @|bold %s|@, %s",
+              "${anAddon.id} ${anAddon.version}", anAddon.name, anAddon.description)
+          LOG.info String.format(
+              "     Newest Version(s) : %s",
+              availableAddons.findAll { availableAddon -> availableAddon.id == anAddon.id && availableAddon > anAddon }
+                  .collect { newestAddon -> "@|yellow ${newestAddon.version}|@"
+              }.join(', '))
+        }
+        LOG.info String.format("""
     To update an add-on:
         ${env.manager.scriptName} install @|yellow <addonId:[version]>|@ --force
       """)
+      } else {
+        LOG.info "No outdated add-on found"
+      }
     } else {
-      LOG.warn "No outdated add-on found"
+      LOG.info "No add-on installed"
     }
     return AddonsManagerConstants.RETURN_CODE_OK
   }
