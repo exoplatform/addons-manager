@@ -28,6 +28,6 @@ import org.exoplatform.platform.am.Addon
 class AddonAlreadyInstalledException extends AddonsManagerException {
 
   AddonAlreadyInstalledException(Addon addon) {
-    super("Add-on ${addon.id} already installed. Use --force option to reinstall it")
+    super("Add-on ${addon.id} already installed in version ${addon.version}. Use --force option to reinstall it")
   }
 }

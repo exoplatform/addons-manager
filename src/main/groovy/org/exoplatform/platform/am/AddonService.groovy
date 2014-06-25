@@ -113,29 +113,36 @@ class AddonService {
       EnvironmentSettings env,
       CommandLineParameters.InstallCommandParameters parameters) {
     Addon addon
-    List<Addon> addons = loadAddons(
-        parameters.catalog ?: env.remoteCatalogUrl,
-        parameters.noCache,
-        env.catalogsCacheDirectory,
-        parameters.offline,
-        env.localAddonsCatalogFile,
-        env.platform.distributionType,
-        env.platform.appServerType)
     if (parameters.addonVersion == null) {
+      // No version specified thus we need to find the newer version available
+      List<Addon> availableAddons = loadAddons(
+          parameters.catalog ?: env.remoteCatalogUrl,
+          parameters.noCache,
+          env.catalogsCacheDirectory,
+          parameters.offline,
+          env.localAddonsCatalogFile,
+          env.platform.distributionType,
+          env.platform.appServerType,
+          parameters.snapshots,
+          parameters.unstable)
       // Let's find the first add-on with the given id (including or not snapshots depending of the option)
-      addon = addons.find {
-        (!it.isSnapshot() || parameters.snapshots) && (!it.unstable || parameters.unstable) && parameters.addonId.equals(it.id)
-      }
+      addon = findNewestAddon(parameters.addonId, availableAddons)
       if (addon == null) {
         LOG.error("No add-on with identifier ${parameters.addonId} found")
         return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
       }
     } else {
+      List<Addon> availableAddons = loadAddons(
+          parameters.catalog ?: env.remoteCatalogUrl,
+          parameters.noCache,
+          env.catalogsCacheDirectory,
+          parameters.offline,
+          env.localAddonsCatalogFile,
+          env.platform.distributionType,
+          env.platform.appServerType)
       // Let's find the add-on with the given id and version
-      addon = addons.find {
-        parameters.addonId.equals(
-            it.id) && parameters.addonVersion.equalsIgnoreCase(
-            it.version)
+      addon = availableAddons.find {
+        parameters.addonId.equals(it.id) && parameters.addonVersion.equalsIgnoreCase(it.version)
       }
       if (addon == null) {
         LOG.error(
@@ -211,14 +218,15 @@ To uninstall an add-on:
       List<Addon> outdatedAddons = getOutdatedAddonsList(installedAddons, availableAddons)
       if (outdatedAddons.size() > 0) {
         LOG.info "\n@|bold Outdated add-ons:|@"
-        outdatedAddons.groupBy { it.id }.each {
+        outdatedAddons.groupBy { it.id }.sort().each {
           Addon anAddon = it.value.first()
           LOG.info String.format(
               "\n+ @|bold,yellow %-${outdatedAddons.id*.size().max() + outdatedAddons.version*.size().max() + 1}s|@ : @|bold %s|@, %s",
               "${anAddon.id} ${anAddon.version}", anAddon.name, anAddon.description)
           LOG.info String.format(
               "     Newest Version(s) : %s",
-              findNewerAddons(anAddon, availableAddons).collect { newestAddon -> "@|yellow ${newestAddon.version}|@"
+              findNewerAddons(anAddon, availableAddons).sort().reverse().collect {
+                newestAddon -> "@|yellow ${newestAddon.version}|@"
               }.join(', '))
         }
         LOG.info String.format("""
@@ -255,11 +263,12 @@ To uninstall an add-on:
         allowUnstable)
     if (availableAddons.size() > 0) {
       LOG.info "\n@|bold Available add-ons:|@"
-      availableAddons.groupBy { it.id }.each {
+      availableAddons.groupBy { it.id }.sort().each {
         Addon anAddon = it.value.first()
         LOG.info String.format("\n+ @|bold,yellow %-${availableAddons.id*.size().max()}s|@ : @|bold %s|@, %s", anAddon.id,
                                anAddon.name, anAddon.description)
-        LOG.info String.format("     Available Version(s) : %s", it.value.collect { "@|yellow ${it.version}|@" }.join(', '))
+        LOG.info String.format("     Available Version(s) : %s", it.value.sort().reverse().collect { "@|yellow ${it.version}|@" }
+            .join(', '))
       }
       LOG.info String.format("""
 To install an add-on:
@@ -291,7 +300,8 @@ To install an add-on:
     }
     if (isInstalled(env.statusesDirectory, addon)) {
       if (!force) {
-        throw new AddonAlreadyInstalledException(addon)
+        Addon oldAddon = parseJSONAddon(getAddonStatusFile(env.statusesDirectory, addon).text);
+        throw new AddonAlreadyInstalledException(oldAddon)
       } else {
         Addon oldAddon = parseJSONAddon(getAddonStatusFile(env.statusesDirectory, addon).text);
         uninstallAddon(env, oldAddon)
@@ -435,24 +445,8 @@ To install an add-on:
     LOG.withStatusOK("Add-on ${addon.name} ${addon.version} uninstalled")
   }
 
-  protected List<Addon> loadAddons(URL remoteCatalogUrl,
-                                   Boolean noCache,
-                                   File catalogsCacheDirectory,
-                                   Boolean offline,
-                                   File localCatalogFile,
-                                   PlatformSettings.DistributionType distributionType,
-                                   PlatformSettings.AppServerType appServerType,
-                                   Boolean allowSnapshot,
-                                   Boolean allowUnstable
-  ) {
-    return filterAddonsByVersion(
-        loadAddons(remoteCatalogUrl, noCache, catalogsCacheDirectory, offline, localCatalogFile, distributionType, appServerType),
-        allowSnapshot,
-        allowUnstable)
-  }
-
   /**
-   * Merge addons loaded from a remote and a local catalog
+   * Load addons from local and remote catalogs
    * @param remoteCatalogUrl The remote catalog URL
    * @param noCache If the 1h cache must be used for the remote catalog
    * @param catalogsCacheDirectory The directory where are cached remote catalogs
@@ -470,11 +464,41 @@ To install an add-on:
                                    PlatformSettings.DistributionType distributionType,
                                    PlatformSettings.AppServerType appServerType
   ) {
-    return mergeCatalogs(
-        loadAddonsFromUrl(remoteCatalogUrl, noCache, offline, catalogsCacheDirectory),
-        loadAddonsFromFile(localCatalogFile),
-        distributionType,
-        appServerType).findAll { !ADDONS_MANAGER_CATALOG_ID.equals(it.id) }.sort().reverse()
+    return loadAddons(remoteCatalogUrl, noCache, catalogsCacheDirectory, offline, localCatalogFile, distributionType,
+                      appServerType, true, true)
+  }
+
+  /**
+   * Load addons from local and remote catalogs
+   * @param remoteCatalogUrl The remote catalog URL
+   * @param noCache If the 1h cache must be used for the remote catalog
+   * @param catalogsCacheDirectory The directory where are cached remote catalogs
+   * @param offline If the operation must be done offline (nothing will be downloaded)
+   * @param localCatalogFile The local catalog file
+   * @param distributionType The distribution type which addons listed must be compatible with
+   * @param appServerType The application seerver type which addons listed must be compatible with
+   * @param allowSnapshot allow addons with snapshot version
+   * @param allowUnstable allow addons with unstable version
+   * @return a list of addons
+   */
+  protected List<Addon> loadAddons(URL remoteCatalogUrl,
+                                   Boolean noCache,
+                                   File catalogsCacheDirectory,
+                                   Boolean offline,
+                                   File localCatalogFile,
+                                   PlatformSettings.DistributionType distributionType,
+                                   PlatformSettings.AppServerType appServerType,
+                                   Boolean allowSnapshot,
+                                   Boolean allowUnstable
+  ) {
+    return filterAddonsByVersion(
+        mergeCatalogs(
+            loadAddonsFromUrl(remoteCatalogUrl, noCache, offline, catalogsCacheDirectory),
+            loadAddonsFromFile(localCatalogFile),
+            distributionType,
+            appServerType).findAll { !ADDONS_MANAGER_CATALOG_ID.equals(it.id) },
+        allowSnapshot,
+        allowUnstable)
   }
 
   /**
