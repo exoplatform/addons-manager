@@ -36,6 +36,7 @@ import org.exoplatform.platform.am.settings.PlatformSettings
 import org.exoplatform.platform.am.utils.*
 
 import java.security.MessageDigest
+import java.text.SimpleDateFormat
 
 /**
  * All services related to add-ons
@@ -101,6 +102,91 @@ class AddonService {
           parameters.offline,
           parameters.catalog)
     }
+  }
+
+  /**
+   * Describe an add-on given the current environment {@code env} and command line {@code parameters}.
+   * @param env The environment
+   * @param parameters Command line parameters
+   * @return a return code defined in {@link AddonsManagerConstants}
+   */
+  int describeAddon(
+      EnvironmentSettings env,
+      CommandLineParameters.InfoCommandParameters parameters) {
+    Addon addon
+    List<Addon> availableAddons = loadAddons(
+        parameters.catalog ?: env.remoteCatalogUrl,
+        parameters.noCache,
+        env.catalogsCacheDirectory,
+        parameters.offline,
+        env.localAddonsCatalogFile,
+        env.platform.distributionType,
+        env.platform.appServerType)
+    if (parameters.addonVersion == null) {
+      // No version specified thus we need to find the newer version available
+      // Let's find the first add-on with the given id (including or not snapshots depending of the option)
+      addon = findNewestAddon(parameters.addonId,
+                              filterAddonsByVersion(availableAddons, parameters.snapshots, parameters.unstable))
+      if (addon == null) {
+        LOG.error("No add-on with identifier ${parameters.addonId} found")
+        // Let's try to find an unstable version of the addon
+        if (!parameters.unstable && findNewestAddon(parameters.addonId,
+                                                    filterAddonsByVersion(availableAddons, parameters.snapshots, true))) {
+          LOG.info(
+              "This add-on exists but doesn't have a stable released version yet! add --unstable option to use an unstable version")
+        }
+        // Let's try to find a snapshot version of the addon
+        if (!parameters.snapshots && findNewestAddon(parameters.addonId,
+                                                     filterAddonsByVersion(availableAddons, parameters.snapshots, true))) {
+          LOG.info(
+              "This add-on exists but doesn't have a stable released version yet! add --snapshots option to use a development version")
+        }
+        return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
+      }
+    } else {
+      // Let's find the add-on with the given id and version
+      addon = availableAddons.find {
+        parameters.addonId.equals(it.id) && parameters.addonVersion.equalsIgnoreCase(it.version)
+      }
+      if (addon == null) {
+        LOG.error(
+            "No add-on with identifier ${parameters.addonId} and version ${parameters.addonVersion} found")
+        return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
+      }
+    }
+    displayAddon(addon)
+    return AddonsManagerConstants.RETURN_CODE_OK
+  }
+
+  void displayAddon(final Addon addon) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd")
+    LOG.infoHR("=")
+    LOG.info "Informations about add-on @|bold,yellow ${addon.id}|@@|bold :${addon.version}|@"
+    LOG.infoHR()
+    Map map = ["Identifier"                        : addon.id,
+               "Version"                           : addon.version,
+               "Name"                              : addon.name,
+               "Description"                       : addon.description,
+               "Release date (YYYY-MM-DD)"         : addon.releaseDate ? sdf.format(sdf.parse(addon.releaseDate)) : null,
+               "Sources URL"                       : addon.sourceUrl,
+               "Screenshot URL"                    : addon.screenshotUrl,
+               "Thumbnail URL"                     : addon.thumbnailUrl,
+               "Documentation URL"                 : addon.documentationUrl,
+               "Download URL"                      : addon.downloadUrl,
+               "Vendor"                            : addon.vendor,
+               "Author"                            : addon.author,
+               "Author email"                      : addon.authorEmail,
+               "License"                           : addon.license,
+               "License URL"                       : addon.licenseUrl,
+               "License must be accepted"          : addon.mustAcceptLicense,
+               "Supported application Server(s)"   : addon.supportedApplicationServers,
+               "Supported platform distribution(s)": addon.supportedDistributions,
+               "Supported platform version(s)"     : addon.compatibility] as LinkedHashMap
+//LinkedHashMap to keep the insertion order
+    map.keySet().findAll { map.get(it) }.each {
+      LOG.info String.format("@|bold %-${map.keySet()*.size().max()}s|@ : @|bold,yellow %s|@", it, map.get(it))
+    }
+    LOG.infoHR("=")
   }
 
   /**

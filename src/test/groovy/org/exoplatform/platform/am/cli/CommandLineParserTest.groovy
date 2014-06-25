@@ -290,6 +290,156 @@ class CommandLineParserTest extends Specification {
     ]
   }
 
+  def "Test command line parameters to describe the latest version of an add-on"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INFO == cliArgs.command
+    "my-addon".equals(cliArgs.commandInfo.addonId)
+    !cliArgs.commandInfo.addonVersion
+    !cliArgs.commandInfo.catalog
+    !cliArgs.commandInfo.noCache
+    !cliArgs.commandInfo.offline
+    !cliArgs.commandInfo.snapshots
+    !cliArgs.commandInfo.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["info", "my-addon"],
+    ]
+  }
+
+  def "Test command line parameters to describe the latest version of an add-on without using cache"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INFO == cliArgs.command
+    "my-addon".equals(cliArgs.commandInfo.addonId)
+    !cliArgs.commandInfo.addonVersion
+    !cliArgs.commandInfo.catalog
+    cliArgs.commandInfo.noCache
+    !cliArgs.commandInfo.offline
+    !cliArgs.commandInfo.snapshots
+    !cliArgs.commandInfo.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["info", "my-addon", "--no-cache"],
+    ]
+  }
+
+  def "Test command line parameters to describe the latest version of an add-on while being offline"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INFO == cliArgs.command
+    "my-addon".equals(cliArgs.commandInfo.addonId)
+    !cliArgs.commandInfo.addonVersion
+    !cliArgs.commandInfo.catalog
+    !cliArgs.commandInfo.noCache
+    cliArgs.commandInfo.offline
+    !cliArgs.commandInfo.snapshots
+    !cliArgs.commandInfo.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["info", "my-addon", "--offline"],
+    ]
+  }
+
+  def "Test command line parameters to describe a given version of an add-on"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    "my-addon".equals(cliArgs.commandInfo.addonId)
+    "42".equals(cliArgs.commandInfo.addonVersion)
+    !cliArgs.commandInfo.catalog
+    !cliArgs.commandInfo.noCache
+    !cliArgs.commandInfo.offline
+    !cliArgs.commandInfo.snapshots
+    !cliArgs.commandInfo.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["info", "my-addon:42"],
+    ]
+  }
+
+  def "Test command line parameters to describe a SNAPSHOT version of an add-on"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INFO == cliArgs.command
+    "my-addon".equals(cliArgs.commandInfo.addonId)
+    !cliArgs.commandInfo.catalog
+    !cliArgs.commandInfo.noCache
+    !cliArgs.commandInfo.offline
+    cliArgs.commandInfo.snapshots
+    !cliArgs.commandInfo.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["info", "my-addon", "--snapshots"],
+        ["info", "my-addon:42-SNAPSHOT", "--snapshots"],
+    ]
+  }
+
+  def "Test command line parameters to describe an unstable version of an add-on"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INFO == cliArgs.command
+    "my-addon".equals(cliArgs.commandInfo.addonId)
+    !cliArgs.commandInfo.catalog
+    !cliArgs.commandInfo.noCache
+    !cliArgs.commandInfo.offline
+    !cliArgs.commandInfo.snapshots
+    cliArgs.commandInfo.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["info", "my-addon", "--unstable"],
+        ["info", "my-addon:42-RC1", "--unstable"],
+    ]
+  }
+
+  def "Test command line parameters to describe an add-on with a valid catalog parameter"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INFO == cliArgs.command
+    "my-addon".equals(cliArgs.commandInfo.addonId)
+    validCatalogUrl.equals(cliArgs.commandInfo.catalog.toString())
+    !cliArgs.commandInfo.noCache
+    !cliArgs.commandInfo.offline
+    !cliArgs.commandInfo.snapshots
+    !cliArgs.commandInfo.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["info", "my-addon", "--catalog=${validCatalogUrl}"],
+        ["info", "my-addon:42", "--catalog=${validCatalogUrl}"],
+    ]
+  }
+
+  def "Test command line parameters to describe an add-on with a invalid catalog parameter"(String[] args) {
+    when:
+    clp.parse(args)
+    then:
+    thrown(CommandLineParsingException)
+    where:
+    args << [
+        ["info", "my-addon", "--catalog=${invalidCatalogUrl}"],
+        ["info", "my-addon:42", "--catalog=${invalidCatalogUrl}"],
+    ]
+  }
 
   def "Test command line parameters to install the latest version of an add-on"(String[] args) {
     when:

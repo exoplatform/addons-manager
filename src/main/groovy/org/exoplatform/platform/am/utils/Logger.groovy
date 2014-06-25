@@ -101,9 +101,9 @@ class Logger {
 
   void debug(final String title, final Map map, final List<String> excludes) {
     List<String> fieldsToExcludes = excludes ? excludes : []
-    debug("".padRight(Console.get().width - Level.DEBUG.prefix.length(), "="))
+    debugHR("=")
     debug("${title.toUpperCase()}:")
-    debug("".padRight(Console.get().width - Level.DEBUG.prefix.length(), "="))
+    debugHR()
     if (map) {
       map.keySet().findAll { !fieldsToExcludes.contains(it) }.each {
         debug String.format("%-${map.keySet()*.size().max()}s : %s", it, map.get(it))
@@ -111,6 +111,15 @@ class Logger {
     } else {
       debug "Null"
     }
+    debugHR("=")
+  }
+
+  void debugHR(final String padding) {
+    debug("".padRight(Console.get().width - Level.DEBUG.prefix.length(), padding))
+  }
+
+  void debugHR() {
+    debugHR("-")
   }
 
   void info(final Object msg) {
@@ -121,6 +130,14 @@ class Logger {
     log(Level.INFO, msg, cause);
   }
 
+  void infoHR(final String padding) {
+    info("".padRight(Console.get().width - Level.INFO.prefix.length(), padding))
+  }
+
+  void infoHR() {
+    infoHR("-")
+  }
+
   void warn(final Object msg) {
     log(Level.WARN, msg, null);
   }
@@ -129,12 +146,28 @@ class Logger {
     log(Level.WARN, msg, cause);
   }
 
+  void warnHR(final String padding) {
+    warn("".padRight(Console.get().width - Level.WARN.prefix.length(), padding))
+  }
+
+  void warnHR() {
+    warnHR("-")
+  }
+
   void error(final Object msg) {
     log(Level.ERROR, msg, null);
   }
 
   void error(final Object msg, final Throwable cause) {
     log(Level.ERROR, msg, cause);
+  }
+
+  void errorHR(final String padding) {
+    error("".padRight(Console.get().width - Level.ERROR.prefix.length(), padding))
+  }
+
+  void errorHR() {
+    errorHR("-")
   }
 
   void displayHeader(String managerVersion) {

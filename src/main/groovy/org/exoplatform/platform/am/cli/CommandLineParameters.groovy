@@ -32,7 +32,7 @@ class CommandLineParameters {
    * The enumeration of all possible commands
    */
   enum Command {
-    LIST(LIST_COMMAND), INSTALL(INSTALL_COMMAND), UNINSTALL(UNINSTALL_COMMAND)
+    LIST(LIST_COMMAND), INFO(INFO_COMMAND), INSTALL(INSTALL_COMMAND), UNINSTALL(UNINSTALL_COMMAND)
     final String name
 
     Command(String name) {
@@ -44,6 +44,10 @@ class CommandLineParameters {
    * The command name used to list add-ons
    */
   static final String LIST_COMMAND = "list"
+  /**
+   * The command name used to list add-ons
+   */
+  static final String INFO_COMMAND = "info"
   /**
    * The command name used to install an add-on
    */
@@ -57,6 +61,10 @@ class CommandLineParameters {
    * List command parameters
    */
   ListCommandParameters commandList = new ListCommandParameters()
+  /**
+   * Info command parameters
+   */
+  InfoCommandParameters commandInfo = new InfoCommandParameters()
   /**
    * Install command parameters
    */
@@ -85,7 +93,7 @@ class CommandLineParameters {
    * @return true if the verbose option is activated as main parameter or command parameter
    */
   boolean isVerbose() {
-    return _verbose || commandList.verbose || commandInstall.verbose || commandUninstall.verbose
+    return _verbose || commandList.verbose || commandInfo.verbose || commandInstall.verbose || commandUninstall.verbose
   }
 
   /**
@@ -93,7 +101,7 @@ class CommandLineParameters {
    * @return true if the help option is activated as main parameter or command parameter
    */
   boolean isHelp() {
-    return _help || commandList.help || commandInstall.help || commandUninstall.help
+    return _help || commandList.help || commandInfo.help || commandInstall.help || commandUninstall.help
   }
 
   /**
@@ -120,6 +128,32 @@ class CommandLineParameters {
     protected boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
     protected boolean help
+  }
+
+  /**
+   * Specific parameters to print informations about an add-on
+   */
+  @Parameters(commandDescription = "Describe an add-on", commandNames = CommandLineParameters.INFO_COMMAND, separators = "=")
+  class InfoCommandParameters {
+    @Parameter(names = ["--snapshots"], description = "Allow to print informations of add-on in SNAPSHOT version")
+    boolean snapshots
+    @Parameter(names = ["--unstable"], description = "Allow to print informations of add-on in unstable version")
+    boolean unstable
+    @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
+        converter = URLConverter.class)
+    URL catalog
+    @Parameter(names = ["--no-cache"], description = "Discard the remote catalog local cache")
+    boolean noCache
+    @Parameter(names = ["--offline"], description = "Do not download anything")
+    boolean offline
+    @Parameter(description = "addon[:version]", arity = 1, required = true)
+    protected List<String> addon;
+    @Parameter(names = ["-v", "--verbose"], hidden = true)
+    protected boolean verbose
+    @Parameter(names = ["-h", "--help"], help = true, hidden = true)
+    protected boolean help
+    String addonId
+    String addonVersion
   }
 
   /**

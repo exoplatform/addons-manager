@@ -165,7 +165,9 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the catalog, check your add-on name [KO]"
    */
   def "[AM_INF_01] addons.(sh|bat) infos foo-addon"() {
-    // TODO : Not yet implemented
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["info", "foo-addon", "--verbose"]).exitValue()
   }
 
   /**
@@ -174,7 +176,9 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the catalog, check your add-on name [KO]"
    */
   def "[AM_INF_02] addons.(sh|bat) infos foo-addon:42"() {
-    // TODO : Not yet implemented
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["info", "foo-addon:42", "--verbose"]).exitValue()
   }
 
   /**
