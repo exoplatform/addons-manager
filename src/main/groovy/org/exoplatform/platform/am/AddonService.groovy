@@ -114,7 +114,7 @@ class AddonService {
       CommandLineParameters.InstallCommandParameters parameters) {
     Addon addon
     List<Addon> addons = loadAddons(
-        parameters.catalog ? parameters.catalog : env.remoteCatalogUrl,
+        parameters.catalog ?: env.remoteCatalogUrl,
         parameters.noCache,
         env.catalogsCacheDirectory,
         parameters.offline,
@@ -170,9 +170,7 @@ class AddonService {
 
   protected int listInstalledAddons(EnvironmentSettings env) {
     // Display only installed add-ons
-    List<Addon> installedAddons = env.statusesDirectory.list(
-        { dir, file -> file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/ } as FilenameFilter
-    ).toList().collect { it -> parseJSONAddon(new File(env.statusesDirectory, it).text) }
+    List<Addon> installedAddons = getInstalledAddonsList(env)
     if (installedAddons.size() > 0) {
       LOG.info "\n@|bold Installed add-ons:|@"
       installedAddons.each {
@@ -192,32 +190,25 @@ To uninstall an add-on:
 
   protected int listOutdatedAddons(
       EnvironmentSettings env,
-      Boolean unstable,
-      Boolean snapshots,
+      Boolean allowUnstable,
+      Boolean allowSnapshot,
       Boolean noCache,
       Boolean offline,
-      URL catalog
+      URL alternateCatalog
   ) {
-    List<Addon> installedAddons = env.statusesDirectory.list(
-        { dir, file -> file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/ } as FilenameFilter
-    ).toList().collect { it -> parseJSONAddon(new File(env.statusesDirectory, it).text) }
+    List<Addon> installedAddons = getInstalledAddonsList(env)
     if (installedAddons.size() > 0) {
       List<Addon> availableAddons = loadAddons(
-          catalog ? catalog : env.remoteCatalogUrl,
+          alternateCatalog ?: env.remoteCatalogUrl,
           noCache,
           env.catalogsCacheDirectory,
           offline,
           env.localAddonsCatalogFile,
           env.platform.distributionType,
-          env.platform.appServerType).findAll {
-        !it.unstable && !it.isSnapshot() ||
-            it.unstable && !it.isSnapshot() && unstable ||
-            it.isSnapshot() && snapshots
-      }
-      List<Addon> outdatedAddons = installedAddons.findAll { installedAddon ->
-        availableAddons
-            .findAll { availableAddon -> availableAddon.id == installedAddon.id && availableAddon > installedAddon }.size() > 0
-      }
+          env.platform.appServerType,
+          allowSnapshot,
+          allowUnstable)
+      List<Addon> outdatedAddons = getOutdatedAddonsList(installedAddons, availableAddons)
       if (outdatedAddons.size() > 0) {
         LOG.info "\n@|bold Outdated add-ons:|@"
         outdatedAddons.groupBy { it.id }.each {
@@ -227,8 +218,7 @@ To uninstall an add-on:
               "${anAddon.id} ${anAddon.version}", anAddon.name, anAddon.description)
           LOG.info String.format(
               "     Newest Version(s) : %s",
-              availableAddons.findAll { availableAddon -> availableAddon.id == anAddon.id && availableAddon > anAddon }
-                  .collect { newestAddon -> "@|yellow ${newestAddon.version}|@"
+              findNewerAddons(anAddon, availableAddons).collect { newestAddon -> "@|yellow ${newestAddon.version}|@"
               }.join(', '))
         }
         LOG.info String.format("""
@@ -246,25 +236,23 @@ To uninstall an add-on:
 
   protected int listAddonsFromCatalogs(
       EnvironmentSettings env,
-      Boolean unstable,
-      Boolean snapshots,
+      Boolean allowUnstable,
+      Boolean allowSnapshot,
       Boolean noCache,
       Boolean offline,
-      URL catalog
+      URL alternateCatalog
   ) {
     // Display add-ons in remote+local catalogs
     List<Addon> availableAddons = loadAddons(
-        catalog ? catalog : env.remoteCatalogUrl,
+        alternateCatalog ?: env.remoteCatalogUrl,
         noCache,
         env.catalogsCacheDirectory,
         offline,
         env.localAddonsCatalogFile,
         env.platform.distributionType,
-        env.platform.appServerType).findAll {
-      !it.unstable && !it.isSnapshot() ||
-          it.unstable && !it.isSnapshot() && unstable ||
-          it.isSnapshot() && snapshots
-    }
+        env.platform.appServerType,
+        allowSnapshot,
+        allowUnstable)
     if (availableAddons.size() > 0) {
       LOG.info "\n@|bold Available add-ons:|@"
       availableAddons.groupBy { it.id }.each {
@@ -286,10 +274,10 @@ To install an add-on:
   protected void installAddon(
       EnvironmentSettings env,
       Addon addon,
-      boolean force,
-      boolean noCache,
-      boolean offline,
-      boolean noCompat) {
+      Boolean force,
+      Boolean noCache,
+      Boolean offline,
+      Boolean noCompat) {
     // if a compatibility rule is defined
     if (addon.compatibility && !noCompat) {
       Version plfVersion = versionScheme.parseVersion(env.platform.version)
@@ -447,6 +435,22 @@ To install an add-on:
     LOG.withStatusOK("Add-on ${addon.name} ${addon.version} uninstalled")
   }
 
+  protected List<Addon> loadAddons(URL remoteCatalogUrl,
+                                   Boolean noCache,
+                                   File catalogsCacheDirectory,
+                                   Boolean offline,
+                                   File localCatalogFile,
+                                   PlatformSettings.DistributionType distributionType,
+                                   PlatformSettings.AppServerType appServerType,
+                                   Boolean allowSnapshot,
+                                   Boolean allowUnstable
+  ) {
+    return filterAddonsByVersion(
+        loadAddons(remoteCatalogUrl, noCache, catalogsCacheDirectory, offline, localCatalogFile, distributionType, appServerType),
+        allowSnapshot,
+        allowUnstable)
+  }
+
   /**
    * Merge addons loaded from a remote and a local catalog
    * @param remoteCatalogUrl The remote catalog URL
@@ -459,9 +463,9 @@ To install an add-on:
    * @return a list of addons
    */
   protected List<Addon> loadAddons(URL remoteCatalogUrl,
-                                   boolean noCache,
+                                   Boolean noCache,
                                    File catalogsCacheDirectory,
-                                   boolean offline,
+                                   Boolean offline,
                                    File localCatalogFile,
                                    PlatformSettings.DistributionType distributionType,
                                    PlatformSettings.AppServerType appServerType
@@ -509,8 +513,8 @@ To install an add-on:
    */
   protected List<Addon> loadAddonsFromUrl(
       URL catalogUrl,
-      boolean noCache,
-      boolean offline,
+      Boolean noCache,
+      Boolean offline,
       File catalogCacheDir) {
     List<Addon> addons = new ArrayList<Addon>()
     String catalogContent
@@ -760,6 +764,18 @@ To install an add-on:
     return addonObj
   }
 
+  protected List<Addon> getInstalledAddonsList(EnvironmentSettings env) {
+    return env.statusesDirectory.list(
+        { dir, file -> file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/ } as FilenameFilter
+    ).toList().collect { it -> parseJSONAddon(new File(env.statusesDirectory, it).text) }
+  }
+
+  protected List<Addon> getOutdatedAddonsList(List<Addon> installedAddons, List<Addon> availableAddons) {
+    return installedAddons.findAll { installedAddon ->
+      findNewerAddons(installedAddon, availableAddons).size() > 0
+    }
+  }
+
   /**
    * Find in the list {@code addons} all addons with the same identifier {@link Addon#id} and a higher version number
    * {@link Addon#version} than {@code addonRef}
@@ -793,7 +809,7 @@ To install an add-on:
    * @param allowUnstable Also return addons with unstable versions (alpha, beta, RC, ...)
    * @return the list of addons.
    */
-  protected List<Addon> filterAddonsByVersion(List<Addon> addons, boolean allowSnapshot, boolean allowUnstable) {
+  protected List<Addon> filterAddonsByVersion(List<Addon> addons, Boolean allowSnapshot, Boolean allowUnstable) {
     return addons.findAll {
       !it.unstable && !it.isSnapshot() || it.unstable && !it.isSnapshot() && allowUnstable || it.isSnapshot() && allowSnapshot
     }
@@ -852,7 +868,7 @@ To install an add-on:
     return getAddonStatusFile(statusesDirectory, addon.id)
   }
 
-  protected boolean isInstalled(File statusesDirectory, Addon addon) {
+  protected Boolean isInstalled(File statusesDirectory, Addon addon) {
     return getAddonStatusFile(statusesDirectory, addon).exists()
   }
 
