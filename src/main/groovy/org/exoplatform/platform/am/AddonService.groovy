@@ -19,7 +19,6 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
-
 import groovy.json.JsonSlurper
 import groovy.json.StreamingJsonBuilder
 import groovy.time.TimeCategory
@@ -36,7 +35,6 @@ import org.exoplatform.platform.am.settings.PlatformSettings
 import org.exoplatform.platform.am.utils.*
 
 import java.security.MessageDigest
-
 /**
  * All services related to add-ons
  * @author Arnaud Héritier <aheritier@exoplatform.com>
@@ -69,10 +67,18 @@ class AddonService {
 
   private VersionScheme versionScheme = new GenericVersionScheme()
 
-
+  /**
+   * You should use the singleton
+   */
   private AddonService() {
   }
 
+  /**
+   * List add-ons given the current environment {@code env} and command line {@code parameters}.
+   * @param env The environment
+   * @param parameters Command line parameters
+   * @return a return code defined in {@link AddonsManagerConstants}
+   */
   int listAddons(EnvironmentSettings env, CommandLineParameters.ListCommandParameters parameters) {
     return listAddons(
         env,
@@ -86,6 +92,12 @@ class AddonService {
     )
   }
 
+  /**
+   * Install an add-on given the current environment {@code env} and command line {@code parameters}.
+   * @param env The environment
+   * @param parameters Command line parameters
+   * @return a return code defined in {@link AddonsManagerConstants}
+   */
   int installAddon(
       EnvironmentSettings env,
       CommandLineParameters.InstallCommandParameters parameters) {
@@ -124,6 +136,12 @@ class AddonService {
     return AddonsManagerConstants.RETURN_CODE_OK
   }
 
+  /**
+   * Uninstall an add-on given the current environment {@code env} and command line {@code parameters}.
+   * @param env The environment
+   * @param parameters Command line parameters
+   * @return a return code defined in {@link AddonsManagerConstants}
+   */
   int uninstallAddon(EnvironmentSettings env, CommandLineParameters.UninstallCommandParameters parameters) {
     File statusFile = getAddonStatusFile(env.statusesDirectory, parameters.addonId)
     if (statusFile.exists()) {
@@ -137,49 +155,6 @@ class AddonService {
       LOG.error("Add-on not installed. It cannot be uninstalled.")
       return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED
     }
-  }
-
-  /**
-   * Find in the list {@code addons} all addons with the same identifier {@link Addon#id} and a higher version number
-   * {@link Addon#version} than {@code addonRef}
-   * @param addonRef The addon reference
-   * @param addons The list to filter
-   * @return A list of addons
-   */
-  protected List<Addon> findNewerAddons(Addon addonRef, List<Addon> addons) {
-    assert addonRef
-    assert addonRef.id
-    assert addonRef.version
-    return addons.findAll { it.id == addonRef.id && it > addonRef }
-  }
-
-  /**
-   * Find in the list {@code addons} the addon with the identifier {@code addonId} and the highest version number
-   * @param addonId The addon identifier
-   * @param addons The list to filter
-   * @return The addon matching constraints or null if none.
-   */
-  protected Addon findNewestAddon(String addonId, List<Addon> addons) {
-    assert addonId
-    return addons.findAll { it.id == addonId }.max()
-  }
-
-  /**
-   * Filter entries in {@code addons} to keep only stable versions. Return also snapshot versions if {@code allowSnapshot} is
-   * true and unstable versions if {@code allowUnstable} is true
-   * @param addons The list of addons to filter
-   * @param allowSnapshot Also return addons with snapshot versions (-SNAPSHOT)
-   * @param allowUnstable Also return addons with unstable versions (alpha, beta, RC, ...)
-   * @return the list of addons.
-   */
-  protected List<Addon> filterAddons(List<Addon> addons, boolean allowSnapshot, boolean allowUnstable) {
-    return addons.findAll {
-      !it.unstable && !it.isSnapshot() || it.unstable && !it.isSnapshot() && allowUnstable || it.isSnapshot() && allowSnapshot
-    }
-  }
-
-  protected File getAddonStatusFile(File statusesDirectory, String addonId) {
-    return new File(statusesDirectory, "${addonId}${STATUS_FILE_EXT}")
   }
 
   protected int listAddons(
@@ -448,38 +423,6 @@ To install an add-on:
     LOG.withStatusOK("Add-on ${addon.name} ${addon.version} uninstalled")
   }
 
-  protected File getLocalArchive(File archivesDirectory, Addon addon) {
-    return new File(archivesDirectory, "${addon.id}-${addon.version}.zip")
-  }
-
-  protected File getAddonStatusFile(File statusesDirectory, Addon addon) {
-    return getAddonStatusFile(statusesDirectory, addon.id)
-  }
-
-  protected boolean isInstalled(File statusesDirectory, Addon addon) {
-    return getAddonStatusFile(statusesDirectory, addon).exists()
-  }
-
-  protected String serializeXml(GPathResult xml) {
-    XmlUtil.serialize(new StreamingMarkupBuilder().bind {
-      mkp.yield xml
-    })
-  }
-
-  protected processFileInplace(File file, Closure processText) {
-    String text = file.text
-    file.write(processText(text))
-  }
-
-/**
- * Parse a JSON String representing an Add-on to build an {@link Addon} object
- * @param text the JSON text to parse
- * @return an Addon object
- */
-  protected Addon parseJSONAddon(String text) {
-    return fromJSON(new JsonSlurper().parseText(text))
-  }
-
   /**
    * Merge addons loaded from a remote and a local catalog
    * @param remoteCatalogUrl The remote catalog URL
@@ -504,47 +447,6 @@ To install an add-on:
         loadAddonsFromFile(localCatalogFile),
         distributionType,
         appServerType).findAll { !ADDONS_MANAGER_CATALOG_ID.equals(it.id) }.sort().reverse()
-  }
-
-  /**
-   * [AM_CAT_07] At merge, de-duplication of add-on entries of the local and remote catalogs is
-   * done using ID, Version, Distributions, Application Servers as the identifier.
-   * In case of duplication, the remote entry takes precedence
-   * @param remoteCatalog
-   * @param localCatalog
-   * @param distributionType The distribution type which addons listed must be compatible with
-   * @param appServerType The application seerver type which addons listed must be compatible with
-   * @return a list of addons
-   */
-  protected List<Addon> mergeCatalogs(
-      final List<Addon> remoteCatalog,
-      final List<Addon> localCatalog,
-      PlatformSettings.DistributionType distributionType,
-      PlatformSettings.AppServerType appServerType) {
-    // Let's keep on entries that are interesting us
-    List<Addon> filteredCentralCatalog = filterAddons(remoteCatalog, distributionType, appServerType)
-    List<Addon> filteredLocalCatalog = filterAddons(localCatalog, distributionType, appServerType)
-    // Let's initiate a new list from the filtered list of the remote catalog
-    List<Addon> mergedCatalog = filteredCentralCatalog.clone()
-    // Let's add entries from the filtered local catalog which aren't already in the catalog (based on id+version identifiers)
-    filteredLocalCatalog.findAll { !mergedCatalog.contains(it) }.each { mergedCatalog.add(it) }
-    return mergedCatalog
-  }
-
-  /**
-   * Returns all add-ons supporting a distributionType+appServerType
-   * @param addons The catalog to filter entries
-   * @param distributionType The distribution type to support
-   * @param appServerType The application server type to support
-   * @return
-   */
-  protected List<Addon> filterAddons(
-      final List<Addon> addons,
-      PlatformSettings.DistributionType distributionType,
-      PlatformSettings.AppServerType appServerType) {
-    return addons.findAll {
-      it.supportedDistributions.contains(distributionType) && it.supportedApplicationServers.contains(appServerType)
-    }
   }
 
   /**
@@ -648,6 +550,32 @@ To install an add-on:
       }
     }
     return addons
+  }
+
+  /**
+   * Parse a JSON String representing an Add-on to build an {@link Addon} object
+   * @param text the JSON text to parse
+   * @return an Addon object
+   */
+  protected Addon parseJSONAddon(String text) {
+    return fromJSON(new JsonSlurper().parseText(text))
+  }
+
+  /**
+   * Loads a list of Addon from its JSON text representation
+   * @param text The JSON text to parse
+   * @return A List of addons
+   */
+  protected List<Addon> parseJSONAddonsList(String text) {
+    List<Addon> addonsList = new ArrayList<Addon>();
+    new JsonSlurper().parseText(text).each { anAddon ->
+      try {
+        addonsList.add(fromJSON(anAddon))
+      } catch (InvalidJSONException ije) {
+        LOG.debug(ije.message)
+      }
+    }
+    return addonsList
   }
 
   /**
@@ -809,20 +737,110 @@ To install an add-on:
   }
 
   /**
-   * Loads a list of Addon from its JSON text representation
-   * @param text The JSON text to parse
-   * @return A List of addons
+   * Find in the list {@code addons} all addons with the same identifier {@link Addon#id} and a higher version number
+   * {@link Addon#version} than {@code addonRef}
+   * @param addonRef The addon reference
+   * @param addons The list to filter
+   * @return A list of addons
    */
-  protected List<Addon> parseJSONAddonsList(String text) {
-    List<Addon> addonsList = new ArrayList<Addon>();
-    new JsonSlurper().parseText(text).each { anAddon ->
-      try {
-        addonsList.add(fromJSON(anAddon))
-      } catch (InvalidJSONException ije) {
-        LOG.debug(ije.message)
-      }
+  protected List<Addon> findNewerAddons(Addon addonRef, List<Addon> addons) {
+    assert addonRef
+    assert addonRef.id
+    assert addonRef.version
+    return addons.findAll { it.id == addonRef.id && it > addonRef }
+  }
+
+  /**
+   * Find in the list {@code addons} the addon with the identifier {@code addonId} and the highest version number
+   * @param addonId The addon identifier
+   * @param addons The list to filter
+   * @return The addon matching constraints or null if none.
+   */
+  protected Addon findNewestAddon(String addonId, List<Addon> addons) {
+    assert addonId
+    return addons.findAll { it.id == addonId }.max()
+  }
+
+  /**
+   * Filter entries in {@code addons} to keep only stable versions. Return also snapshot versions if {@code allowSnapshot} is
+   * true and unstable versions if {@code allowUnstable} is true
+   * @param addons The list of addons to filter
+   * @param allowSnapshot Also return addons with snapshot versions (-SNAPSHOT)
+   * @param allowUnstable Also return addons with unstable versions (alpha, beta, RC, ...)
+   * @return the list of addons.
+   */
+  protected List<Addon> filterAddons(List<Addon> addons, boolean allowSnapshot, boolean allowUnstable) {
+    return addons.findAll {
+      !it.unstable && !it.isSnapshot() || it.unstable && !it.isSnapshot() && allowUnstable || it.isSnapshot() && allowSnapshot
     }
-    return addonsList
+  }
+
+  /**
+   * Returns all add-ons supporting a distributionType+appServerType
+   * @param addons The catalog to filter entries
+   * @param distributionType The distribution type to support
+   * @param appServerType The application server type to support
+   * @return
+   */
+  protected List<Addon> filterAddons(
+      final List<Addon> addons,
+      PlatformSettings.DistributionType distributionType,
+      PlatformSettings.AppServerType appServerType) {
+    return addons.findAll {
+      it.supportedDistributions.contains(distributionType) && it.supportedApplicationServers.contains(appServerType)
+    }
+  }
+
+  /**
+   * [AM_CAT_07] At merge, de-duplication of add-on entries of the local and remote catalogs is
+   * done using ID, Version, Distributions, Application Servers as the identifier.
+   * In case of duplication, the remote entry takes precedence
+   * @param remoteCatalog
+   * @param localCatalog
+   * @param distributionType The distribution type which addons listed must be compatible with
+   * @param appServerType The application seerver type which addons listed must be compatible with
+   * @return a list of addons
+   */
+  protected List<Addon> mergeCatalogs(
+      final List<Addon> remoteCatalog,
+      final List<Addon> localCatalog,
+      PlatformSettings.DistributionType distributionType,
+      PlatformSettings.AppServerType appServerType) {
+    // Let's keep on entries that are interesting us
+    List<Addon> filteredCentralCatalog = filterAddons(remoteCatalog, distributionType, appServerType)
+    List<Addon> filteredLocalCatalog = filterAddons(localCatalog, distributionType, appServerType)
+    // Let's initiate a new list from the filtered list of the remote catalog
+    List<Addon> mergedCatalog = filteredCentralCatalog.clone()
+    // Let's add entries from the filtered local catalog which aren't already in the catalog (based on id+version identifiers)
+    filteredLocalCatalog.findAll { !mergedCatalog.contains(it) }.each { mergedCatalog.add(it) }
+    return mergedCatalog
+  }
+
+  protected File getAddonStatusFile(File statusesDirectory, String addonId) {
+    return new File(statusesDirectory, "${addonId}${STATUS_FILE_EXT}")
+  }
+
+  protected File getLocalArchive(File archivesDirectory, Addon addon) {
+    return new File(archivesDirectory, "${addon.id}-${addon.version}.zip")
+  }
+
+  protected File getAddonStatusFile(File statusesDirectory, Addon addon) {
+    return getAddonStatusFile(statusesDirectory, addon.id)
+  }
+
+  protected boolean isInstalled(File statusesDirectory, Addon addon) {
+    return getAddonStatusFile(statusesDirectory, addon).exists()
+  }
+
+  protected String serializeXml(GPathResult xml) {
+    XmlUtil.serialize(new StreamingMarkupBuilder().bind {
+      mkp.yield xml
+    })
+  }
+
+  protected processFileInplace(File file, Closure processText) {
+    String text = file.text
+    file.write(processText(text))
   }
 
   /**
