@@ -769,7 +769,7 @@ To install an add-on:
    * @param allowUnstable Also return addons with unstable versions (alpha, beta, RC, ...)
    * @return the list of addons.
    */
-  protected List<Addon> filterAddons(List<Addon> addons, boolean allowSnapshot, boolean allowUnstable) {
+  protected List<Addon> filterAddonsByVersion(List<Addon> addons, boolean allowSnapshot, boolean allowUnstable) {
     return addons.findAll {
       !it.unstable && !it.isSnapshot() || it.unstable && !it.isSnapshot() && allowUnstable || it.isSnapshot() && allowSnapshot
     }
@@ -782,7 +782,7 @@ To install an add-on:
    * @param appServerType The application server type to support
    * @return
    */
-  protected List<Addon> filterAddons(
+  protected List<Addon> filterAddonsByCompatibility(
       final List<Addon> addons,
       PlatformSettings.DistributionType distributionType,
       PlatformSettings.AppServerType appServerType) {
@@ -807,8 +807,8 @@ To install an add-on:
       PlatformSettings.DistributionType distributionType,
       PlatformSettings.AppServerType appServerType) {
     // Let's keep on entries that are interesting us
-    List<Addon> filteredCentralCatalog = filterAddons(remoteCatalog, distributionType, appServerType)
-    List<Addon> filteredLocalCatalog = filterAddons(localCatalog, distributionType, appServerType)
+    List<Addon> filteredCentralCatalog = filterAddonsByCompatibility(remoteCatalog, distributionType, appServerType)
+    List<Addon> filteredLocalCatalog = filterAddonsByCompatibility(localCatalog, distributionType, appServerType)
     // Let's initiate a new list from the filtered list of the remote catalog
     List<Addon> mergedCatalog = filteredCentralCatalog.clone()
     // Let's add entries from the filtered local catalog which aren't already in the catalog (based on id+version identifiers)
