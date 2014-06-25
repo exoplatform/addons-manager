@@ -113,7 +113,6 @@ class AddonService {
   int describeAddon(
       EnvironmentSettings env,
       CommandLineParameters.InfoCommandParameters parameters) {
-    Addon addon
     List<Addon> availableAddons = loadAddons(
         parameters.catalog ?: env.remoteCatalogUrl,
         parameters.noCache,
@@ -122,43 +121,131 @@ class AddonService {
         env.localAddonsCatalogFile,
         env.platform.distributionType,
         env.platform.appServerType)
-    if (parameters.addonVersion == null) {
-      // No version specified thus we need to find the newer version available
-      // Let's find the first add-on with the given id (including or not snapshots depending of the option)
-      addon = findNewestAddon(parameters.addonId,
-                              filterAddonsByVersion(availableAddons, parameters.snapshots, parameters.unstable))
-      if (addon == null) {
-        LOG.error("No add-on with identifier ${parameters.addonId} found")
-        // Let's try to find an unstable version of the addon
-        if (!parameters.unstable && findNewestAddon(parameters.addonId,
-                                                    filterAddonsByVersion(availableAddons, parameters.snapshots, true))) {
-          LOG.info(
-              "This add-on exists but doesn't have a stable released version yet! add --unstable option to use an unstable version")
-        }
-        // Let's try to find a snapshot version of the addon
-        if (!parameters.snapshots && findNewestAddon(parameters.addonId,
-                                                     filterAddonsByVersion(availableAddons, parameters.snapshots, true))) {
-          LOG.info(
-              "This add-on exists but doesn't have a stable released version yet! add --snapshots option to use a development version")
-        }
-        return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
-      }
+    Addon addon = findAddon(
+        availableAddons,
+        parameters.addonId,
+        parameters.addonVersion,
+        parameters.snapshots,
+        parameters.unstable)
+    if (addon == null) {
+      return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
     } else {
-      // Let's find the add-on with the given id and version
-      addon = availableAddons.find {
-        parameters.addonId.equals(it.id) && parameters.addonVersion.equalsIgnoreCase(it.version)
-      }
-      if (addon == null) {
-        LOG.error(
-            "No add-on with identifier ${parameters.addonId} and version ${parameters.addonVersion} found")
-        return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
-      }
+      displayAddon(addon)
+      return AddonsManagerConstants.RETURN_CODE_OK
     }
-    displayAddon(addon)
-    return AddonsManagerConstants.RETURN_CODE_OK
   }
 
-  void displayAddon(final Addon addon) {
+  /**
+   * Install an add-on given the current environment {@code env} and command line {@code parameters}.
+   * @param env The environment
+   * @param parameters Command line parameters
+   * @return a return code defined in {@link AddonsManagerConstants}
+   */
+  int installAddon(
+      EnvironmentSettings env,
+      CommandLineParameters.InstallCommandParameters parameters) {
+    List<Addon> availableAddons = loadAddons(
+        parameters.catalog ?: env.remoteCatalogUrl,
+        parameters.noCache,
+        env.catalogsCacheDirectory,
+        parameters.offline,
+        env.localAddonsCatalogFile,
+        env.platform.distributionType,
+        env.platform.appServerType)
+    Addon addon = findAddon(
+        availableAddons,
+        parameters.addonId,
+        parameters.addonVersion,
+        parameters.snapshots,
+        parameters.unstable)
+    if (addon == null) {
+      return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
+    } else {
+      installAddon(env, addon, parameters.force, parameters.noCache, parameters.offline, parameters.noCompat)
+      return AddonsManagerConstants.RETURN_CODE_OK
+    }
+  }
+
+  /**
+   * Uninstall an add-on given the current environment {@code env} and command line {@code parameters}.
+   * @param env The environment
+   * @param parameters Command line parameters
+   * @return a return code defined in {@link AddonsManagerConstants}
+   */
+  int uninstallAddon(EnvironmentSettings env, CommandLineParameters.UninstallCommandParameters parameters) {
+    File statusFile = getAddonStatusFile(env.statusesDirectory, parameters.addonId)
+    if (statusFile.exists()) {
+      Addon addon
+      LOG.withStatus("Loading add-on details") {
+        addon = parseJSONAddon(statusFile.text);
+      }
+      uninstallAddon(env, addon)
+      return AddonsManagerConstants.RETURN_CODE_OK
+    } else {
+      LOG.error("Add-on not installed. It cannot be uninstalled.")
+      return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED
+    }
+  }
+
+  protected Addon findAddon(
+      final List<Addon> addons,
+      final String addonId,
+      final String addonVersion,
+      final Boolean allowSnapshots,
+      final Boolean allowUnstable
+  ) {
+    // Let's find the add-on with the given id and version
+    Addon result
+    if (addonVersion == null) {
+      // No version specified thus we need to find the newer version available
+      // Let's find the first add-on with the given id (including or not snapshots depending of the option)
+      result = findNewestAddon(addonId,
+                               filterAddonsByVersion(addons, allowSnapshots, allowUnstable))
+      if (result == null) {
+        if (!addons.find { it.id == addonId }) {
+          LOG.error "No add-on with identifier ${addonId} found in local or remote catalogs, check your add-on identifier"
+        } else {
+          LOG.error "No add-on with identifier ${addonId} found in local or remote catalogs"
+          // Let's try to find an unstable version of the addon
+          if (!allowUnstable && findNewestAddon(addonId,
+                                                filterAddonsByVersion(addons, allowSnapshots, true))) {
+            LOG.error(
+                "This add-on exists but doesn't have a stable released version yet! add --unstable option to use an unstable version")
+          }
+          // Let's try to find a snapshot version of the addon
+          if (!allowSnapshots && findNewestAddon(addonId,
+                                                 filterAddonsByVersion(addons, true, allowUnstable))) {
+            LOG.error(
+                "This add-on exists but doesn't have a stable released version yet! add --snapshots option to use a development version")
+          }
+        }
+      }
+    } else {
+      result = addons.find { it.id == addonId && it.version == addonVersion }
+      if (result == null) {
+        if (!addons.find { it.id == addonId }) {
+          LOG.error "No add-on with identifier ${addonId} found in local or remote catalogs, check your add-on identifier"
+        } else {
+          LOG.error "No add-on with identifier ${addonId} and version ${addonVersion} found in local or remote catalogs"
+          List<Addon> stableAddons = filterAddonsByVersion(addons.find { it.id == addonId }, false, false)
+          if (!stableAddons.empty) {
+            LOG.error "Stable version(s) currently available : ${stableAddons.sort().reverse().collect { it.version }.join(', ')}"
+          }
+          List<Addon> unstableAddons = filterAddonsByVersion(addons.find { it.id == addonId }, false, true)
+          if (!unstableAddons.empty) {
+            LOG.error "Unstable version(s) currently available : ${unstableAddons.sort().reverse().collect { it.version }.join(', ')}"
+          }
+          List<Addon> snapshotAddons = filterAddonsByVersion(addons.find { it.id == addonId }, false, false)
+          if (!snapshotAddons.empty) {
+            LOG.error "Development version(s) currently available : ${snapshotAddons.sort().reverse().collect { it.version }.join(', ')}"
+          }
+        }
+      }
+    }
+    return result
+  }
+
+  protected void displayAddon(final Addon addon) {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd")
     LOG.infoHR("=")
     LOG.info "Informations about add-on @|bold,yellow ${addon.id}|@@|bold :${addon.version}|@"
@@ -188,78 +275,6 @@ class AddonService {
       LOG.info String.format("@|bold %-${map.keySet()*.size().max()}s|@ : @|bold,yellow %s|@", it, map.get(it))
     }
     LOG.infoHR("=")
-  }
-
-  /**
-   * Install an add-on given the current environment {@code env} and command line {@code parameters}.
-   * @param env The environment
-   * @param parameters Command line parameters
-   * @return a return code defined in {@link AddonsManagerConstants}
-   */
-  int installAddon(
-      EnvironmentSettings env,
-      CommandLineParameters.InstallCommandParameters parameters) {
-    Addon addon
-    if (parameters.addonVersion == null) {
-      // No version specified thus we need to find the newer version available
-      List<Addon> availableAddons = loadAddons(
-          parameters.catalog ?: env.remoteCatalogUrl,
-          parameters.noCache,
-          env.catalogsCacheDirectory,
-          parameters.offline,
-          env.localAddonsCatalogFile,
-          env.platform.distributionType,
-          env.platform.appServerType,
-          parameters.snapshots,
-          parameters.unstable)
-      // Let's find the first add-on with the given id (including or not snapshots depending of the option)
-      addon = findNewestAddon(parameters.addonId, availableAddons)
-      if (addon == null) {
-        LOG.error("No add-on with identifier ${parameters.addonId} found")
-        return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
-      }
-    } else {
-      List<Addon> availableAddons = loadAddons(
-          parameters.catalog ?: env.remoteCatalogUrl,
-          parameters.noCache,
-          env.catalogsCacheDirectory,
-          parameters.offline,
-          env.localAddonsCatalogFile,
-          env.platform.distributionType,
-          env.platform.appServerType)
-      // Let's find the add-on with the given id and version
-      addon = availableAddons.find {
-        parameters.addonId.equals(it.id) && parameters.addonVersion.equalsIgnoreCase(it.version)
-      }
-      if (addon == null) {
-        LOG.error(
-            "No add-on with identifier ${parameters.addonId} and version ${parameters.addonVersion} found")
-        return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
-      }
-    }
-    installAddon(env, addon, parameters.force, parameters.noCache, parameters.offline, parameters.noCompat)
-    return AddonsManagerConstants.RETURN_CODE_OK
-  }
-
-  /**
-   * Uninstall an add-on given the current environment {@code env} and command line {@code parameters}.
-   * @param env The environment
-   * @param parameters Command line parameters
-   * @return a return code defined in {@link AddonsManagerConstants}
-   */
-  int uninstallAddon(EnvironmentSettings env, CommandLineParameters.UninstallCommandParameters parameters) {
-    File statusFile = getAddonStatusFile(env.statusesDirectory, parameters.addonId)
-    if (statusFile.exists()) {
-      Addon addon
-      LOG.withStatus("Loading add-on details") {
-        addon = parseJSONAddon(statusFile.text);
-      }
-      uninstallAddon(env, addon)
-      return AddonsManagerConstants.RETURN_CODE_OK
-    } else {
-      LOG.error("Add-on not installed. It cannot be uninstalled.")
-      return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED
-    }
   }
 
   protected int listInstalledAddons(EnvironmentSettings env) {
