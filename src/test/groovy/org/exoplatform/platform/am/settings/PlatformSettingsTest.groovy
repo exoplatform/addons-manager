@@ -29,18 +29,15 @@ import spock.lang.Specification
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class PlatformSettingsTest extends Specification {
-  /**
-   * Logger
-   */
-  private static final Logger LOG = Logger.getInstance()
 
   def setupSpec() {
-    LOG.enableDebug()
+    Logger.getInstance().enableDebug()
   }
 
   def cleanSpec() {
     Console.get().reset()
   }
+
 
   def "No plf.home property defined"() {
     when:
