@@ -501,10 +501,11 @@ To install an add-on:
       LOG.infoHR('=')
       LOG.info("README :")
       LOG.infoHR()
-//      LOG.wrapLine(readmeFile).each {
-//        LOG.info(it)
-//      }
-      LOG.info(readmeFile)
+      readmeFile.split('\n').collect().each {
+        LOG.wrapLine(it, Console.get().width - Logger.Level.INFO.prefix.length()).each {
+          LOG.info(it)
+        }
+      }
       LOG.infoHR()
     }
     LOG.withStatusOK("Add-on ${addon.name} ${addon.version} installed.")

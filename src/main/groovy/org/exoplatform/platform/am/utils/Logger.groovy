@@ -48,7 +48,7 @@ class Logger {
   /**
    * The enumeration of all possible log levels
    */
-  private enum Level {
+  enum Level {
     DEBUG(Ansi.Color.CYAN, "[DEBUG] "),
     INFO(Ansi.Color.DEFAULT, ""),
     WARN(Ansi.Color.MAGENTA, "[WARN]  "),
@@ -184,36 +184,38 @@ class Logger {
   }
 
   /**
-   * Breaks up long line > console.width into multiline at the word boundary
+   * Breaks up long line into multiline at the word boundary
+   * From : http://groovy.codehaus.org/Formatting+simple+tabular+text+data
    *
    * @param input long input line
+   * @param lineWidth maximum output lines width
    *
    * @return multiline as an array of strings
    */
-  List<String> wrapLine(input) {
+  List<String> wrapLine(input, lineWidth) {
     List<String> lines = []
     def line = ""
     def addWord;
 
     addWord = { word ->
       // Add new word if we have space in current line
-      if ((line.size() + word.size()) <= console.width) {
+      if ((line.size() + word.size()) <= lineWidth) {
         line <<= word
-        if (line.size() < console.width)
+        if (line.size() < lineWidth)
           line <<= " "
         // Our word is longer than line width, break it up
-      } else if (word.size() > console.width) {
-        def len = console.width - line.length()
+      } else if (word.size() > lineWidth) {
+        def len = lineWidth - line.length()
         line <<= word.substring(0, len)
         word = word.substring(len)
         lines += line.toString()
 
-        while (word.size() > console.width) {
-          lines += word.substring(0, console.width);
-          word = word.substring(console.width);
+        while (word.size() > lineWidth) {
+          lines += word.substring(0, lineWidth);
+          word = word.substring(lineWidth);
         }
         line = word
-        if (line.size() > 0 && line.size() < console.width)
+        if (line.size() > 0 && line.size() < lineWidth)
           line <<= " "
         // No more space in line - wrap to another line
       } else {
