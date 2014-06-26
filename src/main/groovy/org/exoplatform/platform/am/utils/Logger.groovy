@@ -115,7 +115,7 @@ class Logger {
   }
 
   void debugHR(final String padding) {
-    debug("".padRight(Console.get().width - Level.DEBUG.prefix.length(), padding))
+    debug("".padRight(console.width - Level.DEBUG.prefix.length(), padding))
   }
 
   void debugHR() {
@@ -131,7 +131,7 @@ class Logger {
   }
 
   void infoHR(final String padding) {
-    info("".padRight(Console.get().width - Level.INFO.prefix.length(), padding))
+    info("".padRight(console.width - Level.INFO.prefix.length(), padding))
   }
 
   void infoHR() {
@@ -147,7 +147,7 @@ class Logger {
   }
 
   void warnHR(final String padding) {
-    warn("".padRight(Console.get().width - Level.WARN.prefix.length(), padding))
+    warn("".padRight(console.width - Level.WARN.prefix.length(), padding))
   }
 
   void warnHR() {
@@ -163,7 +163,7 @@ class Logger {
   }
 
   void errorHR(final String padding) {
-    error("".padRight(Console.get().width - Level.ERROR.prefix.length(), padding))
+    error("".padRight(console.width - Level.ERROR.prefix.length(), padding))
   }
 
   void errorHR() {
@@ -181,6 +181,56 @@ class Logger {
     @|yellow  ee       ee   xx    xx |@  oo       @|yellow oo  |@
     @|yellow    eeeeeee    xx      xx    ooooooo |@           Add-ons Manager v @|yellow ${managerVersion} |@
     """)
+  }
+
+  /**
+   * Breaks up long line > console.width into multiline at the word boundary
+   *
+   * @param input long input line
+   *
+   * @return multiline as an array of strings
+   */
+  List<String> wrapLine(input) {
+    List<String> lines = []
+    def line = ""
+    def addWord;
+
+    addWord = { word ->
+      // Add new word if we have space in current line
+      if ((line.size() + word.size()) <= console.width) {
+        line <<= word
+        if (line.size() < console.width)
+          line <<= " "
+        // Our word is longer than line width, break it up
+      } else if (word.size() > console.width) {
+        def len = console.width - line.length()
+        line <<= word.substring(0, len)
+        word = word.substring(len)
+        lines += line.toString()
+
+        while (word.size() > console.width) {
+          lines += word.substring(0, console.width);
+          word = word.substring(console.width);
+        }
+        line = word
+        if (line.size() > 0 && line.size() < console.width)
+          line <<= " "
+        // No more space in line - wrap to another line
+      } else {
+        lines += line.toString()
+        line = ""
+
+        addWord(word)
+      }
+    }
+
+    input.split(" ").each() {
+      addWord(it)
+    }
+
+    lines += line.toString()
+
+    return lines
   }
 
   def withStatus(String text, Closure closure, Object... args) {

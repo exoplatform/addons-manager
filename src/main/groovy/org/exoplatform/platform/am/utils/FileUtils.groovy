@@ -19,11 +19,7 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.utils
-
 import java.nio.channels.FileChannel
-import java.util.zip.ZipEntry
-import java.util.zip.ZipInputStream
-
 /**
  * Miscellaneous utilities
  */
@@ -124,44 +120,12 @@ class FileUtils {
     }
   }
 
-  /**
-   * Extract from the zip all files matching the pattern into a given directory without taking care of the directories used in the zip
-   * @param zipToExtract
-   * @param destinationDir
-   * @param pattern
-   * @throws IOException
-   */
-  static List<String> flatExtractFromZip(File zipToExtract, File destinationDir, String pattern) throws IOException {
-    ArrayList<String> result = new ArrayList<String>()
-    ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zipToExtract))
-    if (!destinationDir.exists()) {
-      mkdirs(destinationDir)
-    }
-    zipInputStream.withStream {
-      ZipEntry entry
-      while (entry = zipInputStream.nextEntry) {
-        if (!entry.isDirectory() && entry.name =~ pattern) {
-          String filename = extractFilename(entry.name)
-          LOG.withStatus("Installing file ${filename}") {
-            FileOutputStream output = new FileOutputStream(new File(destinationDir, filename))
-            output.withStream {
-              int len = 0;
-              byte[] buffer = new byte[4096]
-              while ((len = zipInputStream.read(buffer)) > 0) {
-                output.write(buffer, 0, len);
-              }
-            }
-          }
-          result.add(filename)
-        }
-      }
-    }
-    result
-  }
-
   static String extractFilename(String fullpath) {
     return fullpath.substring(fullpath.lastIndexOf('/') + 1, fullpath.length())
   }
 
+  static String extractDirPath(String fullpath) {
+    return fullpath.substring(0, fullpath.lastIndexOf('/'))
+  }
 
 }

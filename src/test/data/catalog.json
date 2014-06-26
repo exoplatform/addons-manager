@@ -86,5 +86,18 @@
     "supportedDistributions": "community,enterprise",
     "supportedApplicationServers": "tomcat,jboss",
     "compatibility": "[300,)"
+  },
+  {
+    "id": "readme-addon",
+    "version": "42",
+    "name": "Fake addon with README",
+    "description": "A fake addon with README",
+    "releaseDate": "2014-06-18T00:00:00.000Z",
+    "downloadUrl": "http://localhost:${webserver.http.port}/readme-addon-42.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss",
+    "compatibility": "[4.0.0,)"
   }
 ]

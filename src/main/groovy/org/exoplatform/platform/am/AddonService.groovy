@@ -37,6 +37,10 @@ import org.exoplatform.platform.am.utils.*
 
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+
+import static org.exoplatform.platform.am.utils.FileUtils.*
 
 /**
  * All services related to add-ons
@@ -368,7 +372,7 @@ To install an add-on:
         if (offline) throw new AddonsManagerException(
             "${addon.name} ${addon.version} archive not found locally and offline mode activated")
         LOG.withStatus("Downloading add-on ${addon.name} ${addon.version}") {
-          FileUtils.downloadFile(addon.downloadUrl, getAddonLocalArchive(env.archivesDirectory, addon))
+          downloadFile(addon.downloadUrl, getAddonLocalArchive(env.archivesDirectory, addon))
         }
       } else if (addon.downloadUrl.startsWith("file://")) {
         // Let's see if it is a relative path
@@ -381,17 +385,62 @@ To install an add-on:
           throw new AddonsManagerException("File not found : ${addon.downloadUrl}")
         }
         LOG.withStatus("Copying add-on ${addon.name} ${addon.version}") {
-          FileUtils.copyFile(originFile,
-                             getAddonLocalArchive(env.archivesDirectory, addon))
+          copyFile(originFile,
+                   getAddonLocalArchive(env.archivesDirectory, addon))
         }
       } else {
         throw new AddonsManagerException("Invalid or not supported download URL : ${addon.downloadUrl}")
       }
     }
-    addon.installedLibraries = FileUtils.flatExtractFromZip(getAddonLocalArchive(env.archivesDirectory, addon),
-                                                            env.platform.librariesDirectory, '^.*jar$')
-    addon.installedWebapps = FileUtils.flatExtractFromZip(getAddonLocalArchive(env.archivesDirectory, addon),
-                                                          env.platform.webappsDirectory, '^.*war$')
+
+    addon.installedLibraries = new ArrayList<String>()
+    addon.installedWebapps = new ArrayList<String>()
+    String readmeFile
+    ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(getAddonLocalArchive(env.archivesDirectory, addon)))
+    zipInputStream.withStream {
+      ZipEntry entry
+      while (entry = zipInputStream.nextEntry) {
+        File destinationDir
+        List<String> installationList
+        if (entry.isDirectory()) {
+          // Do nothing
+          break
+        } else if (entry.name?.equalsIgnoreCase("README")) {
+          //[AM_STRUCT_05] a README file may be placed at the root of the archive. This readme file will be displayed after the install command.
+          readmeFile = zipInputStream.text
+          break
+        } else if (entry.name =~ '^.*jar$') {
+          // [AM_STRUCT_02] Add-ons libraries target directory
+          destinationDir = env.platform.librariesDirectory
+          installationList = addon.installedLibraries
+        } else if (entry.name =~ '^.*war$') {
+          // [AM_STRUCT_03] Add-ons webapps target directory
+          destinationDir = env.platform.webappsDirectory
+          installationList = addon.installedWebapps
+        } else {
+          // TBD: see [AM_STRUCT_04] non war/jar files locations
+          destinationDir = new File(env.platform.homeDirectory, extractDirPath(entry.name))
+          LOG.debug("[AM_STRUCT_04] non war/jar files locations : ${entry.name}")
+          break
+        }
+        if (!destinationDir.exists()) {
+          mkdirs(destinationDir)
+        }
+        String filename = extractFilename(entry.name)
+        LOG.withStatus("Installing file ${filename}") {
+          FileOutputStream output = new FileOutputStream(new File(destinationDir, filename))
+          output.withStream {
+            int len = 0;
+            byte[] buffer = new byte[4096]
+            while ((len = zipInputStream.read(buffer)) > 0) {
+              output.write(buffer, 0, len);
+            }
+          }
+        }
+        installationList.add(filename)
+      }
+    }
+
     // Update application.xml if it exists
     File applicationDescriptorFile = new File(env.platform.webappsDirectory, "META-INF/application.xml")
     if (applicationDescriptorFile.exists()) {
@@ -446,6 +495,17 @@ To install an add-on:
             installedWebapps: addon.installedWebapps
         )
       }
+    }
+    // [AM_INST_12] At the end of a successful install command, the README of the add-on is displayed in the console if present.
+    if (readmeFile) {
+      LOG.infoHR('=')
+      LOG.info("README :")
+      LOG.infoHR()
+//      LOG.wrapLine(readmeFile).each {
+//        LOG.info(it)
+//      }
+      LOG.info(readmeFile)
+      LOG.infoHR()
     }
     LOG.withStatusOK("Add-on ${addon.name} ${addon.version} installed.")
   }
@@ -621,7 +681,7 @@ To install an add-on:
             // Don't forget to always delete it even in case of error
             tempFile.deleteOnExit()
             // Download the remote catalog
-            FileUtils.downloadFile(catalogUrl, tempFile)
+            downloadFile(catalogUrl, tempFile)
             // Read the catalog content
             catalogContent = tempFile.text
           } catch (FileNotFoundException fne) {
@@ -634,7 +694,7 @@ To install an add-on:
           }
           // Everything was ok, let's store the cache
           LOG.withStatus("Updating local cache") {
-            FileUtils.copyFile(tempFile, catalogCacheFile, false)
+            copyFile(tempFile, catalogCacheFile, false)
           }
         } catch (groovy.json.JsonException je) {
           LOG.warn("Invalid JSON content from URL : ${catalogUrl}", je)
