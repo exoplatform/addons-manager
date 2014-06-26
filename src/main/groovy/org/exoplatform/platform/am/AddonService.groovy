@@ -209,13 +209,13 @@ class AddonService {
           // Let's try to find an unstable version of the addon
           if (!allowUnstable && findNewestAddon(addonId,
                                                 filterAddonsByVersion(addons, allowSnapshots, true))) {
-            LOG.error(
+            LOG.info(
                 "This add-on exists but doesn't have a stable released version yet! add --unstable option to use an unstable version")
           }
           // Let's try to find a snapshot version of the addon
           if (!allowSnapshots && findNewestAddon(addonId,
                                                  filterAddonsByVersion(addons, true, allowUnstable))) {
-            LOG.error(
+            LOG.info(
                 "This add-on exists but doesn't have a stable released version yet! add --snapshots option to use a development version")
           }
         }
@@ -229,15 +229,15 @@ class AddonService {
           LOG.error "No add-on with identifier ${addonId} and version ${addonVersion} found in local or remote catalogs"
           List<Addon> stableAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, false, false)
           if (!stableAddons.empty) {
-            LOG.error "Stable version(s) currently available : ${stableAddons.sort().reverse().collect { it.version }.join(', ')}"
+            LOG.info "Stable version(s) available for add-on @|bold,yellow ${addonId}|@ : ${stableAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
           List<Addon> unstableAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, false, true)
           if (!unstableAddons.empty) {
-            LOG.error "Unstable version(s) currently available : ${unstableAddons.sort().reverse().collect { it.version }.join(', ')}"
+            LOG.info "Unstable version(s) available for add-on @|bold,yellow ${addonId}|@ : ${unstableAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
-          List<Addon> snapshotAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, false, false)
+          List<Addon> snapshotAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, true, false)
           if (!snapshotAddons.empty) {
-            LOG.error "Development version(s) currently available : ${snapshotAddons.sort().reverse().collect { it.version }.join(', ')}"
+            LOG.info "Development version(s) available for add-on @|bold,yellow ${addonId}|@ : ${snapshotAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
         }
       }
@@ -426,11 +426,11 @@ To install an add-on:
       } else if (addon.downloadUrl.startsWith("file://")) {
         // Let's see if it is a relative path
         File originFile = new File(env.addonsDirectory, addon.downloadUrl.replaceAll("file://", ""))
-        if(!originFile.exists()){
+        if (!originFile.exists()) {
           //Let's test if it is an absolute path
           originFile = new File(addon.downloadUrl.replaceAll("file://", ""))
         }
-        if(!originFile.exists()){
+        if (!originFile.exists()) {
           throw new AddonsManagerException("File not found : ${addon.downloadUrl}")
         }
         LOG.withStatus("Copying add-on ${addon.name} ${addon.version}") {
