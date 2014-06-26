@@ -227,15 +227,15 @@ class AddonService {
           LOG.error "No add-on with identifier ${addonId} found in local or remote catalogs, check your add-on identifier"
         } else {
           LOG.error "No add-on with identifier ${addonId} and version ${addonVersion} found in local or remote catalogs"
-          List<Addon> stableAddons = filterAddonsByVersion(addons.find { it.id == addonId }, false, false)
+          List<Addon> stableAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, false, false)
           if (!stableAddons.empty) {
             LOG.error "Stable version(s) currently available : ${stableAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
-          List<Addon> unstableAddons = filterAddonsByVersion(addons.find { it.id == addonId }, false, true)
+          List<Addon> unstableAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, false, true)
           if (!unstableAddons.empty) {
             LOG.error "Unstable version(s) currently available : ${unstableAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
-          List<Addon> snapshotAddons = filterAddonsByVersion(addons.find { it.id == addonId }, false, false)
+          List<Addon> snapshotAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, false, false)
           if (!snapshotAddons.empty) {
             LOG.error "Development version(s) currently available : ${snapshotAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
