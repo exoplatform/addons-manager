@@ -424,8 +424,17 @@ To install an add-on:
           FileUtils.downloadFile(addon.downloadUrl, getLocalArchive(env.archivesDirectory, addon))
         }
       } else if (addon.downloadUrl.startsWith("file://")) {
+        // Let's see if it is a relative path
+        File originFile = new File(env.addonsDirectory, addon.downloadUrl.replaceAll("file://", ""))
+        if(!originFile.exists()){
+          //Let's test if it is an absolute path
+          originFile = new File(addon.downloadUrl.replaceAll("file://", ""))
+        }
+        if(!originFile.exists()){
+          throw new AddonsManagerException("File not found : ${addon.downloadUrl}")
+        }
         LOG.withStatus("Copying add-on ${addon.name} ${addon.version}") {
-          FileUtils.copyFile(new File(env.addonsDirectory, addon.downloadUrl.replaceAll("file://", "")),
+          FileUtils.copyFile(originFile,
                              getLocalArchive(env.archivesDirectory, addon))
         }
       } else {
