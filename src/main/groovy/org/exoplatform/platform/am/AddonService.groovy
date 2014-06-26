@@ -501,9 +501,16 @@ To install an add-on:
       LOG.infoHR('=')
       LOG.info("README :")
       LOG.infoHR()
+      int i = 0
       readmeFile.split('\n').collect().each {
         LOG.wrapLine(it, Console.get().width - Logger.Level.INFO.prefix.length()).each {
           LOG.info(it)
+          i++
+          if (i == Console.get().height - 2) {
+            LOG.info("@|yellow [Press any key to continue ...]|@")
+            Console.get().in.read()
+            i = 0
+          }
         }
       }
       LOG.infoHR()
