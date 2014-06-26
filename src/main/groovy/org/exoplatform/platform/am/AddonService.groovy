@@ -622,7 +622,7 @@ To install an add-on:
     String catalogContent
     if (catalogFile.exists()) {
       LOG.debug("Loading catalog from ${catalogFile}")
-      LOG.withStatus("Reading catalog ${catalogFile}") {
+      LOG.withStatus("Reading catalog ${catalogFile.name}") {
         catalogContent = catalogFile.text
       }
       try {
