@@ -294,19 +294,19 @@ class CommandLineParserTest extends Specification {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
-    CommandLineParameters.Command.INFO == cliArgs.command
-    "my-addon".equals(cliArgs.commandInfo.addonId)
-    !cliArgs.commandInfo.addonVersion
-    !cliArgs.commandInfo.catalog
-    !cliArgs.commandInfo.noCache
-    !cliArgs.commandInfo.offline
-    !cliArgs.commandInfo.snapshots
-    !cliArgs.commandInfo.unstable
+    CommandLineParameters.Command.DESCRIBE == cliArgs.command
+    "my-addon".equals(cliArgs.commandDescribe.addonId)
+    !cliArgs.commandDescribe.addonVersion
+    !cliArgs.commandDescribe.catalog
+    !cliArgs.commandDescribe.noCache
+    !cliArgs.commandDescribe.offline
+    !cliArgs.commandDescribe.snapshots
+    !cliArgs.commandDescribe.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
     args << [
-        ["info", "my-addon"],
+        ["describe", "my-addon"],
     ]
   }
 
@@ -314,19 +314,19 @@ class CommandLineParserTest extends Specification {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
-    CommandLineParameters.Command.INFO == cliArgs.command
-    "my-addon".equals(cliArgs.commandInfo.addonId)
-    !cliArgs.commandInfo.addonVersion
-    !cliArgs.commandInfo.catalog
-    cliArgs.commandInfo.noCache
-    !cliArgs.commandInfo.offline
-    !cliArgs.commandInfo.snapshots
-    !cliArgs.commandInfo.unstable
+    CommandLineParameters.Command.DESCRIBE == cliArgs.command
+    "my-addon".equals(cliArgs.commandDescribe.addonId)
+    !cliArgs.commandDescribe.addonVersion
+    !cliArgs.commandDescribe.catalog
+    cliArgs.commandDescribe.noCache
+    !cliArgs.commandDescribe.offline
+    !cliArgs.commandDescribe.snapshots
+    !cliArgs.commandDescribe.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
     args << [
-        ["info", "my-addon", "--no-cache"],
+        ["describe", "my-addon", "--no-cache"],
     ]
   }
 
@@ -334,19 +334,19 @@ class CommandLineParserTest extends Specification {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
-    CommandLineParameters.Command.INFO == cliArgs.command
-    "my-addon".equals(cliArgs.commandInfo.addonId)
-    !cliArgs.commandInfo.addonVersion
-    !cliArgs.commandInfo.catalog
-    !cliArgs.commandInfo.noCache
-    cliArgs.commandInfo.offline
-    !cliArgs.commandInfo.snapshots
-    !cliArgs.commandInfo.unstable
+    CommandLineParameters.Command.DESCRIBE == cliArgs.command
+    "my-addon".equals(cliArgs.commandDescribe.addonId)
+    !cliArgs.commandDescribe.addonVersion
+    !cliArgs.commandDescribe.catalog
+    !cliArgs.commandDescribe.noCache
+    cliArgs.commandDescribe.offline
+    !cliArgs.commandDescribe.snapshots
+    !cliArgs.commandDescribe.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
     args << [
-        ["info", "my-addon", "--offline"],
+        ["describe", "my-addon", "--offline"],
     ]
   }
 
@@ -354,18 +354,18 @@ class CommandLineParserTest extends Specification {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
-    "my-addon".equals(cliArgs.commandInfo.addonId)
-    "42".equals(cliArgs.commandInfo.addonVersion)
-    !cliArgs.commandInfo.catalog
-    !cliArgs.commandInfo.noCache
-    !cliArgs.commandInfo.offline
-    !cliArgs.commandInfo.snapshots
-    !cliArgs.commandInfo.unstable
+    "my-addon".equals(cliArgs.commandDescribe.addonId)
+    "42".equals(cliArgs.commandDescribe.addonVersion)
+    !cliArgs.commandDescribe.catalog
+    !cliArgs.commandDescribe.noCache
+    !cliArgs.commandDescribe.offline
+    !cliArgs.commandDescribe.snapshots
+    !cliArgs.commandDescribe.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
     args << [
-        ["info", "my-addon:42"],
+        ["describe", "my-addon:42"],
     ]
   }
 
@@ -373,19 +373,19 @@ class CommandLineParserTest extends Specification {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
-    CommandLineParameters.Command.INFO == cliArgs.command
-    "my-addon".equals(cliArgs.commandInfo.addonId)
-    !cliArgs.commandInfo.catalog
-    !cliArgs.commandInfo.noCache
-    !cliArgs.commandInfo.offline
-    cliArgs.commandInfo.snapshots
-    !cliArgs.commandInfo.unstable
+    CommandLineParameters.Command.DESCRIBE == cliArgs.command
+    "my-addon".equals(cliArgs.commandDescribe.addonId)
+    !cliArgs.commandDescribe.catalog
+    !cliArgs.commandDescribe.noCache
+    !cliArgs.commandDescribe.offline
+    cliArgs.commandDescribe.snapshots
+    !cliArgs.commandDescribe.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
     args << [
-        ["info", "my-addon", "--snapshots"],
-        ["info", "my-addon:42-SNAPSHOT", "--snapshots"],
+        ["describe", "my-addon", "--snapshots"],
+        ["describe", "my-addon:42-SNAPSHOT", "--snapshots"],
     ]
   }
 
@@ -393,19 +393,19 @@ class CommandLineParserTest extends Specification {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
-    CommandLineParameters.Command.INFO == cliArgs.command
-    "my-addon".equals(cliArgs.commandInfo.addonId)
-    !cliArgs.commandInfo.catalog
-    !cliArgs.commandInfo.noCache
-    !cliArgs.commandInfo.offline
-    !cliArgs.commandInfo.snapshots
-    cliArgs.commandInfo.unstable
+    CommandLineParameters.Command.DESCRIBE == cliArgs.command
+    "my-addon".equals(cliArgs.commandDescribe.addonId)
+    !cliArgs.commandDescribe.catalog
+    !cliArgs.commandDescribe.noCache
+    !cliArgs.commandDescribe.offline
+    !cliArgs.commandDescribe.snapshots
+    cliArgs.commandDescribe.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
     args << [
-        ["info", "my-addon", "--unstable"],
-        ["info", "my-addon:42-RC1", "--unstable"],
+        ["describe", "my-addon", "--unstable"],
+        ["describe", "my-addon:42-RC1", "--unstable"],
     ]
   }
 
@@ -413,19 +413,19 @@ class CommandLineParserTest extends Specification {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
-    CommandLineParameters.Command.INFO == cliArgs.command
-    "my-addon".equals(cliArgs.commandInfo.addonId)
-    validCatalogUrl.equals(cliArgs.commandInfo.catalog.toString())
-    !cliArgs.commandInfo.noCache
-    !cliArgs.commandInfo.offline
-    !cliArgs.commandInfo.snapshots
-    !cliArgs.commandInfo.unstable
+    CommandLineParameters.Command.DESCRIBE == cliArgs.command
+    "my-addon".equals(cliArgs.commandDescribe.addonId)
+    validCatalogUrl.equals(cliArgs.commandDescribe.catalog.toString())
+    !cliArgs.commandDescribe.noCache
+    !cliArgs.commandDescribe.offline
+    !cliArgs.commandDescribe.snapshots
+    !cliArgs.commandDescribe.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
     args << [
-        ["info", "my-addon", "--catalog=${validCatalogUrl}"],
-        ["info", "my-addon:42", "--catalog=${validCatalogUrl}"],
+        ["describe", "my-addon", "--catalog=${validCatalogUrl}"],
+        ["describe", "my-addon:42", "--catalog=${validCatalogUrl}"],
     ]
   }
 
@@ -436,8 +436,8 @@ class CommandLineParserTest extends Specification {
     thrown(CommandLineParsingException)
     where:
     args << [
-        ["info", "my-addon", "--catalog=${invalidCatalogUrl}"],
-        ["info", "my-addon:42", "--catalog=${invalidCatalogUrl}"],
+        ["describe", "my-addon", "--catalog=${invalidCatalogUrl}"],
+        ["describe", "my-addon:42", "--catalog=${invalidCatalogUrl}"],
     ]
   }
 

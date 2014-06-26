@@ -164,10 +164,10 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if the foo-addon exists and has no released version (only snapshots) : must raise an error saying "The add-on foo-addon doesn't doesn't have a released version yet ! add snapshot option to use the snapshot version [KO]"
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the catalog, check your add-on name [KO]"
    */
-  def "[AM_INF_01] addons.(sh|bat) infos foo-addon"() {
+  def "[AM_INF_01] addons.(sh|bat) describe foo-addon"() {
     expect:
     // Verify return code
-    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["info", "foo-addon", "--verbose"]).exitValue()
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["describe", "foo-addon", "--verbose"]).exitValue()
   }
 
   /**
@@ -175,10 +175,10 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if the foo-addon exists and has no released version 42 : must raise an error saying "The add-on foo-addon doesn't have a released version 42 yet ! check the version you specify [KO]"
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the catalog, check your add-on name [KO]"
    */
-  def "[AM_INF_02] addons.(sh|bat) infos foo-addon:42"() {
+  def "[AM_INF_02] addons.(sh|bat) describe foo-addon:42"() {
     expect:
     // Verify return code
-    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["info", "foo-addon:42", "--verbose"]).exitValue()
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["describe", "foo-addon:42", "--verbose"]).exitValue()
   }
 
   /**

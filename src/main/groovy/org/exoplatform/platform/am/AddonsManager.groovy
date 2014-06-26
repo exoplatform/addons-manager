@@ -63,8 +63,8 @@ try {
     case CommandLineParameters.Command.LIST:
       returnCode = addonService.listAddons(env, commandLineParameters.commandList)
       break
-    case CommandLineParameters.Command.INFO:
-      returnCode = addonService.describeAddon(env, commandLineParameters.commandInfo)
+    case CommandLineParameters.Command.DESCRIBE:
+      returnCode = addonService.describeAddon(env, commandLineParameters.commandDescribe)
       break
     case CommandLineParameters.Command.INSTALL:
       returnCode = addonService.installAddon(env, commandLineParameters.commandInstall)

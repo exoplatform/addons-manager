@@ -114,7 +114,7 @@ class AddonService {
    */
   int describeAddon(
       EnvironmentSettings env,
-      CommandLineParameters.InfoCommandParameters parameters) {
+      CommandLineParameters.DescribeCommandParameters parameters) {
     List<Addon> availableAddons = loadAddons(
         parameters.catalog ?: env.remoteCatalogUrl,
         parameters.noCache,

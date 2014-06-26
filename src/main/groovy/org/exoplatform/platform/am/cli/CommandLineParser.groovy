@@ -55,7 +55,7 @@ class CommandLineParser {
     _cliArgs = new CommandLineParameters()
     _jCommander = new JCommander(_cliArgs);
     _jCommander.addCommand(_cliArgs.commandList)
-    _jCommander.addCommand(_cliArgs.commandInfo)
+    _jCommander.addCommand(_cliArgs.commandDescribe)
     _jCommander.addCommand(_cliArgs.commandInstall)
     _jCommander.addCommand(_cliArgs.commandUninstall)
     _jCommander.setColumnSize(columnSize)
@@ -93,21 +93,21 @@ class CommandLineParser {
 
     if (CommandLineParameters.LIST_COMMAND.equals(_jCommander.getParsedCommand())) {
       _cliArgs.command = CommandLineParameters.Command.LIST
-    } else if (CommandLineParameters.INFO_COMMAND.equals(_jCommander.getParsedCommand())) {
-      _cliArgs.command = CommandLineParameters.Command.INFO
-      if (_cliArgs?.commandInfo?.addon?.size() != 1) {
+    } else if (CommandLineParameters.DESCRIBE_COMMAND.equals(_jCommander.getParsedCommand())) {
+      _cliArgs.command = CommandLineParameters.Command.DESCRIBE
+      if (_cliArgs?.commandDescribe?.addon?.size() != 1) {
         throw new CommandLineParsingException(
-            "Command ${CommandLineParameters.Command.INFO} must have one and only one value (found : ${_cliArgs?.commandInfo?.addon})");
+            "Command ${CommandLineParameters.Command.DESCRIBE} must have one and only one value (found : ${_cliArgs?.commandDescribe?.addon})");
       }
-      if (_cliArgs.commandInfo.addon[0].indexOf(':') > 0) {
+      if (_cliArgs.commandDescribe.addon[0].indexOf(':') > 0) {
         // A specific version is asked
-        _cliArgs.commandInfo.addonId = _cliArgs.commandInfo.addon[0].substring(0, _cliArgs.commandInfo.addon[0].indexOf
+        _cliArgs.commandDescribe.addonId = _cliArgs.commandDescribe.addon[0].substring(0, _cliArgs.commandDescribe.addon[0].indexOf
             (':'))
-        _cliArgs.commandInfo.addonVersion = _cliArgs.commandInfo.addon[0].substring(
-            _cliArgs.commandInfo.addon[0].indexOf(':') + 1,
-            _cliArgs.commandInfo.addon[0].length())
+        _cliArgs.commandDescribe.addonVersion = _cliArgs.commandDescribe.addon[0].substring(
+            _cliArgs.commandDescribe.addon[0].indexOf(':') + 1,
+            _cliArgs.commandDescribe.addon[0].length())
       } else {
-        _cliArgs.commandInfo.addonId = _cliArgs.commandInfo.addon[0]
+        _cliArgs.commandDescribe.addonId = _cliArgs.commandDescribe.addon[0]
       }
     } else if (CommandLineParameters.INSTALL_COMMAND.equals(_jCommander.getParsedCommand())) {
       _cliArgs.command = CommandLineParameters.Command.INSTALL

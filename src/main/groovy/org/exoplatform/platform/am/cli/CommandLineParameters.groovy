@@ -32,7 +32,7 @@ class CommandLineParameters {
    * The enumeration of all possible commands
    */
   enum Command {
-    LIST(LIST_COMMAND), INFO(INFO_COMMAND), INSTALL(INSTALL_COMMAND), UNINSTALL(UNINSTALL_COMMAND)
+    LIST(LIST_COMMAND), DESCRIBE(DESCRIBE_COMMAND), INSTALL(INSTALL_COMMAND), UNINSTALL(UNINSTALL_COMMAND)
     final String name
 
     Command(String name) {
@@ -45,9 +45,9 @@ class CommandLineParameters {
    */
   static final String LIST_COMMAND = "list"
   /**
-   * The command name used to list add-ons
+   * The command name used to describe an add-on
    */
-  static final String INFO_COMMAND = "info"
+  static final String DESCRIBE_COMMAND = "describe"
   /**
    * The command name used to install an add-on
    */
@@ -62,9 +62,9 @@ class CommandLineParameters {
    */
   ListCommandParameters commandList = new ListCommandParameters()
   /**
-   * Info command parameters
+   * Describe command parameters
    */
-  InfoCommandParameters commandInfo = new InfoCommandParameters()
+  DescribeCommandParameters commandDescribe = new DescribeCommandParameters()
   /**
    * Install command parameters
    */
@@ -93,7 +93,7 @@ class CommandLineParameters {
    * @return true if the verbose option is activated as main parameter or command parameter
    */
   boolean isVerbose() {
-    return _verbose || commandList.verbose || commandInfo.verbose || commandInstall.verbose || commandUninstall.verbose
+    return _verbose || commandList.verbose || commandDescribe.verbose || commandInstall.verbose || commandUninstall.verbose
   }
 
   /**
@@ -101,7 +101,7 @@ class CommandLineParameters {
    * @return true if the help option is activated as main parameter or command parameter
    */
   boolean isHelp() {
-    return _help || commandList.help || commandInfo.help || commandInstall.help || commandUninstall.help
+    return _help || commandList.help || commandDescribe.help || commandInstall.help || commandUninstall.help
   }
 
   /**
@@ -133,11 +133,11 @@ class CommandLineParameters {
   /**
    * Specific parameters to print informations about an add-on
    */
-  @Parameters(commandDescription = "Describe an add-on", commandNames = CommandLineParameters.INFO_COMMAND, separators = "=")
-  class InfoCommandParameters {
-    @Parameter(names = ["--snapshots"], description = "Allow to print informations of add-on in SNAPSHOT version")
+  @Parameters(commandDescription = "Describe an add-on", commandNames = CommandLineParameters.DESCRIBE_COMMAND, separators = "=")
+  class DescribeCommandParameters {
+    @Parameter(names = ["--snapshots"], description = "If no version specified, allows to find the latest one including development versions")
     boolean snapshots
-    @Parameter(names = ["--unstable"], description = "Allow to print informations of add-on in unstable version")
+    @Parameter(names = ["--unstable"], description = "If no version specified, allows to find the latest one including unstable version.")
     boolean unstable
     @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
@@ -146,7 +146,7 @@ class CommandLineParameters {
     boolean noCache
     @Parameter(names = ["--offline"], description = "Do not download anything")
     boolean offline
-    @Parameter(description = "addon[:version]", arity = 1, required = true)
+    @Parameter(description = "identifier[:version]", arity = 1, required = true)
     protected List<String> addon;
     @Parameter(names = ["-v", "--verbose"], hidden = true)
     protected boolean verbose
@@ -163,9 +163,9 @@ class CommandLineParameters {
   class InstallCommandParameters {
     @Parameter(names = ["--force"], description = "Enforce to download again and reinstall an add-on already deployed")
     boolean force
-    @Parameter(names = ["--snapshots"], description = "Allow to install add-on in SNAPSHOTs version")
+    @Parameter(names = ["--snapshots"], description = "If no version specified, allows to find the latest one including development versions")
     boolean snapshots
-    @Parameter(names = ["--unstable"], description = "Allow to install add-on in unstable version")
+    @Parameter(names = ["--unstable"], description = "If no version specified, allows to find the latest one including unstable versions")
     boolean unstable
     @Parameter(names = ["--no-compat"], description = "Disable compatibility check")
     boolean noCompat
@@ -176,7 +176,7 @@ class CommandLineParameters {
     boolean noCache
     @Parameter(names = ["--offline"], description = "Do not download anything")
     boolean offline
-    @Parameter(description = "addon[:version]", arity = 1, required = true)
+    @Parameter(description = "identifier[:version]", arity = 1, required = true)
     protected List<String> addon;
     @Parameter(names = ["-v", "--verbose"], hidden = true)
     protected boolean verbose
