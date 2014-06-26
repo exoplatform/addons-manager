@@ -21,6 +21,7 @@
 package org.exoplatform.platform.am
 
 import org.exoplatform.platform.am.settings.PlatformSettings
+import org.exoplatform.platform.am.utils.InvalidJSONException
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -31,6 +32,153 @@ class AddonServiceTest extends Specification {
 
   @Shared
   AddonService addonService = AddonService.getInstance()
+
+  def "createAddonFromJsonText parse a valid JSON text"() {
+    when:
+    def addon = addonService.createAddonFromJsonText("""
+    {
+        "id": "my-addon",
+        "version": "1.0.0",
+        "name": "The super addon",
+        "downloadUrl": "http://path/to/archive.zip",
+        "vendor": "eXo platform",
+        "license": "LGPLv3",
+        "supportedDistributions": "community,enterprise",
+        "supportedApplicationServers": "tomcat,jboss"
+    }
+""")
+    then:
+    // Mustn't be null nor throw an exception
+    addon == new Addon(
+        id: "my-addon",
+        version: "1.0.0",
+        name: "The super addon",
+        downloadUrl: "http://path/to/archive.zip",
+        vendor: "eXo platform",
+        license: "LGPLv3",
+        supportedApplicationServers: [PlatformSettings.AppServerType.JBOSS, PlatformSettings.AppServerType.TOMCAT],
+        supportedDistributions: [PlatformSettings.DistributionType.COMMUNITY, PlatformSettings.DistributionType.ENTERPRISE])
+  }
+
+  def "createAddonFromJsonText parse an invalid valid JSON text"() {
+    when:
+    addonService.createAddonFromJsonText("""
+    {
+        "version": "1.0.0",
+        "name": "The super addon",
+        "downloadUrl": "http://path/to/archive.zip",
+        "vendor": "eXo platform",
+        "license": "LGPLv3",
+        "supportedDistributions": "community,enterprise",
+        "supportedApplicationServers": "tomcat,jboss"
+    }
+""")
+    then:
+    thrown(InvalidJSONException)
+  }
+
+  def "createAddonsFromJsonText must silently ignore all invalid entries"() {
+    when:
+    def addons = addonService.createAddonsFromJsonText("""
+[
+    {
+        "id": "my-addon",
+        "version": "1.0.0",
+        "name": "The super addon",
+        "downloadUrl": "http://path/to/archive.zip",
+        "vendor": "eXo platform",
+        "license": "LGPLv3",
+        "supportedDistributions": "community,enterprise",
+        "supportedApplicationServers": "tomcat,jboss"
+    },
+    {
+        "version": "1.0.0",
+        "name": "The super addon",
+        "downloadUrl": "http://path/to/archive.zip",
+        "vendor": "eXo platform",
+        "license": "LGPLv3",
+        "supportedDistributions": "community,enterprise",
+        "supportedApplicationServers": "tomcat,jboss"
+    },
+    {
+        "id": "my-addon",
+        "name": "The super addon",
+        "downloadUrl": "http://path/to/archive.zip",
+        "vendor": "eXo platform",
+        "license": "LGPLv3",
+        "supportedDistributions": "community,enterprise",
+        "supportedApplicationServers": "tomcat,jboss"
+    },
+    {
+        "id": "my-addon",
+        "version": "1.0.0",
+        "downloadUrl": "http://path/to/archive.zip",
+        "vendor": "eXo platform",
+        "license": "LGPLv3",
+        "supportedDistributions": "community,enterprise",
+        "supportedApplicationServers": "tomcat,jboss"
+    },
+    {
+        "id": "my-addon",
+        "version": "1.0.0",
+        "name": "The super addon",
+        "vendor": "eXo platform",
+        "license": "LGPLv3",
+        "supportedDistributions": "community,enterprise",
+        "supportedApplicationServers": "tomcat,jboss"
+    },
+    {
+        "id": "my-addon",
+        "version": "1.0.0",
+        "name": "The super addon",
+        "downloadUrl": "http://path/to/archive.zip",
+        "license": "LGPLv3",
+        "supportedDistributions": "community,enterprise",
+        "supportedApplicationServers": "tomcat,jboss"
+    },
+    {
+        "id": "my-addon",
+        "version": "1.0.0",
+        "name": "The super addon",
+        "downloadUrl": "http://path/to/archive.zip",
+        "vendor": "eXo platform",
+        "supportedDistributions": "community,enterprise",
+        "supportedApplicationServers": "tomcat,jboss"
+    },
+    {
+        "id": "my-addon",
+        "version": "1.0.0",
+        "name": "The super addon",
+        "downloadUrl": "http://path/to/archive.zip",
+        "vendor": "eXo platform",
+        "license": "LGPLv3",
+        "supportedApplicationServers": "tomcat,jboss"
+    },
+    {
+        "id": "my-addon",
+        "version": "1.0.0",
+        "name": "The super addon",
+        "downloadUrl": "http://path/to/archive.zip",
+        "vendor": "eXo platform",
+        "license": "LGPLv3",
+        "supportedDistributions": "community,enterprise",
+    }
+]
+""")
+    then:
+    // Mustn't be null nor throw an exception
+    addons != null
+    addons.size() == 1
+    addons[0] == new Addon(
+        id: "my-addon",
+        version: "1.0.0",
+        name: "The super addon",
+        downloadUrl: "http://path/to/archive.zip",
+        vendor: "eXo platform",
+        license: "LGPLv3",
+        supportedApplicationServers: [PlatformSettings.AppServerType.JBOSS, PlatformSettings.AppServerType.TOMCAT],
+        supportedDistributions: [PlatformSettings.DistributionType.COMMUNITY, PlatformSettings.DistributionType.ENTERPRISE])
+  }
 
   /**
    * [AM_CAT_07] At merge, de-duplication of add-on entries of the local and remote catalogs is done using  ID, Version,
@@ -91,21 +239,21 @@ class AddonServiceTest extends Specification {
     then:
     // addons 1 and 3 are supporting appsrv tomcat on community edition
     addonService.findAddonsByCompatibility(addonsCatalog,
-                                             PlatformSettings.DistributionType.COMMUNITY,
-                                             PlatformSettings.AppServerType.TOMCAT).sort() == [addon1, addon3].sort()
+                                           PlatformSettings.DistributionType.COMMUNITY,
+                                           PlatformSettings.AppServerType.TOMCAT).sort() == [addon1, addon3].sort()
     // addons 1 and 3 are supporting appsrv tomcat on enterprise edition
     addonService.findAddonsByCompatibility(addonsCatalog,
-                                             PlatformSettings.DistributionType.ENTERPRISE,
-                                             PlatformSettings.AppServerType.TOMCAT).sort() == [addon1, addon4].sort()
+                                           PlatformSettings.DistributionType.ENTERPRISE,
+                                           PlatformSettings.AppServerType.TOMCAT).sort() == [addon1, addon4].sort()
     // addon 1 is supporting appsrv jboss on community edition
     // TODO : The current model doesn't let us know that it is an impossible combination
     addonService.findAddonsByCompatibility(addonsCatalog,
-                                             PlatformSettings.DistributionType.COMMUNITY,
-                                             PlatformSettings.AppServerType.JBOSS).sort() == [addon1].sort()
+                                           PlatformSettings.DistributionType.COMMUNITY,
+                                           PlatformSettings.AppServerType.JBOSS).sort() == [addon1].sort()
     // addons 1 and 2 are supporting appsrv jboss on enterprise edition
     addonService.findAddonsByCompatibility(addonsCatalog,
-                                             PlatformSettings.DistributionType.ENTERPRISE,
-                                             PlatformSettings.AppServerType.JBOSS).sort() == [addon1, addon2].sort()
+                                           PlatformSettings.DistributionType.ENTERPRISE,
+                                           PlatformSettings.AppServerType.JBOSS).sort() == [addon1, addon2].sort()
   }
 
   def "findAddonsByVersion must keep only stable versions"() {
@@ -117,7 +265,7 @@ class AddonServiceTest extends Specification {
     ]
     then:
     addonService.findAddonsByVersion(addons, false, false).sort() == [new Addon(id: "addon", version: "42",
-                                                                                  unstable: false)].sort()
+                                                                                unstable: false)].sort()
   }
 
   def "findAddonsByVersion must keep stable and snapshot versions"() {
@@ -158,14 +306,6 @@ class AddonServiceTest extends Specification {
         new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true),
         new Addon(id: "addon", version: "42-alpha1", unstable: true),
         new Addon(id: "addon", version: "42", unstable: false)].sort()
-  }
-
-  def "convertUrlToFilename must always return the same value for a given URL"() {
-    when:
-    def filename1 = addonService.convertUrlToFilename(new URL("http://www.exoplatform.com"))
-    def filename2 = addonService.convertUrlToFilename(new URL("http://www.exoplatform.com"))
-    then:
-    filename1 == filename2
   }
 
   def "findAddonsNewerThan must use version numbers to order and extract newer addons"() {
@@ -231,4 +371,11 @@ class AddonServiceTest extends Specification {
     addonService.findNewestAddon("addon2", addons) == null
   }
 
+  def "convertUrlToFilename must always return the same value for a given URL"() {
+    when:
+    def filename1 = addonService.convertUrlToFilename(new URL("http://www.exoplatform.com"))
+    def filename2 = addonService.convertUrlToFilename(new URL("http://www.exoplatform.com"))
+    then:
+    filename1 == filename2
+  }
 }
