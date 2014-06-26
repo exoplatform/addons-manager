@@ -90,25 +90,25 @@ class AddonServiceTest extends Specification {
     List<Addon> addonsCatalog = [addon1, addon2, addon3, addon4]
     then:
     // addons 1 and 3 are supporting appsrv tomcat on community edition
-    addonService.filterAddonsByCompatibility(addonsCatalog,
+    addonService.findAddonsByCompatibility(addonsCatalog,
                                              PlatformSettings.DistributionType.COMMUNITY,
                                              PlatformSettings.AppServerType.TOMCAT).sort() == [addon1, addon3].sort()
     // addons 1 and 3 are supporting appsrv tomcat on enterprise edition
-    addonService.filterAddonsByCompatibility(addonsCatalog,
+    addonService.findAddonsByCompatibility(addonsCatalog,
                                              PlatformSettings.DistributionType.ENTERPRISE,
                                              PlatformSettings.AppServerType.TOMCAT).sort() == [addon1, addon4].sort()
     // addon 1 is supporting appsrv jboss on community edition
     // TODO : The current model doesn't let us know that it is an impossible combination
-    addonService.filterAddonsByCompatibility(addonsCatalog,
+    addonService.findAddonsByCompatibility(addonsCatalog,
                                              PlatformSettings.DistributionType.COMMUNITY,
                                              PlatformSettings.AppServerType.JBOSS).sort() == [addon1].sort()
     // addons 1 and 2 are supporting appsrv jboss on enterprise edition
-    addonService.filterAddonsByCompatibility(addonsCatalog,
+    addonService.findAddonsByCompatibility(addonsCatalog,
                                              PlatformSettings.DistributionType.ENTERPRISE,
                                              PlatformSettings.AppServerType.JBOSS).sort() == [addon1, addon2].sort()
   }
 
-  def "filterAddonsByVersion must keep only stable versions"() {
+  def "findAddonsByVersion must keep only stable versions"() {
     when:
     List<Addon> addons = [
         new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true),
@@ -116,11 +116,11 @@ class AddonServiceTest extends Specification {
         new Addon(id: "addon", version: "42", unstable: false)
     ]
     then:
-    addonService.filterAddonsByVersion(addons, false, false).sort() == [new Addon(id: "addon", version: "42",
+    addonService.findAddonsByVersion(addons, false, false).sort() == [new Addon(id: "addon", version: "42",
                                                                                   unstable: false)].sort()
   }
 
-  def "filterAddonsByVersion must keep stable and snapshot versions"() {
+  def "findAddonsByVersion must keep stable and snapshot versions"() {
     when:
     List<Addon> addons = [
         new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true),
@@ -128,12 +128,12 @@ class AddonServiceTest extends Specification {
         new Addon(id: "addon", version: "42", unstable: false)
     ]
     then:
-    addonService.filterAddonsByVersion(addons, true, false).sort() == [
+    addonService.findAddonsByVersion(addons, true, false).sort() == [
         new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true),
         new Addon(id: "addon", version: "42", unstable: false)].sort()
   }
 
-  def "filterAddonsByVersion must keep stable and unstable versions (but without snapshots)"() {
+  def "findAddonsByVersion must keep stable and unstable versions (but without snapshots)"() {
     when:
     List<Addon> addons = [
         new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true),
@@ -141,12 +141,12 @@ class AddonServiceTest extends Specification {
         new Addon(id: "addon", version: "42", unstable: false)
     ]
     then:
-    addonService.filterAddonsByVersion(addons, false, true).sort() == [
+    addonService.findAddonsByVersion(addons, false, true).sort() == [
         new Addon(id: "addon", version: "42-alpha1", unstable: true),
         new Addon(id: "addon", version: "42", unstable: false)].sort()
   }
 
-  def "filterAddonsByVersion must keep stable, unstable and snapshot versions"() {
+  def "findAddonsByVersion must keep stable, unstable and snapshot versions"() {
     when:
     List<Addon> addons = [
         new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true),
@@ -154,21 +154,21 @@ class AddonServiceTest extends Specification {
         new Addon(id: "addon", version: "42", unstable: false)
     ]
     then:
-    addonService.filterAddonsByVersion(addons, true, true).sort() == [
+    addonService.findAddonsByVersion(addons, true, true).sort() == [
         new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true),
         new Addon(id: "addon", version: "42-alpha1", unstable: true),
         new Addon(id: "addon", version: "42", unstable: false)].sort()
   }
 
-  def "getCacheFilename must always return the same value for a given URL"() {
+  def "convertUrlToFilename must always return the same value for a given URL"() {
     when:
-    def filename1 = addonService.getCacheFilename(new URL("http://www.exoplatform.com"))
-    def filename2 = addonService.getCacheFilename(new URL("http://www.exoplatform.com"))
+    def filename1 = addonService.convertUrlToFilename(new URL("http://www.exoplatform.com"))
+    def filename2 = addonService.convertUrlToFilename(new URL("http://www.exoplatform.com"))
     then:
     filename1 == filename2
   }
 
-  def "findNewerAddons must use version numbers to order and extract newer addons"() {
+  def "findAddonsNewerThan must use version numbers to order and extract newer addons"() {
     when:
     // Unordered list of addons with the same id and different versions
     List<Addon> addons = [
@@ -184,7 +184,7 @@ class AddonServiceTest extends Specification {
         new Addon(id: "addon", version: "43-SNAPSHOT")
     ]
     then:
-    addonService.findNewerAddons(new Addon(id: "addon", version: "42-M1"), addons).sort() == [
+    addonService.findAddonsNewerThan(new Addon(id: "addon", version: "42-M1"), addons).sort() == [
         new Addon(id: "addon", version: "42-RC1"),
         new Addon(id: "addon", version: "42-SNAPSHOT"),
         new Addon(id: "addon", version: "42"),

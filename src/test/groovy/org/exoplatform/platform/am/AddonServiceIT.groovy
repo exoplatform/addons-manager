@@ -46,7 +46,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
     setup:
     File tmpDir = File.createTempDir()
     URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
-    File catalogCache = new File(tmpDir, addonService.getCacheFilename(catalogUrl))
+    File catalogCache = new File(tmpDir, addonService.convertUrlToFilename(catalogUrl))
     when:
     List<Addon> addons = addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
     then:
@@ -64,7 +64,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
     setup:
     File tmpDir = File.createTempDir()
     URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
-    File catalogCache = new File(tmpDir, addonService.getCacheFilename(catalogUrl))
+    File catalogCache = new File(tmpDir, addonService.convertUrlToFilename(catalogUrl))
     when:
     List<Addon> addons = addonService.loadAddonsFromUrl(catalogUrl, true, true, tmpDir)
     then:
@@ -81,7 +81,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
     setup:
     File tmpDir = File.createTempDir()
     URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
-    File catalogCache = new File(tmpDir, addonService.getCacheFilename(catalogUrl))
+    File catalogCache = new File(tmpDir, addonService.convertUrlToFilename(catalogUrl))
     // We call it a first time
     addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
     long firstCallCatalogCacheDate = catalogCache.lastModified()
@@ -106,7 +106,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
     setup:
     File tmpDir = File.createTempDir()
     URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
-    File catalogCache = new File(tmpDir, addonService.getCacheFilename(catalogUrl))
+    File catalogCache = new File(tmpDir, addonService.convertUrlToFilename(catalogUrl))
     // We call it a first time
     addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
     long firstCallCatalogCacheDate = catalogCache.lastModified()
@@ -127,23 +127,23 @@ class AddonServiceIT extends IntegrationTestsSpecification {
     tmpDir.deleteDir()
   }
 
-  def "parseJSONAddonsList can read a valid catalog"() {
+  def "createAddonsFromJsonText can read a valid catalog"() {
     when:
-    List<Addon> catalog = addonService.parseJSONAddonsList(new File(getTestDataDir(), "catalog.json").text)
+    List<Addon> catalog = addonService.createAddonsFromJsonText(new File(getTestDataDir(), "catalog.json").text)
     then:
     catalog.size() == NB_ADDONS_CATALOG_JSON
   }
 
-  def "parseJSONAddonsList removes invalid entries"() {
+  def "createAddonsFromJsonText removes invalid entries"() {
     when:
-    List<Addon> catalog = addonService.parseJSONAddonsList(new File(getTestDataDir(), "catalog-with-invalid-entries.json").text)
+    List<Addon> catalog = addonService.createAddonsFromJsonText(new File(getTestDataDir(), "catalog-with-invalid-entries.json").text)
     then:
     catalog.size() == 1
   }
 
-  def "parseJSONAddonsList cannot read invalid JSON"() {
+  def "createAddonsFromJsonText cannot read invalid JSON"() {
     when:
-    addonService.parseJSONAddonsList(new File(getTestDataDir(), "catalog-unreadable.json").text)
+    addonService.createAddonsFromJsonText(new File(getTestDataDir(), "catalog-unreadable.json").text)
     then:
     thrown JsonException
   }
