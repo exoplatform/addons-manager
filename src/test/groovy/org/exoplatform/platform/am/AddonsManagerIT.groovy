@@ -770,6 +770,29 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   }
 
   /**
+   * Other files and folders located at the root of the add-on archive are copied as-is under $PLATFORM_HOME
+   */
+  def "[AM_STRUCT_04] addons.(sh|bat) install other-files-addon"() {
+    expect:
+    // Install it
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "other-files-addon:42", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(getPlatformSettings().librariesDirectory, "other-files-addon-42.jar").exists()
+    new File(getPlatformSettings().webappsDirectory, "other-files-addon-42.war").exists()
+    new File(getPlatformSettings().homeDirectory, "conf/other-files-addon/configuration1.properties").exists()
+    new File(getPlatformSettings().homeDirectory, "conf/other-files-addon/configuration2.properties").exists()
+    // Uninstall it
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["uninstall", "other-files-addon", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    !new File(getPlatformSettings().librariesDirectory, "other-files-addon-42.jar").exists()
+    !new File(getPlatformSettings().webappsDirectory, "other-files-addon-42.war").exists()
+    !new File(getPlatformSettings().homeDirectory, "conf/other-files-addon/configuration1.properties").exists()
+    !new File(getPlatformSettings().homeDirectory, "conf/other-files-addon/configuration2.properties").exists()
+  }
+
+  /**
    * if foo-addon not already installed : must raise an error saying "The add-on foo-addon was not installed [KO]"
    */
   def "[AM_UNINST_01] addons.(sh|bat) uninstall foo-addon - not already installed"() {

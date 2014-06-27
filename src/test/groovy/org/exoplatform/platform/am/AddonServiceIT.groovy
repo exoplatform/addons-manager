@@ -33,7 +33,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
    * Logger
    */
   private static final Logger LOG = Logger.getInstance()
-  private static final int NB_ADDONS_CATALOG_JSON = 8
+  private static final int NB_ADDONS_CATALOG_JSON = 9
 
   def setupSpec() {
     LOG.enableDebug()

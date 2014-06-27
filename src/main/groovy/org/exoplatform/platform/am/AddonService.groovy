@@ -395,40 +395,42 @@ To install an add-on:
 
     addon.installedLibraries = new ArrayList<String>()
     addon.installedWebapps = new ArrayList<String>()
+    addon.installedOthersFiles = new ArrayList<String>()
     String readmeFile
     ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(getAddonLocalArchive(env.archivesDirectory, addon)))
     zipInputStream.withStream {
       ZipEntry entry
       while (entry = zipInputStream.nextEntry) {
-        File destinationDir
+        File destinationFile
         List<String> installationList
+        LOG.debug("ZIP entry : ${entry.name}")
         if (entry.isDirectory()) {
           // Do nothing
-          break
+          continue
         } else if (entry.name?.equalsIgnoreCase("README")) {
           //[AM_STRUCT_05] a README file may be placed at the root of the archive. This readme file will be displayed after the install command.
           readmeFile = zipInputStream.text
           break
         } else if (entry.name =~ '^.*jar$') {
           // [AM_STRUCT_02] Add-ons libraries target directory
-          destinationDir = env.platform.librariesDirectory
+          destinationFile = new File(env.platform.librariesDirectory,extractFilename(entry.name))
           installationList = addon.installedLibraries
         } else if (entry.name =~ '^.*war$') {
           // [AM_STRUCT_03] Add-ons webapps target directory
-          destinationDir = env.platform.webappsDirectory
+          destinationFile = new File(env.platform.webappsDirectory,extractFilename(entry.name))
           installationList = addon.installedWebapps
         } else {
-          // TBD: see [AM_STRUCT_04] non war/jar files locations
-          destinationDir = new File(env.platform.homeDirectory, extractDirPath(entry.name))
-          LOG.debug("[AM_STRUCT_04] non war/jar files locations : ${entry.name}")
-          break
+          // see [AM_STRUCT_04] non war/jar files locations
+          destinationFile = new File(env.platform.homeDirectory, entry.name)
+          installationList = addon.installedOthersFiles
         }
-        if (!destinationDir.exists()) {
-          mkdirs(destinationDir)
+        LOG.debug("Destination : ${destinationFile}")
+        if (!destinationFile.parentFile.exists()) {
+          mkdirs(destinationFile.parentFile)
         }
-        String filename = extractFilename(entry.name)
-        LOG.withStatus("Installing file ${filename}") {
-          FileOutputStream output = new FileOutputStream(new File(destinationDir, filename))
+        String plfHomeRelativePath = env.platform.homeDirectory.toURI().relativize(destinationFile.toURI()).getPath()
+        LOG.withStatus("Installing file ${plfHomeRelativePath}") {
+          FileOutputStream output = new FileOutputStream(destinationFile)
           output.withStream {
             int len = 0;
             byte[] buffer = new byte[4096]
@@ -437,7 +439,7 @@ To install an add-on:
             }
           }
         }
-        installationList.add(filename)
+        installationList.add(plfHomeRelativePath)
       }
     }
 
@@ -492,7 +494,8 @@ To install an add-on:
             supportedApplicationServers: addon.supportedApplicationServers,
             compatibility: addon.compatibility,
             installedLibraries: addon.installedLibraries,
-            installedWebapps: addon.installedWebapps
+            installedWebapps: addon.installedWebapps,
+            installedOthersFiles: addon.installedOthersFiles
         )
       }
     }
@@ -525,7 +528,7 @@ To install an add-on:
 
     addon.installedLibraries.each {
       library ->
-        File fileToDelete = new File(env.platform.librariesDirectory, library)
+        File fileToDelete = new File(env.platform.homeDirectory, library)
         if (!fileToDelete.exists()) {
           LOG.warn("No library ${library} to delete")
         } else {
@@ -541,7 +544,7 @@ To install an add-on:
 
     addon.installedWebapps.each {
       webapp ->
-        File fileToDelete = new File(env.platform.webappsDirectory, webapp)
+        File fileToDelete = new File(env.platform.homeDirectory, webapp)
         String webContext = webapp.substring(0, webapp.length() - 4)
         if (!fileToDelete.exists()) {
           LOG.warn("No web application ${webapp} to delete")
@@ -566,6 +569,20 @@ To install an add-on:
           }
         }
     }
+
+    addon.installedOthersFiles.each {
+      otherFile ->
+        File fileToDelete = new File(env.platform.homeDirectory, otherFile)
+        if (!fileToDelete.exists()) {
+          LOG.warn("No file ${otherFile} to delete")
+        } else {
+          LOG.withStatus("Deleting file ${otherFile}") {
+            fileToDelete.delete()
+            assert !fileToDelete.exists()
+          }
+        }
+    }
+
     LOG.withStatus("Deleting installation details ${getAddonStatusFile(env.statusesDirectory, addon).name}") {
       getAddonStatusFile(env.statusesDirectory, addon).delete()
       assert !getAddonStatusFile(env.statusesDirectory, addon).exists()
@@ -993,6 +1010,7 @@ To install an add-on:
     addonObj.compatibility = anAddon.compatibility
     addonObj.installedLibraries = anAddon.installedLibraries
     addonObj.installedWebapps = anAddon.installedWebapps
+    addonObj.installedOthersFiles = anAddon.installedOthersFiles
     int errors = 0
     if (!addonObj.id) {
       LOG.debug("No id for add-on ${anAddon}")

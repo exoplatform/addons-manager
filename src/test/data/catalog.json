@@ -99,5 +99,18 @@
     "supportedDistributions": "community,enterprise",
     "supportedApplicationServers": "tomcat,jboss",
     "compatibility": "[4.0.0,)"
+  },
+  {
+    "id": "other-files-addon",
+    "version": "42",
+    "name": "Fake addon with other files",
+    "description": "A fake addon with other files",
+    "releaseDate": "2014-06-18T00:00:00.000Z",
+    "downloadUrl": "http://localhost:${webserver.http.port}/other-files-addon-42.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss",
+    "compatibility": "[4.0.0,)"
   }
 ]
