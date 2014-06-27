@@ -746,8 +746,51 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * --conflict=overwrite will overwrite the conflicted files by the one contained in the add-on and log a warning for each one
    * : File XYZ already exists. Overwritten.
    */
-  def "[AM_INST_11] addons.(sh|bat) install foo-addon --conflict=skip|overwrite"() {
-    // TODO : Not yet implemented
+  def "[AM_INST_11] addons.(sh|bat) install foo-addon --conflict=skip"() {
+    setup:
+    // Let's create a file existing in the addon
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar") << "TEST"
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "foo-addon:42", "--conflict=skip", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    // It shouldn't have been touched
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").text == "TEST"
+    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+    // Manually remove or additional file
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").delete()
+  }
+
+  /**
+   * If installation requires to install an existing file, the default behaviour is to abort the installation with an error :
+   * File XYZ already exists. Installation aborted. Use --conflict=skip|overwrite.
+   * --conflict=skip will skip the conflicted files and log a warning for each one : File XYZ already exists. Skipped.
+   * --conflict=overwrite will overwrite the conflicted files by the one contained in the add-on and log a warning for each one
+   * : File XYZ already exists. Overwritten.
+   */
+  def "[AM_INST_11] addons.(sh|bat) install foo-addon --conflict=overwrite"() {
+    setup:
+    // Let's create a file existing in the addon
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar") << "TEST"
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "foo-addon:42", "--conflict=overwrite", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    // It should have been replaced
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").text != "TEST"
+    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+    // Manually remove or additional file
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").delete()
   }
 
   /**
@@ -759,7 +802,16 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "readme-addon:42", "--verbose"]) { writer ->
       // We don't really know how many time we'll have to press a key to display the content of the readme
-      writer << ['', '', '', '', '', '', '', '', '', '']
+      writer << ''
+      writer << ''
+      writer << ''
+      writer << ''
+      writer << ''
+      writer << ''
+      writer << ''
+      writer << ''
+      writer << ''
+      writer << ''
     }.exitValue()
     // Verify that the add-on is correctly installed
     new File(getPlatformSettings().librariesDirectory, "readme-addon-42.jar").exists()
@@ -822,6 +874,20 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * restored
    */
   def "[AM_UNINST_02] Removal of add-ons installed with --conflict=overwrite"() {
-    // TODO : Not yet implemented
+    setup:
+    // Let's create a file existing in the addon
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar") << "TEST"
+    launchAddonsManager(["install", "foo-addon:42", "--conflict=overwrite"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["uninstall", "foo-addon", "--verbose"]).exitValue()
+    // Verify that the add-on is remove installed
+    !new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    // But the replaced file should be restored
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").text == "TEST"
+    cleanup:
+    // Manually remove or additional file
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").delete()
   }
 }

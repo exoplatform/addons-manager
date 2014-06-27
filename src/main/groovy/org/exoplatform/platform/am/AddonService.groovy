@@ -31,16 +31,17 @@ import org.eclipse.aether.version.Version
 import org.eclipse.aether.version.VersionConstraint
 import org.eclipse.aether.version.VersionScheme
 import org.exoplatform.platform.am.cli.CommandLineParameters
+import org.exoplatform.platform.am.cli.Conflict
 import org.exoplatform.platform.am.settings.EnvironmentSettings
 import org.exoplatform.platform.am.settings.PlatformSettings
 import org.exoplatform.platform.am.utils.*
 
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
-import java.util.zip.ZipEntry
-import java.util.zip.ZipInputStream
+import java.util.zip.ZipFile
 
-import static org.exoplatform.platform.am.utils.FileUtils.*
+import static org.exoplatform.platform.am.utils.FileUtils.copyFile
+import static org.exoplatform.platform.am.utils.FileUtils.downloadFile
 
 /**
  * All services related to add-ons
@@ -167,7 +168,7 @@ class AddonService {
     if (addon == null) {
       return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
     } else {
-      installAddon(env, addon, parameters.force, parameters.noCache, parameters.offline, parameters.noCompat)
+      installAddon(env, addon, parameters.force, parameters.noCache, parameters.offline, parameters.noCompat, parameters.conflict)
       return AddonsManagerConstants.RETURN_CODE_OK
     }
   }
@@ -339,7 +340,8 @@ To install an add-on:
       Boolean force,
       Boolean noCache,
       Boolean offline,
-      Boolean noCompat) {
+      Boolean noCompat,
+      Conflict conflict) {
     // if a compatibility rule is defined
     if (addon.compatibility && !noCompat) {
       Version plfVersion = versionScheme.parseVersion(env.platform.version)
@@ -392,32 +394,32 @@ To install an add-on:
         throw new AddonsManagerException("Invalid or not supported download URL : ${addon.downloadUrl}")
       }
     }
-
     addon.installedLibraries = new ArrayList<String>()
     addon.installedWebapps = new ArrayList<String>()
     addon.installedOthersFiles = new ArrayList<String>()
+    addon.overwrittenFiles = new ArrayList<String>()
     String readmeFile
-    ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(getAddonLocalArchive(env.archivesDirectory, addon)))
-    zipInputStream.withStream {
-      ZipEntry entry
-      while (entry = zipInputStream.nextEntry) {
+    try {
+      ZipFile addonArchive = new ZipFile(getAddonLocalArchive(env.archivesDirectory, addon))
+
+      addonArchive.entries().each { entry ->
         File destinationFile
         List<String> installationList
         LOG.debug("ZIP entry : ${entry.name}")
         if (entry.isDirectory()) {
           // Do nothing
-          continue
+          return
         } else if (entry.name?.equalsIgnoreCase("README")) {
           //[AM_STRUCT_05] a README file may be placed at the root of the archive. This readme file will be displayed after the install command.
-          readmeFile = zipInputStream.text
-          break
+          readmeFile = addonArchive.getInputStream(entry).text
+          return
         } else if (entry.name =~ '^.*jar$') {
           // [AM_STRUCT_02] Add-ons libraries target directory
-          destinationFile = new File(env.platform.librariesDirectory,extractFilename(entry.name))
+          destinationFile = new File(env.platform.librariesDirectory, FileUtils.extractFilename(entry.name))
           installationList = addon.installedLibraries
         } else if (entry.name =~ '^.*war$') {
           // [AM_STRUCT_03] Add-ons webapps target directory
-          destinationFile = new File(env.platform.webappsDirectory,extractFilename(entry.name))
+          destinationFile = new File(env.platform.webappsDirectory, FileUtils.extractFilename(entry.name))
           installationList = addon.installedWebapps
         } else {
           // see [AM_STRUCT_04] non war/jar files locations
@@ -426,77 +428,94 @@ To install an add-on:
         }
         LOG.debug("Destination : ${destinationFile}")
         if (!destinationFile.parentFile.exists()) {
-          mkdirs(destinationFile.parentFile)
+          FileUtils.mkdirs(destinationFile.parentFile)
         }
         String plfHomeRelativePath = env.platform.homeDirectory.toURI().relativize(destinationFile.toURI()).getPath()
+        if (destinationFile.exists()) {
+          switch (conflict) {
+            case Conflict.FAIL:
+              throw new AddonsManagerException(
+                  "File ${plfHomeRelativePath} already exists. Installation aborted. Use --conflict=skip or --conflict=overwrite option to install it.")
+              break
+            case Conflict.OVERWRITE:
+              LOG.warn("File ${plfHomeRelativePath} already exists. Overwritten.")
+              // Let's save it before
+              File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${plfHomeRelativePath}")
+              if (!backupFile.parentFile.exists()) {
+                FileUtils.mkdirs(backupFile.parentFile)
+              }
+              copyFile(destinationFile, backupFile)
+              addon.overwrittenFiles.add(plfHomeRelativePath)
+              break
+            case Conflict.SKIP:
+              LOG.warn("File ${plfHomeRelativePath} already exists. Skipped.")
+              return // Next entry
+          }
+        }
         LOG.withStatus("Installing file ${plfHomeRelativePath}") {
-          FileOutputStream output = new FileOutputStream(destinationFile)
-          output.withStream {
-            int len = 0;
-            byte[] buffer = new byte[4096]
-            while ((len = zipInputStream.read(buffer)) > 0) {
-              output.write(buffer, 0, len);
-            }
+          new FileOutputStream(destinationFile).withObjectOutputStream {w ->
+            w << addonArchive.getInputStream(entry)
           }
         }
         installationList.add(plfHomeRelativePath)
       }
-    }
-
-    // Update application.xml if it exists
-    File applicationDescriptorFile = new File(env.platform.webappsDirectory, "META-INF/application.xml")
-    if (applicationDescriptorFile.exists()) {
-      processFileInplace(applicationDescriptorFile) { text ->
-        GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(text)
-        addon.installedWebapps.each { file ->
-          String webContext = file.substring(0, file.length() - 4)
-          LOG.withStatus("Adding context declaration /${webContext} for ${file} in application.xml") {
-            applicationXmlContent.depthFirst().findAll {
-              (it.name() == 'module') && (it.'web'.'web-uri'.text() == file)
-            }.each { node ->
-              // remove existing node
-              node.replaceNode {}
-            }
-            applicationXmlContent."initialize-in-order" + {
-              module {
-                web {
-                  'web-uri'(file)
-                  'context-root'(webContext)
+      // Update application.xml if it exists
+      File applicationDescriptorFile = new File(env.platform.webappsDirectory, "META-INF/application.xml")
+      if (applicationDescriptorFile.exists()) {
+        processFileInplace(applicationDescriptorFile) { text ->
+          GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(text)
+          addon.installedWebapps.each { file ->
+            String webContext = file.substring(0, file.length() - 4)
+            LOG.withStatus("Adding context declaration /${webContext} for ${file} in application.xml") {
+              applicationXmlContent.depthFirst().findAll {
+                (it.name() == 'module') && (it.'web'.'web-uri'.text() == file)
+              }.each { node ->
+                // remove existing node
+                node.replaceNode {}
+              }
+              applicationXmlContent."initialize-in-order" + {
+                module {
+                  web {
+                    'web-uri'(file)
+                    'context-root'(webContext)
+                  }
                 }
               }
             }
           }
+          serializeXml(applicationXmlContent)
         }
-        serializeXml(applicationXmlContent)
       }
-    }
-    LOG.withStatus("Recording installation details into ${getAddonStatusFile(env.statusesDirectory, addon).name}") {
-      new FileWriter(getAddonStatusFile(env.statusesDirectory, addon)).withWriter { w ->
-        StreamingJsonBuilder builder = new StreamingJsonBuilder(w)
-        builder(
-            id: addon.id,
-            version: addon.version,
-            unstable: addon.unstable,
-            name: addon.name,
-            description: addon.description,
-            releaseDate: addon.releaseDate,
-            sourceUrl: addon.sourceUrl,
-            screenshotUrl: addon.screenshotUrl,
-            thumbnailUrl: addon.thumbnailUrl,
-            documentationUrl: addon.documentationUrl,
-            downloadUrl: addon.downloadUrl,
-            vendor: addon.vendor,
-            author: addon.author,
-            authorEmail: addon.authorEmail,
-            license: addon.license,
-            licenseUrl: addon.licenseUrl,
-            supportedDistributions: addon.supportedDistributions,
-            supportedApplicationServers: addon.supportedApplicationServers,
-            compatibility: addon.compatibility,
-            installedLibraries: addon.installedLibraries,
-            installedWebapps: addon.installedWebapps,
-            installedOthersFiles: addon.installedOthersFiles
-        )
+    } finally {
+      LOG.withStatus("Recording installation details into ${getAddonStatusFile(env.statusesDirectory, addon).name}") {
+        new FileWriter(getAddonStatusFile(env.statusesDirectory, addon)).withWriter { w ->
+          StreamingJsonBuilder builder = new StreamingJsonBuilder(w)
+          builder(
+              id: addon.id,
+              version: addon.version,
+              unstable: addon.unstable,
+              name: addon.name,
+              description: addon.description,
+              releaseDate: addon.releaseDate,
+              sourceUrl: addon.sourceUrl,
+              screenshotUrl: addon.screenshotUrl,
+              thumbnailUrl: addon.thumbnailUrl,
+              documentationUrl: addon.documentationUrl,
+              downloadUrl: addon.downloadUrl,
+              vendor: addon.vendor,
+              author: addon.author,
+              authorEmail: addon.authorEmail,
+              license: addon.license,
+              licenseUrl: addon.licenseUrl,
+              supportedDistributions: addon.supportedDistributions,
+              supportedApplicationServers: addon.supportedApplicationServers,
+              compatibility: addon.compatibility,
+              installedLibraries: addon.installedLibraries,
+              installedWebapps: addon.installedWebapps,
+              installedOthersFiles: addon.installedOthersFiles,
+              overwrittenFiles: addon.overwrittenFiles
+          )
+        }
       }
     }
     // [AM_INST_12] At the end of a successful install command, the README of the add-on is displayed in the console if present.
@@ -511,14 +530,14 @@ To install an add-on:
           i++
           if (i == Console.get().height - 2) {
             LOG.info("@|yellow [Press any key to continue ...]|@")
-            Console.get().readLine()
+            Console.get().in.read()
             i = 0
           }
         }
       }
       LOG.infoHR()
+      LOG.withStatusOK("Add-on ${addon.name} ${addon.version} installed.")
     }
-    LOG.withStatusOK("Add-on ${addon.name} ${addon.version} installed.")
   }
 
   protected void uninstallAddon(
@@ -580,6 +599,19 @@ To install an add-on:
             fileToDelete.delete()
             assert !fileToDelete.exists()
           }
+        }
+    }
+
+    // Restore overwritten files
+    addon.overwrittenFiles.each {
+      fileToRecover ->
+        File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${fileToRecover}")
+        File originalFile = new File(env.platform.homeDirectory, fileToRecover)
+        LOG.withStatus("Reinstalling original file ${fileToRecover}") {
+          copyFile(backupFile, originalFile)
+        }
+        LOG.withStatus("Deleting backup file of ${fileToRecover}") {
+          backupFile.delete()
         }
     }
 
@@ -1011,6 +1043,7 @@ To install an add-on:
     addonObj.installedLibraries = anAddon.installedLibraries
     addonObj.installedWebapps = anAddon.installedWebapps
     addonObj.installedOthersFiles = anAddon.installedOthersFiles
+    addonObj.overwrittenFiles = anAddon.overwrittenFiles
     int errors = 0
     if (!addonObj.id) {
       LOG.debug("No id for add-on ${anAddon}")

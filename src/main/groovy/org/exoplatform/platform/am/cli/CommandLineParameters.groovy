@@ -117,7 +117,7 @@ class CommandLineParameters {
     boolean installed
     @Parameter(names = ["--outdated"], description = "List all add-ons installed locally for which a newer version is available")
     boolean outdated
-    @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
+    @Parameter(names = ["--catalog"], description = "=<URL> - Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog
     @Parameter(names = ["--no-cache"], description = "Discard the remote catalog local cache")
@@ -139,7 +139,7 @@ class CommandLineParameters {
     boolean snapshots
     @Parameter(names = ["--unstable"], description = "If no version specified, allows to find the latest one including unstable version.")
     boolean unstable
-    @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
+    @Parameter(names = ["--catalog"], description = "=<URL> - Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog
     @Parameter(names = ["--no-cache"], description = "Discard the remote catalog local cache")
@@ -169,7 +169,12 @@ class CommandLineParameters {
     boolean unstable
     @Parameter(names = ["--no-compat"], description = "Disable compatibility check")
     boolean noCompat
-    @Parameter(names = ["--catalog"], description = "Central catalog URL", validateWith = URLValidator.class,
+    @Parameter(names = ["--conflict"],
+        description = "=[skip|overwrite] - to control the behavior when installing a file already existing in your PLF instance. Failing by default",
+        validateWith = ConflictValidator.class,
+        converter = ConflictConverter.class)
+    Conflict conflict = Conflict.FAIL
+    @Parameter(names = ["--catalog"], description = "=<URL> - Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog
     @Parameter(names = ["--no-cache"], description = "Discard the remote catalog local cache")

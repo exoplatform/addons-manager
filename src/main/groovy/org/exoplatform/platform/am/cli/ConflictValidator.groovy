@@ -24,10 +24,10 @@ import com.beust.jcommander.IParameterValidator
 import com.beust.jcommander.ParameterException
 
 /**
- * URL Validator for JCommander
+ * Conflict Validator for JCommander
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class URLValidator implements IParameterValidator {
+class ConflictValidator implements IParameterValidator {
 /**
  * {@inheritDoc}
  */
@@ -35,9 +35,9 @@ class URLValidator implements IParameterValidator {
   public void validate(String name, String value)
       throws ParameterException {
     try {
-      new URL(value)
-    } catch (MalformedURLException mue) {
-      throw new ParameterException("Parameter " + name + " should be a valid URL (found " + value + ")");
+      if(value){Conflict.valueOf(value.toUpperCase().trim())}
+    } catch (IllegalArgumentException iae) {
+      throw new ParameterException("Parameter " + name + " accepts only values 'skip' or 'overwrite' (found " + value + ")");
     }
   }
 }

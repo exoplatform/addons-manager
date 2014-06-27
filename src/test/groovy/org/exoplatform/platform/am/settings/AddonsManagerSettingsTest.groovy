@@ -47,6 +47,7 @@ class AddonsManagerSettingsTest extends Specification {
     managerSettings.catalogsCacheDirectoryName
     managerSettings.remoteCatalogUrl
     managerSettings.localAddonsCatalogFilename
+    managerSettings.overwrittenFilesDirectoryName
     managerSettings.scriptBaseName
     managerSettings.scriptName
     managerSettings.statusesDirectoryName
@@ -62,6 +63,7 @@ class AddonsManagerSettingsTest extends Specification {
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.catalogsCacheDirectoryName", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.remoteCatalogUrl", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.localAddonsCatalogFilename", "foo")
+    System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.overwrittenFilesDirectoryName", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.scriptBaseName", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.statusesDirectoryName", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.version", "foo")
@@ -73,6 +75,7 @@ class AddonsManagerSettingsTest extends Specification {
     "foo".equals(managerSettings.catalogsCacheDirectoryName)
     "foo".equals(managerSettings.remoteCatalogUrl)
     "foo".equals(managerSettings.localAddonsCatalogFilename)
+    "foo".equals(managerSettings.overwrittenFilesDirectoryName)
     "foo".equals(managerSettings.scriptBaseName)
     "foo".equals(managerSettings.statusesDirectoryName)
     "foo".equals(managerSettings.version)
@@ -84,6 +87,7 @@ class AddonsManagerSettingsTest extends Specification {
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.catalogsCacheDirectoryName")
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.remoteCatalogUrl")
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.localAddonsCatalogFilename")
+    System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.overwrittenFilesDirectoryName")
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.scriptBaseName")
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.statusesDirectoryName")
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.version")

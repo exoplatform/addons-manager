@@ -41,6 +41,10 @@ class EnvironmentSettings {
    */
   File catalogsCacheDirectory
   /**
+   * Where overwritten files are stored
+   */
+  File overwrittenFilesDirectory
+  /**
    * The path where add-ons statuses are stored
    */
   File statusesDirectory
@@ -63,6 +67,10 @@ class EnvironmentSettings {
     catalogsCacheDirectory = new File(addonsDirectory, manager.catalogsCacheDirectoryName)
     if (!catalogsCacheDirectory.exists()) {
       FileUtils.mkdirs(catalogsCacheDirectory)
+    }
+    overwrittenFilesDirectory = new File(addonsDirectory, manager.overwrittenFilesDirectoryName)
+    if (!overwrittenFilesDirectory.exists()) {
+      FileUtils.mkdirs(overwrittenFilesDirectory)
     }
     statusesDirectory = new File(addonsDirectory, manager.statusesDirectoryName)
     if (!statusesDirectory.exists()) {

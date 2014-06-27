@@ -449,6 +449,7 @@ class CommandLineParserTest extends Specification {
     "my-addon".equals(cliArgs.commandInstall.addonId)
     !cliArgs.commandInstall.addonVersion
     !cliArgs.commandInstall.catalog
+    cliArgs.commandInstall.conflict == Conflict.FAIL
     !cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.noCompat
@@ -471,6 +472,7 @@ class CommandLineParserTest extends Specification {
     "my-addon".equals(cliArgs.commandInstall.addonId)
     !cliArgs.commandInstall.addonVersion
     !cliArgs.commandInstall.catalog
+    cliArgs.commandInstall.conflict == Conflict.FAIL
     !cliArgs.commandInstall.force
     cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.noCompat
@@ -493,6 +495,7 @@ class CommandLineParserTest extends Specification {
     "my-addon".equals(cliArgs.commandInstall.addonId)
     !cliArgs.commandInstall.addonVersion
     !cliArgs.commandInstall.catalog
+    cliArgs.commandInstall.conflict == Conflict.FAIL
     !cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.noCompat
@@ -514,6 +517,7 @@ class CommandLineParserTest extends Specification {
     "my-addon".equals(cliArgs.commandInstall.addonId)
     "42".equals(cliArgs.commandInstall.addonVersion)
     !cliArgs.commandInstall.catalog
+    cliArgs.commandInstall.conflict == Conflict.FAIL
     !cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.noCompat
@@ -535,6 +539,7 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters.Command.INSTALL == cliArgs.command
     "my-addon".equals(cliArgs.commandInstall.addonId)
     !cliArgs.commandInstall.catalog
+    cliArgs.commandInstall.conflict == Conflict.FAIL
     cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.noCompat
@@ -557,6 +562,7 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters.Command.INSTALL == cliArgs.command
     "my-addon".equals(cliArgs.commandInstall.addonId)
     !cliArgs.commandInstall.catalog
+    cliArgs.commandInstall.conflict == Conflict.FAIL
     !cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.noCompat
@@ -579,6 +585,7 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters.Command.INSTALL == cliArgs.command
     "my-addon".equals(cliArgs.commandInstall.addonId)
     !cliArgs.commandInstall.catalog
+    cliArgs.commandInstall.conflict == Conflict.FAIL
     !cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.noCompat
@@ -601,6 +608,7 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters.Command.INSTALL == cliArgs.command
     "my-addon".equals(cliArgs.commandInstall.addonId)
     !cliArgs.commandInstall.catalog
+    cliArgs.commandInstall.conflict == Conflict.FAIL
     !cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
     cliArgs.commandInstall.noCompat
@@ -615,6 +623,62 @@ class CommandLineParserTest extends Specification {
     ]
   }
 
+  def "Test command line parameters to install an add-on overriding any existing file "(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INSTALL == cliArgs.command
+    "my-addon".equals(cliArgs.commandInstall.addonId)
+    !cliArgs.commandInstall.catalog
+    cliArgs.commandInstall.conflict == Conflict.OVERWRITE
+    !cliArgs.commandInstall.force
+    !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.noCompat
+    !cliArgs.commandInstall.offline
+    !cliArgs.commandInstall.snapshots
+    !cliArgs.commandInstall.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["install", "my-addon", "--conflict=overwrite"],
+    ]
+  }
+
+  def "Test command line parameters to install an add-on skipping any existing file "(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INSTALL == cliArgs.command
+    "my-addon".equals(cliArgs.commandInstall.addonId)
+    !cliArgs.commandInstall.catalog
+    cliArgs.commandInstall.conflict == Conflict.SKIP
+    !cliArgs.commandInstall.force
+    !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.noCompat
+    !cliArgs.commandInstall.offline
+    !cliArgs.commandInstall.snapshots
+    !cliArgs.commandInstall.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    where:
+    args << [
+        ["install", "my-addon", "--conflict=skip"],
+    ]
+  }
+
+
+  def "Test command line parameters to install an add-on with invalid conflict parameter"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    thrown(CommandLineParsingException)
+    where:
+    args << [
+        ["install", "my-addon", "--conflict=foo"],
+    ]
+  }
+
   def "Test command line parameters to install an add-on with a valid catalog parameter"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
@@ -622,6 +686,7 @@ class CommandLineParserTest extends Specification {
     CommandLineParameters.Command.INSTALL == cliArgs.command
     "my-addon".equals(cliArgs.commandInstall.addonId)
     validCatalogUrl.equals(cliArgs.commandInstall.catalog.toString())
+    cliArgs.commandInstall.conflict == Conflict.FAIL
     !cliArgs.commandInstall.force
     !cliArgs.commandInstall.noCache
     !cliArgs.commandInstall.noCompat

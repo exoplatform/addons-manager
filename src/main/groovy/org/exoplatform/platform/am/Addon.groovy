@@ -52,6 +52,7 @@ class Addon implements Comparable<Addon> {
   List<String> installedLibraries
   List<String> installedWebapps
   List<String> installedOthersFiles
+  List<String> overwrittenFiles
 
   boolean isSnapshot() {
     return version =~ '.*SNAPSHOT$'

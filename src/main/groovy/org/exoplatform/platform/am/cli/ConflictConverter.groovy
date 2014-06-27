@@ -20,24 +20,31 @@
  */
 package org.exoplatform.platform.am.cli
 
-import com.beust.jcommander.IParameterValidator
-import com.beust.jcommander.ParameterException
+import com.beust.jcommander.converters.BaseConverter
 
 /**
- * URL Validator for JCommander
+ * String -> Conflict Converter for JCommander
+ *
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class URLValidator implements IParameterValidator {
+class ConflictConverter extends BaseConverter<Conflict> {
+  public ConflictConverter(String optionName) {
+    super(optionName);
+  }
+
 /**
  * {@inheritDoc}
  */
   @Override
-  public void validate(String name, String value)
-      throws ParameterException {
+  public Conflict convert(String value) {
     try {
-      new URL(value)
-    } catch (MalformedURLException mue) {
-      throw new ParameterException("Parameter " + name + " should be a valid URL (found " + value + ")");
+      if (value) {
+        Conflict.valueOf(value.toUpperCase().trim())
+      } else {
+        Conflict.FAIL
+      }
+    } catch (IllegalArgumentException iea) {
+      Conflict.FAIL
     }
   }
 }
