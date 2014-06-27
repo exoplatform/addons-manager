@@ -756,7 +756,11 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   def "[AM_INST_12] At the end of a successful install command, the README of the add-on is displayed in the console if present."() {
     expect:
     // Verify return code
-    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "readme-addon:42", "--verbose"]).exitValue()
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "readme-addon:42", "--verbose"]) { writer ->
+      // We don't really know how many time we'll have to press a key to display the content of the readme
+      writer << ['', '', '', '', '', '', '', '', '', '']
+    }.exitValue()
     // Verify that the add-on is correctly installed
     new File(getPlatformSettings().librariesDirectory, "readme-addon-42.jar").exists()
     new File(getPlatformSettings().webappsDirectory, "readme-addon-42.war").exists()

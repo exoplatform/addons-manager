@@ -508,7 +508,7 @@ To install an add-on:
           i++
           if (i == Console.get().height - 2) {
             LOG.info("@|yellow [Press any key to continue ...]|@")
-            Console.get().in.read()
+            Console.get().readLine()
             i = 0
           }
         }

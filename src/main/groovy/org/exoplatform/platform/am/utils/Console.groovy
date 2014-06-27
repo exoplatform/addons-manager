@@ -119,6 +119,10 @@ class Console {
     }
   }
 
+  String readLine() {
+    return getIn().readLine()
+  }
+
 // Factory
   private static Console instance = new Console()
 
