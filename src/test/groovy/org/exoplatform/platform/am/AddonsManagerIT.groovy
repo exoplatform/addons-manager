@@ -897,6 +897,9 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "license-addon"])
+    // Remove the local license
+    new File(env.statusesDirectory,
+             "license-addon-${convertUrlToFilename(new URL("https://www.gnu.org/licenses/lgpl-3.0.txt"))}.license").delete()
   }
 
   /**
