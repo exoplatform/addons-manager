@@ -386,7 +386,7 @@ To install an add-on:
         LOG.info("License ${addon.license} :")
         LOG.infoHR()
         int i = 0
-        licenseFile.text.split('\n').collect().each {
+        licenseFile?.text?.split('\n').collect().each {
           LOG.wrapLine(it, Console.get().width - Logger.Level.INFO.prefix.length()).each {
             LOG.info(it)
             i++
@@ -400,7 +400,7 @@ To install an add-on:
         LOG.infoHR()
         // [LICENSE_03] [LICENSE_04] interactive validation of license
         LOG.info("You must accept the license above to install this add-on. Type \"yes\" to accept : ")
-        String reply = Console.get().readLine().trim().toLowerCase()
+        String reply = Console.get().readLine()?.trim()?.toLowerCase()
         LOG.debug("REPLY : ${reply}")
         if (!"yes".equalsIgnoreCase(reply)) {
           licenseFile.delete()
