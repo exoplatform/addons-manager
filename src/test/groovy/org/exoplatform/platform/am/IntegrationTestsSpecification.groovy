@@ -19,6 +19,7 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
+
 import org.exoplatform.platform.am.settings.AddonsManagerSettings
 import org.exoplatform.platform.am.settings.PlatformSettings
 import spock.lang.Shared
@@ -26,6 +27,7 @@ import spock.lang.Specification
 
 import static org.junit.Assert.assertNotNull
 import static org.junit.Assert.assertTrue
+
 /**
  * This class offers various helpers methods to write integration tests
  * @author Arnaud Héritier <aheritier@exoplatform.com>
@@ -122,10 +124,10 @@ abstract class IntegrationTestsSpecification extends Specification {
   /**
    * Helper method used to execute the addons manager
    * @param params Command line parameters to pass to the addons manager
-   * @param withWriter Closure to define a writer to fill process inputs (stdin)
+   * @param inputs inputs to pass to the process
    * @return The process return code
    */
-  def launchAddonsManager(List<String> params, Closure withWriter) {
+  def launchAddonsManager(List<String> params, List<String> inputs) {
     List<String> commandToExecute = ["${System.getProperty('java.home')}/bin/java"]
     // If Jacoco Agent is used, let's pass it to the forked VM
     if (System.getProperty('jacocoAgent') != null) {
@@ -137,8 +139,10 @@ abstract class IntegrationTestsSpecification extends Specification {
     commandToExecute.addAll(params)
     println "Command launched : ${commandToExecute.join(' ')}"
     Process process = commandToExecute.execute()
-    if (withWriter) {
-      process.withWriter(withWriter)
+    if (inputs) {
+      process.withWriter { writer ->
+        writer << inputs
+      }
     }
     process.waitFor() // Wait for the command to finish
     // Obtain status and output

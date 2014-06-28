@@ -94,4 +94,9 @@ if [ "$os400" != "true" ]; then
   _RUNJDB="$JAVA_HOME"/bin/jdb
 fi
 
+# Install the new version of the addons manager
+if [ -f "$PLF_HOME/addons/addons-manager.jar.new" ]; then
+  mv "$PLF_HOME/addons/addons-manager.jar.new" "$PLF_HOME/addons/addons-manager.jar"
+fi
+
 eval exec \"$_RUNJAVA\" -Dplf.home=\"$PLF_HOME\" -jar \"$PLF_HOME/addons/addons-manager.jar\" "$@"

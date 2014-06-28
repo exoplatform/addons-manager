@@ -49,6 +49,10 @@ class EnvironmentSettings {
    */
   File statusesDirectory
   /**
+   * The path where add-ons manager old versions are stored
+   */
+  File versionsDirectory
+  /**
    * The path to the local catalog
    */
   File localAddonsCatalogFile
@@ -75,6 +79,10 @@ class EnvironmentSettings {
     statusesDirectory = new File(addonsDirectory, manager.statusesDirectoryName)
     if (!statusesDirectory.exists()) {
       FileUtils.mkdirs(statusesDirectory)
+    }
+    versionsDirectory = new File(addonsDirectory, manager.versionsDirectoryName)
+    if (!versionsDirectory.exists()) {
+      FileUtils.mkdirs(versionsDirectory)
     }
     localAddonsCatalogFile = new File(addonsDirectory, manager.localAddonsCatalogFilename)
   }

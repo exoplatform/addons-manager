@@ -38,7 +38,8 @@ import org.exoplatform.platform.am.utils.*
 
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
-import java.util.zip.ZipFile
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 
 import static org.exoplatform.platform.am.utils.FileUtils.copyFile
 import static org.exoplatform.platform.am.utils.FileUtils.downloadFile
@@ -127,7 +128,11 @@ class AddonService {
         parameters.offline,
         env.localAddonsCatalogFile,
         env.platform.distributionType,
-        env.platform.appServerType)
+        env.platform.appServerType,
+        env.manager.version,
+        env.addonsDirectory,
+        env.versionsDirectory,
+        env.archivesDirectory)
     Addon addon = findAddon(
         availableAddons,
         parameters.addonId,
@@ -158,7 +163,11 @@ class AddonService {
         parameters.offline,
         env.localAddonsCatalogFile,
         env.platform.distributionType,
-        env.platform.appServerType)
+        env.platform.appServerType,
+        env.manager.version,
+        env.addonsDirectory,
+        env.versionsDirectory,
+        env.archivesDirectory)
     Addon addon = findAddon(
         availableAddons,
         parameters.addonId,
@@ -235,7 +244,12 @@ To uninstall an add-on:
           env.platform.distributionType,
           env.platform.appServerType,
           allowSnapshot,
-          allowUnstable)
+          allowUnstable,
+          env.manager.version,
+          env.addonsDirectory,
+          env.versionsDirectory,
+          env.archivesDirectory
+      )
       List<Addon> outdatedAddons = getOutdatedAddons(installedAddons, availableAddons)
       if (outdatedAddons.size() > 0) {
         LOG.info "\n@|bold Outdated add-ons:|@"
@@ -280,7 +294,11 @@ To uninstall an add-on:
         env.platform.distributionType,
         env.platform.appServerType,
         allowSnapshot,
-        allowUnstable)
+        allowUnstable,
+        env.manager.version,
+        env.addonsDirectory,
+        env.versionsDirectory,
+        env.archivesDirectory)
     if (availableAddons.size() > 0) {
       LOG.info "\n@|bold Available add-ons:|@"
       availableAddons.groupBy { it.id }.sort().each {
@@ -398,66 +416,81 @@ To install an add-on:
     addon.installedWebapps = new ArrayList<String>()
     addon.installedOthersFiles = new ArrayList<String>()
     addon.overwrittenFiles = new ArrayList<String>()
-    String readmeFile
+    File readmeFile = File.createTempFile("readme","txt")
+    readmeFile.deleteOnExit()
     try {
-      ZipFile addonArchive = new ZipFile(getAddonLocalArchive(env.archivesDirectory, addon))
-
-      addonArchive.entries().each { entry ->
-        File destinationFile
-        List<String> installationList
-        LOG.debug("ZIP entry : ${entry.name}")
-        if (entry.isDirectory()) {
-          // Do nothing
-          return
-        } else if (entry.name?.equalsIgnoreCase("README")) {
-          //[AM_STRUCT_05] a README file may be placed at the root of the archive. This readme file will be displayed after the install command.
-          readmeFile = addonArchive.getInputStream(entry).text
-          return
-        } else if (entry.name =~ '^.*jar$') {
-          // [AM_STRUCT_02] Add-ons libraries target directory
-          destinationFile = new File(env.platform.librariesDirectory, FileUtils.extractFilename(entry.name))
-          installationList = addon.installedLibraries
-        } else if (entry.name =~ '^.*war$') {
-          // [AM_STRUCT_03] Add-ons webapps target directory
-          destinationFile = new File(env.platform.webappsDirectory, FileUtils.extractFilename(entry.name))
-          installationList = addon.installedWebapps
-        } else {
-          // see [AM_STRUCT_04] non war/jar files locations
-          destinationFile = new File(env.platform.homeDirectory, entry.name)
-          installationList = addon.installedOthersFiles
-        }
-        LOG.debug("Destination : ${destinationFile}")
-        if (!destinationFile.parentFile.exists()) {
-          FileUtils.mkdirs(destinationFile.parentFile)
-        }
-        String plfHomeRelativePath = env.platform.homeDirectory.toURI().relativize(destinationFile.toURI()).getPath()
-        if (destinationFile.exists()) {
-          switch (conflict) {
-            case Conflict.FAIL:
-              throw new AddonsManagerException(
-                  "File ${plfHomeRelativePath} already exists. Installation aborted. Use --conflict=skip or --conflict=overwrite option to install it.")
-              break
-            case Conflict.OVERWRITE:
-              LOG.warn("File ${plfHomeRelativePath} already exists. Overwritten.")
-              // Let's save it before
-              File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${plfHomeRelativePath}")
-              if (!backupFile.parentFile.exists()) {
-                FileUtils.mkdirs(backupFile.parentFile)
+      ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(getAddonLocalArchive(env.archivesDirectory, addon)))
+      zipInputStream.withStream {
+        ZipEntry entry
+        while (entry = zipInputStream.nextEntry) {
+          File destinationFile
+          List<String> installationList
+          LOG.debug("ZIP entry : ${entry.name}")
+          if (entry.isDirectory()) {
+            // Do nothing
+            continue
+          } else if (entry.name?.equalsIgnoreCase("README")) {
+            //[AM_STRUCT_05] a README file may be placed at the root of the archive. This readme file will be displayed after the install command.
+            FileOutputStream output = new FileOutputStream(readmeFile)
+            output.withStream {
+              int len = 0;
+              byte[] buffer = new byte[4096]
+              while ((len = zipInputStream.read(buffer)) > 0) {
+                output.write(buffer, 0, len);
               }
-              copyFile(destinationFile, backupFile)
-              addon.overwrittenFiles.add(plfHomeRelativePath)
-              break
-            case Conflict.SKIP:
-              LOG.warn("File ${plfHomeRelativePath} already exists. Skipped.")
-              return // Next entry
+            }
+            continue
+          } else if (entry.name =~ '^.*jar$') {
+            // [AM_STRUCT_02] Add-ons libraries target directory
+            destinationFile = new File(env.platform.librariesDirectory, FileUtils.extractFilename(entry.name))
+            installationList = addon.installedLibraries
+          } else if (entry.name =~ '^.*war$') {
+            // [AM_STRUCT_03] Add-ons webapps target directory
+            destinationFile = new File(env.platform.webappsDirectory, FileUtils.extractFilename(entry.name))
+            installationList = addon.installedWebapps
+          } else {
+            // see [AM_STRUCT_04] non war/jar files locations
+            destinationFile = new File(env.platform.homeDirectory, entry.name)
+            installationList = addon.installedOthersFiles
           }
-        }
-        LOG.withStatus("Installing file ${plfHomeRelativePath}") {
-          new FileOutputStream(destinationFile).withObjectOutputStream {w ->
-            w << addonArchive.getInputStream(entry)
+          LOG.debug("Destination : ${destinationFile}")
+          if (!destinationFile.parentFile.exists()) {
+            FileUtils.mkdirs(destinationFile.parentFile)
           }
+          String plfHomeRelativePath = env.platform.homeDirectory.toURI().relativize(destinationFile.toURI()).getPath()
+          if (destinationFile.exists()) {
+            switch (conflict) {
+              case Conflict.FAIL:
+                throw new AddonsManagerException(
+                    "File ${plfHomeRelativePath} already exists. Installation aborted. Use --conflict=skip or --conflict=overwrite option to install it.")
+                break
+              case Conflict.OVERWRITE:
+                LOG.warn("File ${plfHomeRelativePath} already exists. Overwritten.")
+                // Let's save it before
+                File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${plfHomeRelativePath}")
+                if (!backupFile.parentFile.exists()) {
+                  FileUtils.mkdirs(backupFile.parentFile)
+                }
+                copyFile(destinationFile, backupFile)
+                addon.overwrittenFiles.add(plfHomeRelativePath)
+                break
+              case Conflict.SKIP:
+                LOG.warn("File ${plfHomeRelativePath} already exists. Skipped.")
+                continue // Next entry
+            }
+          }
+          LOG.withStatus("Installing file ${plfHomeRelativePath}") {
+            FileOutputStream output = new FileOutputStream(destinationFile)
+            output.withStream {
+              int len = 0;
+              byte[] buffer = new byte[4096]
+              while ((len = zipInputStream.read(buffer)) > 0) {
+                output.write(buffer, 0, len);
+              }
+            }
+          }
+          installationList.add(plfHomeRelativePath)
         }
-        installationList.add(plfHomeRelativePath)
       }
       // Update application.xml if it exists
       File applicationDescriptorFile = new File(env.platform.webappsDirectory, "META-INF/application.xml")
@@ -519,12 +552,12 @@ To install an add-on:
       }
     }
     // [AM_INST_12] At the end of a successful install command, the README of the add-on is displayed in the console if present.
-    if (readmeFile) {
+    if (readmeFile.text) {
       LOG.infoHR('=')
       LOG.info("README :")
       LOG.infoHR()
       int i = 0
-      readmeFile.split('\n').collect().each {
+      readmeFile.text.split('\n').collect().each {
         LOG.wrapLine(it, Console.get().width - Logger.Level.INFO.prefix.length()).each {
           LOG.info(it)
           i++
@@ -536,8 +569,9 @@ To install an add-on:
         }
       }
       LOG.infoHR()
-      LOG.withStatusOK("Add-on ${addon.name} ${addon.version} installed.")
+      readmeFile.delete()
     }
+    LOG.withStatusOK("Add-on ${addon.name} ${addon.version} installed.")
   }
 
   protected void uninstallAddon(
@@ -640,9 +674,14 @@ To install an add-on:
       Boolean offline,
       File localCatalogFile,
       PlatformSettings.DistributionType distributionType,
-      PlatformSettings.AppServerType appServerType) {
+      PlatformSettings.AppServerType appServerType,
+      String currentAddonsManagerVersion,
+      File addonsDirectory,
+      File versionsDirectory,
+      File archivesDirectory) {
     return loadAddons(remoteCatalogUrl, noCache, catalogsCacheDirectory, offline, localCatalogFile, distributionType,
-                      appServerType, true, true)
+                      appServerType, true, true, currentAddonsManagerVersion, addonsDirectory, versionsDirectory,
+                      archivesDirectory)
   }
 
   /**
@@ -667,13 +706,58 @@ To install an add-on:
       PlatformSettings.DistributionType distributionType,
       PlatformSettings.AppServerType appServerType,
       Boolean allowSnapshot,
-      Boolean allowUnstable) {
+      Boolean allowUnstable,
+      String currentAddonsManagerVersion,
+      File addonsDirectory,
+      File versionsDirectory,
+      File archivesDirectory) {
+    List<Addon> allAddons = mergeCatalogs(
+        loadAddonsFromUrl(remoteCatalogUrl, noCache, offline, catalogsCacheDirectory),
+        loadAddonsFromFile(localCatalogFile),
+        distributionType,
+        appServerType)
+    Addon newerAddonManager = findAddonsNewerThan(
+        new Addon(id: ADDONS_MANAGER_CATALOG_ID, version: currentAddonsManagerVersion),
+        findAddonsByVersion(allAddons, false, false))?.max()
+    if (newerAddonManager) {
+      LOG.info(
+          "New Addons Manager version @|yellow,bold ${newerAddonManager.version}|@ found. It will be automatically updated " +
+              "after its restart.")
+      // Backup the current library
+      File backupDirectory = new File(versionsDirectory, currentAddonsManagerVersion)
+      if (!backupDirectory.exists()) {
+        FileUtils.mkdirs(backupDirectory)
+      }
+      LOG.withStatus("Backing up current addons manager library") {
+        FileUtils.copyFile(new File(addonsDirectory, "addons-manager.jar"), new File(backupDirectory, "addons-manager.jar"),
+                           false)
+      }
+      // Let's download the new one
+      File newAddonsManagerArchive = new File(archivesDirectory, "${newerAddonManager.id}-${newerAddonManager.version}.zip")
+      LOG.withStatus("Downloading Addons Manager version @|yellow,bold ${newerAddonManager.version}|@") {
+        FileUtils.downloadFile(newerAddonManager.downloadUrl, newAddonsManagerArchive)
+      }
+      LOG.withStatus("Extracting Addons Manager version @|yellow,bold ${newerAddonManager.version}|@") {
+        ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(newAddonsManagerArchive))
+        zipInputStream.withStream {
+          ZipEntry entry
+          while (entry = zipInputStream.nextEntry) {
+            if (entry.name == "addons/addons-manager.jar") {
+              FileOutputStream output = new FileOutputStream(new File(addonsDirectory, "addons-manager.jar.new"))
+              output.withStream {
+                int len = 0;
+                byte[] buffer = new byte[4096]
+                while ((len = zipInputStream.read(buffer)) > 0) {
+                  output.write(buffer, 0, len);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     return findAddonsByVersion(
-        mergeCatalogs(
-            loadAddonsFromUrl(remoteCatalogUrl, noCache, offline, catalogsCacheDirectory),
-            loadAddonsFromFile(localCatalogFile),
-            distributionType,
-            appServerType).findAll { !ADDONS_MANAGER_CATALOG_ID.equals(it.id) },
+        allAddons.findAll { !ADDONS_MANAGER_CATALOG_ID.equals(it.id) },
         allowSnapshot,
         allowUnstable)
   }

@@ -51,6 +51,7 @@ class AddonsManagerSettingsTest extends Specification {
     managerSettings.scriptBaseName
     managerSettings.scriptName
     managerSettings.statusesDirectoryName
+    managerSettings.versionsDirectoryName
     managerSettings.version
     // Created within the object constructor
     managerSettings.scriptName
@@ -66,6 +67,7 @@ class AddonsManagerSettingsTest extends Specification {
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.overwrittenFilesDirectoryName", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.scriptBaseName", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.statusesDirectoryName", "foo")
+    System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.versionsDirectoryName", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.version", "foo")
     def managerSettings = new AddonsManagerSettings()
     Logger.getInstance().debug("Manager Settings", managerSettings, ["class"])
@@ -78,6 +80,7 @@ class AddonsManagerSettingsTest extends Specification {
     "foo".equals(managerSettings.overwrittenFilesDirectoryName)
     "foo".equals(managerSettings.scriptBaseName)
     "foo".equals(managerSettings.statusesDirectoryName)
+    "foo".equals(managerSettings.versionsDirectoryName)
     "foo".equals(managerSettings.version)
     // Must have been updated too
     managerSettings.scriptName.startsWith("foo")
@@ -90,6 +93,7 @@ class AddonsManagerSettingsTest extends Specification {
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.overwrittenFilesDirectoryName")
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.scriptBaseName")
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.statusesDirectoryName")
+    System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.versionsDirectoryName")
     System.clearProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.version")
   }
 

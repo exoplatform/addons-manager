@@ -102,6 +102,10 @@ shift
 goto setArgs
 :doneSetArgs
 
+:updateAM
+if not exist "%PLF_HOME%\addons\addons-manager.jar.new" goto execCmd
+move /y "%PLF_HOME%\addons\addons-manager.jar.new" "%PLF_HOME%\addons\addons-manager.jar"
+
 :execCmd
 %_RUNJAVA% -Dplf.home="%PLF_HOME%" -jar "%PLF_HOME%\addons\addons-manager.jar" %CMD_LINE_ARGS%
 goto end

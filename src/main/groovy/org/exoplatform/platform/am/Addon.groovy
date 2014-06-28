@@ -100,8 +100,8 @@ class Addon implements Comparable<Addon> {
   @Override
   int compareTo(Addon o) {
     return this.equals(o) ? 0 :
-        (this.name.equals(o.name) ?
+        (this.id.equals(o.id) ?
             VERSION_SCHEME.parseVersion(this.version).compareTo(VERSION_SCHEME.parseVersion(o.version)) :
-            this.name.compareTo(o.name))
+            this.id.compareTo(o.id))
   }
 }
