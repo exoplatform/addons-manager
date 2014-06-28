@@ -33,7 +33,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
    * Logger
    */
   private static final Logger LOG = Logger.getInstance()
-  private static final int NB_ADDONS_CATALOG_JSON = 9
+  private static final int NB_ADDONS_CATALOG_JSON = 10
 
   def setupSpec() {
     LOG.enableDebug()
@@ -46,7 +46,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
     setup:
     File tmpDir = File.createTempDir()
     URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
-    File catalogCache = new File(tmpDir, addonService.convertUrlToFilename(catalogUrl))
+    File catalogCache = new File(tmpDir, "${addonService.convertUrlToFilename(catalogUrl)}.json")
     when:
     List<Addon> addons = addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
     then:
@@ -64,7 +64,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
     setup:
     File tmpDir = File.createTempDir()
     URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
-    File catalogCache = new File(tmpDir, addonService.convertUrlToFilename(catalogUrl))
+    File catalogCache = new File(tmpDir, "${addonService.convertUrlToFilename(catalogUrl)}.json")
     when:
     List<Addon> addons = addonService.loadAddonsFromUrl(catalogUrl, true, true, tmpDir)
     then:
@@ -81,7 +81,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
     setup:
     File tmpDir = File.createTempDir()
     URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
-    File catalogCache = new File(tmpDir, addonService.convertUrlToFilename(catalogUrl))
+    File catalogCache = new File(tmpDir, "${addonService.convertUrlToFilename(catalogUrl)}.json")
     // We call it a first time
     addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
     long firstCallCatalogCacheDate = catalogCache.lastModified()
@@ -106,7 +106,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
     setup:
     File tmpDir = File.createTempDir()
     URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
-    File catalogCache = new File(tmpDir, addonService.convertUrlToFilename(catalogUrl))
+    File catalogCache = new File(tmpDir, "${addonService.convertUrlToFilename(catalogUrl)}.json")
     // We call it a first time
     addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
     long firstCallCatalogCacheDate = catalogCache.lastModified()
@@ -136,7 +136,8 @@ class AddonServiceIT extends IntegrationTestsSpecification {
 
   def "createAddonsFromJsonText removes invalid entries"() {
     when:
-    List<Addon> catalog = addonService.createAddonsFromJsonText(new File(getTestDataDir(), "catalog-with-invalid-entries.json").text)
+    List<Addon> catalog = addonService.createAddonsFromJsonText(
+        new File(getTestDataDir(), "catalog-with-invalid-entries.json").text)
     then:
     catalog.size() == 1
   }

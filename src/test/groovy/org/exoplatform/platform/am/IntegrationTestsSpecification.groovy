@@ -141,7 +141,7 @@ abstract class IntegrationTestsSpecification extends Specification {
     Process process = commandToExecute.execute()
     if (inputs) {
       process.withWriter { writer ->
-        writer << inputs
+        inputs.each {writer << "${it}\n"}
       }
     }
     process.waitFor() // Wait for the command to finish

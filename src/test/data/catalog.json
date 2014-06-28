@@ -101,6 +101,21 @@
     "compatibility": "[4.0.0,)"
   },
   {
+    "id": "license-addon",
+    "version": "42",
+    "name": "Fake addon with a license to validate",
+    "description": "A fake addon with a license to validate",
+    "releaseDate": "2014-06-18T00:00:00.000Z",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-42.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "licenseUrl": "https://www.gnu.org/licenses/lgpl-3.0.txt",
+    "mustAcceptLicense": true,
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss",
+    "compatibility": "[4.0.0,)"
+  },
+  {
     "id": "other-files-addon",
     "version": "42",
     "name": "Fake addon with other files",

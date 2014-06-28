@@ -371,6 +371,47 @@ To install an add-on:
     } else {
       LOG.debug("Compatibility check deactivated")
     }
+    if (addon.mustAcceptLicense && addon.licenseUrl) {
+      // Local license file
+      URL licenseUrl = new URL(addon.licenseUrl)
+      File licenseFile = new File(env.statusesDirectory, "${addon.id}-${convertUrlToFilename(licenseUrl)}.license")
+      // [LICENSE_05] Don't prompt to validate a license already accepted
+      if (!licenseFile.exists()) {
+        // [LICENSE_01] Download and display license if mustAcceptLicenseTerms=true
+        LOG.withStatus("Downloading license ${addon.license} from ${addon.licenseUrl}") {
+          licenseFile << licenseUrl.text
+        }
+        // [LICENSE_02] Split the license per page (click on a touch to advance)
+        LOG.infoHR('=')
+        LOG.info("License ${addon.license} :")
+        LOG.infoHR()
+        int i = 0
+        licenseFile.text.split('\n').collect().each {
+          LOG.wrapLine(it, Console.get().width - Logger.Level.INFO.prefix.length()).each {
+            LOG.info(it)
+            i++
+            if (i == Console.get().height - 2) {
+              LOG.info("@|yellow [Press any key to continue ...]|@")
+              Console.get().in.read()
+              i = 0
+            }
+          }
+        }
+        LOG.infoHR()
+        // [LICENSE_03] [LICENSE_04] interactive validation of license
+        LOG.info("You must accept the license above to install this add-on. Type \"yes\" to accept : ")
+        String reply = Console.get().readLine().trim().toLowerCase()
+        LOG.debug("REPLY : ${reply}")
+        if (!"yes".equalsIgnoreCase(reply)) {
+          licenseFile.delete()
+          throw new AddonsManagerException("You didn't accept the license. Installation aborted.")
+        }
+      }
+    } else {
+      //[LICENSE_06] no licenseUrl or mustAcceptLicenseTerms=false
+      LOG.warn(
+          "DISCLAIMER : You are about to install third-party software available on your eXo Platform instance. This software is provided \"as is\" without warranty of any kind, either expressed or implied and such software is to be used at your own risk.")
+    }
     if (isAddonInstalled(env.statusesDirectory, addon)) {
       if (!force) {
         Addon oldAddon = createAddonFromJsonText(getAddonStatusFile(env.statusesDirectory, addon).text);
@@ -416,7 +457,7 @@ To install an add-on:
     addon.installedWebapps = new ArrayList<String>()
     addon.installedOthersFiles = new ArrayList<String>()
     addon.overwrittenFiles = new ArrayList<String>()
-    File readmeFile = File.createTempFile("readme","txt")
+    File readmeFile = File.createTempFile("readme", "txt")
     readmeFile.deleteOnExit()
     try {
       ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(getAddonLocalArchive(env.archivesDirectory, addon)))
@@ -804,7 +845,7 @@ To install an add-on:
       File catalogCacheDir) {
     List<Addon> addons = new ArrayList<Addon>()
     String catalogContent
-    File catalogCacheFile = new File(catalogCacheDir, convertUrlToFilename(catalogUrl));
+    File catalogCacheFile = new File(catalogCacheDir, "${convertUrlToFilename(catalogUrl)}.json");
     LOG.debug("Remote catalog cache file for ${catalogUrl} : ${catalogCacheFile}")
     // If there is no local cache of the remote catalog or if it is older than 1h
     use([TimeCategory]) {
@@ -1260,6 +1301,6 @@ To install an add-on:
   protected String convertUrlToFilename(
       URL catalogUrl) {
     return new BigInteger(1, MessageDigest.getInstance("MD5").digest(catalogUrl.toString().getBytes()))
-        .toString(16).padLeft(32, "0").toUpperCase() + ".json"
+        .toString(16).padLeft(32, "0").toUpperCase()
   }
 }
