@@ -885,6 +885,24 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * [LICENSE_05] Don't prompt to validate a license already accepted
    * [LICENSE_06] no licenseUrl or mustAcceptLicenseTerms=false
    */
+  def "[LICENSE_03] Download and display license if mustAcceptLicenseTerms=true. The user refuses it."() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR == launchAddonsManager(
+        ["install", "license-addon:42", "--verbose"],
+        ['', '', 'no']).exitValue()
+    // Verify that the add-on is correctly installed
+    !new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    !new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+  }
+
+  /**
+   * [LICENSE_01] Download and display license if mustAcceptLicenseTerms=true
+   * [LICENSE_02] Split the license per page (click on a touch to advance)
+   * [LICENSE_03] [LICENSE_04] interactive validation of license
+   * [LICENSE_05] Don't prompt to validate a license already accepted
+   * [LICENSE_06] no licenseUrl or mustAcceptLicenseTerms=false
+   */
   def "[LICENSE_03] Download and display license if mustAcceptLicenseTerms=true. The user accepts it."() {
     expect:
     // Verify return code
@@ -902,22 +920,5 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
              "license-addon-${convertUrlToFilename(new URL("https://www.gnu.org/licenses/lgpl-3.0.txt"))}.license").delete()
   }
 
-  /**
-   * [LICENSE_01] Download and display license if mustAcceptLicenseTerms=true
-   * [LICENSE_02] Split the license per page (click on a touch to advance)
-   * [LICENSE_03] [LICENSE_04] interactive validation of license
-   * [LICENSE_05] Don't prompt to validate a license already accepted
-   * [LICENSE_06] no licenseUrl or mustAcceptLicenseTerms=false
-   */
-  def "[LICENSE_03] Download and display license if mustAcceptLicenseTerms=true. The user refuses it."() {
-    expect:
-    // Verify return code
-    AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR == launchAddonsManager(
-        ["install", "license-addon:42", "--verbose"],
-        ['', '', 'no']).exitValue()
-    // Verify that the add-on is correctly installed
-    !new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
-    !new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
-  }
 
 }
