@@ -409,8 +409,8 @@ To install an add-on:
       }
     } else {
       //[LICENSE_06] no licenseUrl or mustAcceptLicenseTerms=false
-      LOG.warn(
-          "DISCLAIMER : You are about to install third-party software available on your eXo Platform instance. This software is provided \"as is\" without warranty of any kind, either expressed or implied and such software is to be used at your own risk.")
+      LOG.warn("DISCLAIMER : You are about to install third-party software available on your eXo Platform instance.")
+      LOG.warn("This software is provided \"as is\" without warranty of any kind, either expressed or implied and such software is to be used at your own risk.")
     }
     if (isAddonInstalled(env.statusesDirectory, addon)) {
       if (!force) {
