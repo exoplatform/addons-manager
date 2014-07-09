@@ -381,7 +381,7 @@ To install an add-on:
   }
 
   /**
-   * Install the @{param addon} into the current @{param env}*
+   * Install the @{code addon} into the current @{code env}*
    * @param env The execution environment
    * @param addon The add-on to install
    * @param force Enforce to install it even if it was already installed
@@ -655,7 +655,7 @@ To install an add-on:
   }
 
   /**
-   * Uninstall the @{param addon} from the current @{param env}* @param env The environment where the add-on must be uninstalled
+   * Uninstall the @{code addon} from the current @{code env}* @param env The environment where the add-on must be uninstalled
    * @param addon The addon to remove
    */
   protected void uninstallAddon(
@@ -951,7 +951,7 @@ To install an add-on:
   }
 
   /**
-   * Returns the list of add-ons installed in the current environment @{param env}* @param env The environment where the add-on must be uninstalled
+   * Returns the list of add-ons installed in the current environment @{code env}* @param env The environment where the add-on must be uninstalled
    * @return A list of @{link Addon}
    */
   protected List<Addon> getInstalledAddons(
@@ -962,8 +962,8 @@ To install an add-on:
   }
 
   /**
-   * Returns the list of outdated add-ons by comparing the list of @{param installedAddons} with the one of
-   * @{param availableAddons}* @param installedAddons The list of installed add-ons
+   * Returns the list of outdated add-ons by comparing the list of @{code installedAddons} with the one of
+   * @{code availableAddons}* @param installedAddons The list of installed add-ons
    * @param availableAddons The list of available add-ons
    * @return The list of outdated add-ons
    */
@@ -976,15 +976,15 @@ To install an add-on:
   }
 
   /**
-   * Find in the @{param addons} list the one with the current @{param addonId} and @{param addonVersion}. If
-   * @{param addonVersion} isn't set it will find the more recent version (stable per default excepted if @{param allowUnstable}* or @{param allowSnapshot} are set.
+   * Find in the @{code addons} list the one with the current @{code addonId} and @{code addonVersion}. If
+   * @{code addonVersion} isn't set it will find the more recent version (stable per default excepted if @{code allowUnstable}* or @{code allowSnapshot} are set.
    * @param addons The list of add-ons in wich to do the search
    * @param addonId The Identifier of the add-on to find
    * @param addonVersion The version of the add-on to find
    * @param allowSnapshot allows addons with snapshot version Allow to retrieve a snapshot version if it is the most recent and
-   * @{param addonVersion} isn't set
+   * @{code addonVersion} isn't set
    * @param allowUnstable allows addons with snapshot version Allow to retrieve an unstable version if it is the most recent and
-   * @{param addonVersion} isn't set
+   * @{code addonVersion} isn't set
    * @return the add-on or null if not found
    */
   protected Addon findAddon(
