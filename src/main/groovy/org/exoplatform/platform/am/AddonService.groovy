@@ -84,8 +84,8 @@ class AddonService {
 
   /**
    * List add-ons given the current environment {@code env} and command line {@code parameters}.
-   * @param env The environment
-   * @param parameters Command line parameters
+   * @param env The execution environment
+   * @param parameters Command line parameters for a list action
    * @return a return code defined in {@link AddonsManagerConstants}
    */
   int listAddons(
@@ -114,8 +114,8 @@ class AddonService {
 
   /**
    * Describe an add-on given the current environment {@code env} and command line {@code parameters}.
-   * @param env The environment
-   * @param parameters Command line parameters
+   * @param env The execution environment
+   * @param parameters Command line parameters for a describe action
    * @return a return code defined in {@link AddonsManagerConstants}
    */
   int describeAddon(
@@ -149,8 +149,8 @@ class AddonService {
 
   /**
    * Install an add-on given the current environment {@code env} and command line {@code parameters}.
-   * @param env The environment
-   * @param parameters Command line parameters
+   * @param env The execution environment
+   * @param parameters Command line parameters for an install action
    * @return a return code defined in {@link AddonsManagerConstants}
    */
   int installAddon(
@@ -184,8 +184,8 @@ class AddonService {
 
   /**
    * Uninstall an add-on given the current environment {@code env} and command line {@code parameters}.
-   * @param env The environment
-   * @param parameters Command line parameters
+   * @param env The execution environment
+   * @param parameters Command line parameters for an uninstall action
    * @return a return code defined in {@link AddonsManagerConstants}
    */
   int uninstallAddon(
@@ -194,7 +194,7 @@ class AddonService {
     File statusFile = getAddonStatusFile(env.statusesDirectory, parameters.addonId)
     if (statusFile.exists()) {
       Addon addon
-      LOG.withStatus("Loading add-on details") {
+      LOG.withStatus("Loading add-on installation details") {
         addon = createAddonFromJsonText(statusFile.text);
       }
       uninstallAddon(env, addon)
@@ -205,6 +205,11 @@ class AddonService {
     }
   }
 
+  /**
+   * List add-ons installed in the current environment {@code env}.
+   * @param env The execution environment
+   * @return a return code defined in {@link AddonsManagerConstants}
+   */
   protected int listInstalledAddons(
       EnvironmentSettings env) {
     // Display only installed add-ons
@@ -226,6 +231,17 @@ To uninstall an add-on:
     return AddonsManagerConstants.RETURN_CODE_OK
   }
 
+  /**
+   * List add-ons installed with a more recent version available in the current environment {@code env}.
+   *
+   * @param env The execution environment
+   * @param allowUnstable List also unstable versions ?
+   * @param allowSnapshot List also development versions ?
+   * @param noCache Don't use catalog's cache if exist ?
+   * @param offline Don't download anything ?
+   * @param alternateCatalog Specific remote catalog URL to use
+   * @return a return code defined in {@link AddonsManagerConstants}
+   */
   protected int listOutdatedAddons(
       EnvironmentSettings env,
       Boolean allowUnstable,
@@ -277,6 +293,17 @@ To uninstall an add-on:
     return AddonsManagerConstants.RETURN_CODE_OK
   }
 
+  /**
+   * List add-ons from remote+local catalogs
+   *
+   * @param env The execution environment
+   * @param allowUnstable List also unstable versions ?
+   * @param allowSnapshot List also development versions ?
+   * @param noCache Don't use catalog's cache if exist ?
+   * @param offline Don't download anything ?
+   * @param alternateCatalog Specific remote catalog URL to use
+   * @return a return code defined in {@link AddonsManagerConstants}
+   */
   protected int listAddonsFromCatalogs(
       EnvironmentSettings env,
       Boolean allowUnstable,
@@ -284,7 +311,6 @@ To uninstall an add-on:
       Boolean noCache,
       Boolean offline,
       URL alternateCatalog) {
-    // Display add-ons in remote+local catalogs
     List<Addon> availableAddons = loadAddons(
         alternateCatalog ?: env.remoteCatalogUrl,
         noCache,
@@ -318,40 +344,52 @@ To install an add-on:
     return AddonsManagerConstants.RETURN_CODE_OK
   }
 
-
+  /**
+   * Describe an add-on
+   * @param addon The add-on to describe
+   */
   protected void describeAddon(
       final Addon addon) {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd")
     LOG.infoHR("=")
     LOG.info "Informations about add-on @|bold,yellow ${addon.id}|@@|bold :${addon.version}|@"
     LOG.infoHR()
-    Map map = ["Identifier"                        : addon.id,
-               "Version"                           : addon.version,
-               "Name"                              : addon.name,
-               "Description"                       : addon.description,
-               "Release date (YYYY-MM-DD)"         : addon.releaseDate ? sdf.format(sdf.parse(addon.releaseDate)) : null,
-               "Sources URL"                       : addon.sourceUrl ? URLDecoder.decode(addon.sourceUrl, "UTF-8") : null,
-               "Screenshot URL"                    : addon.screenshotUrl ? URLDecoder.decode(addon.screenshotUrl, "UTF-8") : null,
-               "Thumbnail URL"                     : addon.thumbnailUrl ? URLDecoder.decode(addon.thumbnailUrl, "UTF-8") : null,
-               "Documentation URL"                 : addon.documentationUrl ? URLDecoder.decode(addon.documentationUrl,
-                                                                                                "UTF-8") : null,
-               "Download URL"                      : addon.downloadUrl ? URLDecoder.decode(addon.downloadUrl, "UTF-8") : null,
-               "Vendor"                            : addon.vendor,
-               "Author"                            : addon.author,
-               "Author email"                      : addon.authorEmail,
-               "License"                           : addon.license,
-               "License URL"                       : addon.licenseUrl ? URLDecoder.decode(addon.licenseUrl, "UTF-8") : null,
-               "License must be accepted"          : addon.mustAcceptLicense,
-               "Supported application Server(s)"   : addon.supportedApplicationServers,
-               "Supported platform distribution(s)": addon.supportedDistributions,
-               "Supported platform version(s)"     : addon.compatibility] as LinkedHashMap
-//LinkedHashMap to keep the insertion order
+    Map map = [
+        "Identifier"                        : addon.id,
+        "Version"                           : addon.version,
+        "Name"                              : addon.name,
+        "Description"                       : addon.description,
+        "Release date (YYYY-MM-DD)"         : addon.releaseDate ? sdf.format(sdf.parse(addon.releaseDate)) : null,
+        "Sources URL"                       : addon.sourceUrl ? URLDecoder.decode(addon.sourceUrl, "UTF-8") : null,
+        "Screenshot URL"                    : addon.screenshotUrl ? URLDecoder.decode(addon.screenshotUrl, "UTF-8") : null,
+        "Thumbnail URL"                     : addon.thumbnailUrl ? URLDecoder.decode(addon.thumbnailUrl, "UTF-8") : null,
+        "Documentation URL"                 : addon.documentationUrl ? URLDecoder.decode(addon.documentationUrl, "UTF-8") : null,
+        "Download URL"                      : addon.downloadUrl ? URLDecoder.decode(addon.downloadUrl, "UTF-8") : null,
+        "Vendor"                            : addon.vendor,
+        "Author"                            : addon.author,
+        "Author email"                      : addon.authorEmail,
+        "License"                           : addon.license,
+        "License URL"                       : addon.licenseUrl ? URLDecoder.decode(addon.licenseUrl, "UTF-8") : null,
+        "License must be accepted"          : addon.mustAcceptLicense,
+        "Supported application Server(s)"   : addon.supportedApplicationServers,
+        "Supported platform distribution(s)": addon.supportedDistributions,
+        "Supported platform version(s)"     : addon.compatibility] as LinkedHashMap //LinkedHashMap to keep the insertion order
     map.keySet().findAll { map.get(it) }.each {
       LOG.info String.format("@|bold %-${map.keySet()*.size().max()}s|@ : @|bold,yellow %s|@", it, map.get(it))
     }
     LOG.infoHR("=")
   }
 
+  /**
+   * Install the @{param addon} into the current @{param env}*
+   * @param env The execution environment
+   * @param addon The add-on to install
+   * @param force Enforce to install it even if it was already installed
+   * @param noCache Don't use catalog's cache if exist ?
+   * @param offline Don't download anything ?
+   * @param noCompat Bypass compatibility checks
+   * @param conflict Conflict resolution mode
+   */
   protected void installAddon(
       EnvironmentSettings env,
       Addon addon,
@@ -410,7 +448,8 @@ To install an add-on:
     } else {
       //[LICENSE_06] no licenseUrl or mustAcceptLicenseTerms=false
       LOG.warn("DISCLAIMER : You are about to install third-party software available on your eXo Platform instance.")
-      LOG.warn("This software is provided \"as is\" without warranty of any kind, either expressed or implied and such software is to be used at your own risk.")
+      LOG.warn(
+          "This software is provided \"as is\" without warranty of any kind, either expressed or implied and such software is to be used at your own risk.")
     }
     if (isAddonInstalled(env.statusesDirectory, addon)) {
       if (!force) {
@@ -615,6 +654,10 @@ To install an add-on:
     LOG.withStatusOK("Add-on ${addon.name} ${addon.version} installed.")
   }
 
+  /**
+   * Uninstall the @{param addon} from the current @{param env}* @param env The environment where the add-on must be uninstalled
+   * @param addon The addon to remove
+   */
   protected void uninstallAddon(
       EnvironmentSettings env,
       Addon addon) {
@@ -804,38 +847,11 @@ To install an add-on:
   }
 
   /**
-   * Load add-ons list from a local file (JSON formatted)
-   * @param catalogFile
-   * @return a list of Add-ons. Empty if the file doesn't exist.
-   */
-  protected List<Addon> loadAddonsFromFile(
-      File catalogFile) {
-    List<Addon> addons = new ArrayList<Addon>()
-    String catalogContent
-    if (catalogFile.exists()) {
-      LOG.debug("Loading catalog from ${catalogFile}")
-      LOG.withStatus("Reading catalog ${catalogFile.name}") {
-        catalogContent = catalogFile.text
-      }
-      try {
-        LOG.withStatus("Loading add-ons list") {
-          addons.addAll(createAddonsFromJsonText(catalogContent))
-        }
-      } catch (groovy.json.JsonException je) {
-        LOG.warn("Invalid JSON content in file : ${catalogFile}", je)
-      }
-    } else {
-      LOG.debug("No local catalog to load from ${catalogFile}")
-    }
-    return addons
-  }
-
-  /**
    * Load add-ons list from a remote Url (JSON formatted)
-   * @param catalogUrl
-   * @param noCache
-   * @param offline
-   * @param catalogCacheDir
+   * @param catalogUrl The remote catalog URL
+   * @param noCache If the 1h cache must be used for the remote catalog
+   * @param offline If the operation must be done offline (nothing will be downloaded)
+   * @param catalogCacheDir The directory where are stored catalogs caches
    * @return a list of Add-ons
    */
   protected List<Addon> loadAddonsFromUrl(
@@ -907,6 +923,37 @@ To install an add-on:
     return addons
   }
 
+  /**
+   * Load add-ons list from a local file (JSON formatted)
+   * @param catalogFile The catalog file to read
+   * @return a list of Add-ons. Empty if the file doesn't exist.
+   */
+  protected List<Addon> loadAddonsFromFile(
+      File catalogFile) {
+    List<Addon> addons = new ArrayList<Addon>()
+    String catalogContent
+    if (catalogFile.exists()) {
+      LOG.debug("Loading catalog from ${catalogFile}")
+      LOG.withStatus("Reading catalog ${catalogFile.name}") {
+        catalogContent = catalogFile.text
+      }
+      try {
+        LOG.withStatus("Loading add-ons list") {
+          addons.addAll(createAddonsFromJsonText(catalogContent))
+        }
+      } catch (groovy.json.JsonException je) {
+        LOG.warn("Invalid JSON content in file : ${catalogFile}", je)
+      }
+    } else {
+      LOG.debug("No local catalog to load from ${catalogFile}")
+    }
+    return addons
+  }
+
+  /**
+   * Returns the list of add-ons installed in the current environment @{param env}* @param env The environment where the add-on must be uninstalled
+   * @return A list of @{link Addon}
+   */
   protected List<Addon> getInstalledAddons(
       EnvironmentSettings env) {
     return env.statusesDirectory.list(
@@ -914,6 +961,12 @@ To install an add-on:
     ).toList().collect { it -> createAddonFromJsonText(new File(env.statusesDirectory, it).text) }
   }
 
+  /**
+   * Returns the list of outdated add-ons by comparing the list of @{param installedAddons} with the one of
+   * @{param availableAddons}* @param installedAddons The list of installed add-ons
+   * @param availableAddons The list of available add-ons
+   * @return The list of outdated add-ons
+   */
   protected List<Addon> getOutdatedAddons(
       List<Addon> installedAddons,
       List<Addon> availableAddons) {
@@ -922,6 +975,18 @@ To install an add-on:
     }
   }
 
+  /**
+   * Find in the @{param addons} list the one with the current @{param addonId} and @{param addonVersion}. If
+   * @{param addonVersion} isn't set it will find the more recent version (stable per default excepted if @{param allowUnstable}* or @{param allowSnapshot} are set.
+   * @param addons The list of add-ons in wich to do the search
+   * @param addonId The Identifier of the add-on to find
+   * @param addonVersion The version of the add-on to find
+   * @param allowSnapshot allows addons with snapshot version Allow to retrieve a snapshot version if it is the most recent and
+   * @{param addonVersion} isn't set
+   * @param allowUnstable allows addons with snapshot version Allow to retrieve an unstable version if it is the most recent and
+   * @{param addonVersion} isn't set
+   * @return the add-on or null if not found
+   */
   protected Addon findAddon(
       final List<Addon> addons,
       final String addonId,
@@ -979,6 +1044,7 @@ To install an add-on:
     }
     return result
   }
+
   /**
    * Find in the list {@code addons} all addons with the same identifier {@link Addon#id} and a higher version number
    * {@link Addon#version} than {@code addonRef}
@@ -1255,30 +1321,59 @@ To install an add-on:
     return addonObj
   }
 
-  protected File getAddonStatusFile(
-      File statusesDirectory,
-      String addonId) {
-    return new File(statusesDirectory, "${addonId}${STATUS_FILE_EXT}")
-  }
-
+  /**
+   * Returns the local archive file of an add-on
+   * @param archivesDirectory The archives directory
+   * @param addon The add-on
+   * @return a File (existing or not)
+   */
   protected File getAddonLocalArchive(
       File archivesDirectory,
       Addon addon) {
     return new File(archivesDirectory, "${addon.id}-${addon.version}.zip")
   }
 
+  /**
+   * Returns the status File for a given add-on
+   * @param statusesDirectory The directory where statuses are stored
+   * @param addonId The identifier of the add-on to find
+   * @return a File (existing or not)
+   */
+  protected File getAddonStatusFile(
+      File statusesDirectory,
+      String addonId) {
+    return new File(statusesDirectory, "${addonId}${STATUS_FILE_EXT}")
+  }
+
+  /**
+   * Returns the status File for a given add-on
+   * @param statusesDirectory The directory where statuses are stored
+   * @param addon The add-on to find
+   * @return a File (existing or not)
+   */
   protected File getAddonStatusFile(
       File statusesDirectory,
       Addon addon) {
     return getAddonStatusFile(statusesDirectory, addon.id)
   }
 
+  /**
+   * Checks if the given add-on is installed
+   * @param statusesDirectory The directory where are stored status files
+   * @param addon The add-on to check
+   * @return True if the add-on is installed (thus if its status file exists)
+   */
   protected Boolean isAddonInstalled(
       File statusesDirectory,
       Addon addon) {
     return getAddonStatusFile(statusesDirectory, addon).exists()
   }
 
+  /**
+   * Serializes XML
+   * @param xml The XML content
+   * @return a String representation of the XML
+   */
   protected String serializeXml(
       GPathResult xml) {
     XmlUtil.serialize(new StreamingMarkupBuilder().bind {
@@ -1286,7 +1381,12 @@ To install an add-on:
     })
   }
 
-  protected processFileInplace(
+  /**
+   * Applies a conversion on a text file
+   * @param file The file to change
+   * @param processText The conversion to apply
+   */
+  protected void processFileInplace(
       File file,
       Closure processText) {
     String text = file.text

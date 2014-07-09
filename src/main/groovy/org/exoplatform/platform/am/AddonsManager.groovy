@@ -27,38 +27,38 @@ import org.exoplatform.platform.am.settings.EnvironmentSettings
 import org.exoplatform.platform.am.utils.*
 
 /*
- * Command line utility to manage Platform addons.
+ * Command line utility to manage add-ons inside a Platform installation.
  */
 
+int returnCode = AddonsManagerConstants.RETURN_CODE_OK
+Logger log = Logger.getInstance()
 CommandLineParser clp
 EnvironmentSettings env
 CommandLineParameters commandLineParameters
-int returnCode = AddonsManagerConstants.RETURN_CODE_OK
-/**
- * Logger
- */
-Logger log = Logger.getInstance()
+
 try {
-// Initialize environment settings
+  // Initialize environment settings
   env = new EnvironmentSettings()
 
-// display header
+  // display header
   log.displayHeader(env.manager.version)
 
-// Initialize Add-ons manager settings
+  // Initialize Add-ons manager settings
   clp = new CommandLineParser(env.manager.scriptName, Console.get().width)
 
-// Parse command line parameters and fill settings with user inputs
+  // Parse command line parameters and fill settings with user inputs
   commandLineParameters = clp.parse(args)
 
-  // Show usage text when -h or --help option is used.
+  // Show usage text when -h or --help option is used and exit
   if (commandLineParameters.help) {
     clp.usage()
-    System.exit AddonsManagerConstants.RETURN_CODE_OK
+    System.exit returnCode
   }
 
+  // Instantiate our Service class to manage add-ons
   AddonService addonService = AddonService.getInstance()
 
+  // And execute the required action
   switch (commandLineParameters.command) {
     case CommandLineParameters.Command.LIST:
       returnCode = addonService.listAddons(env, commandLineParameters.commandList)
@@ -74,7 +74,7 @@ try {
       break
   }
 } catch (CommandLineParsingException clpe) {
-  log.error("Invalid command line parameter(s) : ${clpe.message}")
+  log.error "Invalid command line parameter(s) : ${clpe.message}"
   clp.usage()
   returnCode = AddonsManagerConstants.RETURN_CODE_INVALID_COMMAND_LINE_PARAMS
 } catch (AddonAlreadyInstalledException aaie) {
@@ -87,7 +87,7 @@ try {
   log.error ame.message
   returnCode = AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR
 } catch (Throwable t) {
-  log.error(t)
+  log.error t
   returnCode = AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR
 }
 // Display various details for debug purposes
