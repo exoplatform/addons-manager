@@ -20,7 +20,7 @@
  */
 package org.exoplatform.platform.am.settings
 
-import org.exoplatform.platform.am.utils.AddonsManagerException
+import org.exoplatform.platform.am.ex.ErroneousSetupException
 
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
@@ -71,7 +71,7 @@ class PlatformSettings {
   PlatformSettings() {
     // Take the PLF_HOME from system properties
     if (!System.getProperty(PLATFORM_HOME_SYS_PROP)) {
-      throw new AddonsManagerException("Erroneous setup, system property \"${PLATFORM_HOME_SYS_PROP}\" not defined.")
+      throw new ErroneousSetupException("Erroneous setup, system property \"${PLATFORM_HOME_SYS_PROP}\" not defined.")
     }
     // Let's validate few things
     init(new File(System.getProperty(PLATFORM_HOME_SYS_PROP)))
@@ -92,7 +92,7 @@ class PlatformSettings {
     // Let's set the homeDir
     this.homeDirectory = homeDirectory
     if (!homeDirectory.isDirectory()) {
-      throw new AddonsManagerException("Erroneous setup, product home directory (${homeDirectory}) is invalid.")
+      throw new ErroneousSetupException("Erroneous setup, product home directory (${homeDirectory}) is invalid.")
     }
 
     if (new File(homeDirectory, "bin/catalina.sh").exists()) {
@@ -103,7 +103,7 @@ class PlatformSettings {
       this.appServerType = AppServerType.UNKNOWN
     }
     if (AppServerType.UNKNOWN.equals(this.appServerType)) {
-      throw new AddonsManagerException("Erroneous setup, cannot computes the application server type.")
+      throw new ErroneousSetupException("Erroneous setup, cannot computes the application server type.")
     }
 
     if (new File(homeDirectory, "eXo_Subscription_Agreement_US.pdf").exists()) {
@@ -112,17 +112,17 @@ class PlatformSettings {
       this.distributionType = DistributionType.COMMUNITY
     }
     if (DistributionType.UNKNOWN.equals(this.distributionType)) {
-      throw new AddonsManagerException("Erroneous setup, cannot computes the distribution type.")
+      throw new ErroneousSetupException("Erroneous setup, cannot computes the distribution type.")
     }
 
     this.librariesDirectory = new File(homeDirectory, this.appServerType.librariesPath)
     if (!this.librariesDirectory.isDirectory()) {
-      throw new AddonsManagerException("Erroneous setup, platform libraries directory (${this.librariesDirectory}) is invalid.")
+      throw new ErroneousSetupException("Erroneous setup, platform libraries directory (${this.librariesDirectory}) is invalid.")
     }
 
     this.webappsDirectory = new File(homeDirectory, this.appServerType.webappsPath)
     if (!this.webappsDirectory.isDirectory()) {
-      throw new AddonsManagerException(
+      throw new ErroneousSetupException(
           "Erroneous setup, platform web applications directory (${this.webappsDirectory}) is invalid.")
     }
     Pattern filePattern = ~/platform-component-upgrade-plugins.*jar/
@@ -134,7 +134,8 @@ class PlatformSettings {
     }
     this.librariesDirectory.eachFile(findFilenameClosure)
     if (fileFound == null) {
-      throw new AddonsManagerException("Unable to find platform-component-upgrade-plugins jar in ${librariesDirectory}")
+      throw new ErroneousSetupException(
+          "Erroneous setup, Unable to find platform-component-upgrade-plugins jar in ${librariesDirectory}")
     } else {
       JarFile jarFile = new JarFile(fileFound)
       JarEntry jarEntry = jarFile.getJarEntry("conf/platform.properties")

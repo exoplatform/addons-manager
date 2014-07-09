@@ -20,6 +20,7 @@
  */
 package org.exoplatform.platform.am.cli
 
+import org.exoplatform.platform.am.ex.CommandLineParsingException
 import org.exoplatform.platform.am.utils.Console
 import spock.lang.Specification
 

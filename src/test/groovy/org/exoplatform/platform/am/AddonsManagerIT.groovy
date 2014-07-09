@@ -726,7 +726,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   def "[AM_INST_09] The add-ons manager does a compatibility check using the compatibility values prior to install an add-on."() {
     expect:
     // Verify return code
-    AddonsManagerConstants.RETURN_CODE_ADDON_INCOMPATIBLE == launchAddonsManager(
+    AddonsManagerConstants.RETURN_CODE_INCOMPATIBILITY_ERROR == launchAddonsManager(
         ["install", "incompatible-foo-addon:42", "--verbose"]).exitValue()
   }
 
@@ -890,7 +890,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   def "[LICENSE_01] [LICENSE_03] [LICENSE_04] Download and display license if mustAcceptLicenseTerms=true. The user refuses it."() {
     expect:
     // Verify return code
-    AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR == launchAddonsManager(
+    AddonsManagerConstants.RETURN_CODE_LICENSE_NOT_ACCEPTED == launchAddonsManager(
         ["install", "license-addon:42", "--verbose"],
         ['no\n']).exitValue()
     // Verify that the add-on isn't installed

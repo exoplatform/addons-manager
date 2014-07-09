@@ -22,6 +22,7 @@ package org.exoplatform.platform.am.cli
 
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.ParameterException
+import org.exoplatform.platform.am.ex.CommandLineParsingException
 import org.exoplatform.platform.am.utils.Logger
 
 /**
@@ -80,7 +81,7 @@ class CommandLineParser {
     try {
       _jCommander.parse(args);
     } catch (ParameterException pe) {
-      throw new CommandLineParsingException(pe.message, pe);
+      throw new CommandLineParsingException("Invalid command line parameter(s) : ${pe.message}", pe);
     }
     if (_cliArgs.verbose) {
       LOG.enableDebug()
@@ -97,12 +98,13 @@ class CommandLineParser {
       _cliArgs.command = CommandLineParameters.Command.DESCRIBE
       if (_cliArgs?.commandDescribe?.addon?.size() != 1) {
         throw new CommandLineParsingException(
-            "Command ${CommandLineParameters.Command.DESCRIBE} must have one and only one value (found : ${_cliArgs?.commandDescribe?.addon})");
+            "Invalid command line parameter(s) : Command ${CommandLineParameters.Command.DESCRIBE} must have one and only one value (found : ${_cliArgs?.commandDescribe?.addon})");
       }
       if (_cliArgs.commandDescribe.addon[0].indexOf(':') > 0) {
         // A specific version is asked
-        _cliArgs.commandDescribe.addonId = _cliArgs.commandDescribe.addon[0].substring(0, _cliArgs.commandDescribe.addon[0].indexOf
-            (':'))
+        _cliArgs.commandDescribe.addonId = _cliArgs.commandDescribe.addon[0].substring(0,
+                                                                                       _cliArgs.commandDescribe.addon[0].indexOf(
+                                                                                           ':'))
         _cliArgs.commandDescribe.addonVersion = _cliArgs.commandDescribe.addon[0].substring(
             _cliArgs.commandDescribe.addon[0].indexOf(':') + 1,
             _cliArgs.commandDescribe.addon[0].length())
@@ -113,12 +115,12 @@ class CommandLineParser {
       _cliArgs.command = CommandLineParameters.Command.INSTALL
       if (_cliArgs?.commandInstall?.addon?.size() != 1) {
         throw new CommandLineParsingException(
-            "Command ${CommandLineParameters.Command.INSTALL} must have one and only one value (found : ${_cliArgs?.commandInstall?.addon})");
+            "Invalid command line parameter(s) : Command ${CommandLineParameters.Command.INSTALL} must have one and only one value (found : ${_cliArgs?.commandInstall?.addon})");
       }
       if (_cliArgs.commandInstall.addon[0].indexOf(':') > 0) {
         // A specific version is asked
-        _cliArgs.commandInstall.addonId = _cliArgs.commandInstall.addon[0].substring(0, _cliArgs.commandInstall.addon[0].indexOf
-            (':'))
+        _cliArgs.commandInstall.addonId = _cliArgs.commandInstall.addon[0].substring(0, _cliArgs.commandInstall.addon[0].indexOf(
+            ':'))
         _cliArgs.commandInstall.addonVersion = _cliArgs.commandInstall.addon[0].substring(
             _cliArgs.commandInstall.addon[0].indexOf(':') + 1,
             _cliArgs.commandInstall.addon[0].length())
@@ -132,11 +134,11 @@ class CommandLineParser {
       _cliArgs.command = CommandLineParameters.Command.UNINSTALL
       if (_cliArgs?.commandUninstall?.addon?.size() != 1) {
         throw new CommandLineParsingException(
-            "Command ${CommandLineParameters.Command.UNINSTALL} must have one and only one value (found : ${_cliArgs?.commandUninstall?.addon})");
+            "Invalid command line parameter(s) : Command ${CommandLineParameters.Command.UNINSTALL} must have one and only one value (found : ${_cliArgs?.commandUninstall?.addon})");
       }
       _cliArgs.commandUninstall.addonId = _cliArgs.commandUninstall.addon[0]
     } else {
-      throw new CommandLineParsingException("No command defined")
+      throw new CommandLineParsingException("Invalid command line parameter(s) : No command defined")
     }
     return _cliArgs
   }

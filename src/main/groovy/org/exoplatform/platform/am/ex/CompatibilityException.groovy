@@ -18,28 +18,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.platform.am.cli;
+package org.exoplatform.platform.am.ex
+import org.exoplatform.platform.am.Addon
 
-import org.exoplatform.platform.am.utils.AddonsManagerException;
-
+import static org.exoplatform.platform.am.AddonsManagerConstants.RETURN_CODE_INCOMPATIBILITY_ERROR
 /**
- * When something goes wrong while parsing command line parameters
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class CommandLineParsingException extends AddonsManagerException {
-  CommandLineParsingException() {
+class CompatibilityException extends AddonsManagerException {
+
+  CompatibilityException(Addon addon, String plfVersion) {
+    super(
+        "The add-on ${addon.id}:${addon.version} defines a compatibility rule ${addon.compatibility}. Your version " +
+            "${plfVersion} of eXo Platform isn't compatible. Use --no-compat to ignore this compatibility check and install it " +
+            "anyway.")
   }
 
-  CommandLineParsingException(String s) {
-    super(s);
+  @Override
+  int getErrorCode() {
+    return RETURN_CODE_INCOMPATIBILITY_ERROR
   }
-
-  CommandLineParsingException(String s, Throwable throwable) {
-    super(s, throwable);
-  }
-
-  CommandLineParsingException(Throwable throwable) {
-    super(throwable);
-  }
-
 }

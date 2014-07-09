@@ -18,31 +18,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.platform.am.settings
+package org.exoplatform.platform.am.ex
+import org.exoplatform.platform.am.Addon
 
-import org.exoplatform.platform.am.ex.ErroneousSetupException
-import org.exoplatform.platform.am.utils.Console
-import org.exoplatform.platform.am.utils.Logger
-import spock.lang.Specification
-
+import static org.exoplatform.platform.am.AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class PlatformSettingsTest extends Specification {
+class AddonAlreadyInstalledException extends AddonsManagerException {
 
-  def setupSpec() {
-    Logger.getInstance().enableDebug()
+  AddonAlreadyInstalledException(Addon addon) {
+    super("Add-on ${addon.id} already installed in version ${addon.version}. Use --force option to reinstall it")
   }
 
-  def cleanSpec() {
-    Console.get().reset()
-  }
-
-
-  def "No plf.home property defined"() {
-    when:
-    new PlatformSettings()
-    then:
-    thrown(ErroneousSetupException)
+  @Override
+  int getErrorCode() {
+    return RETURN_CODE_ADDON_ALREADY_INSTALLED
   }
 }

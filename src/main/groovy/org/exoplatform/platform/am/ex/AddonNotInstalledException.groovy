@@ -18,16 +18,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.platform.am.utils
+package org.exoplatform.platform.am.ex
 
-import org.exoplatform.platform.am.Addon
+import groovy.transform.InheritConstructors
+
+import static org.exoplatform.platform.am.AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED
 
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class AddonAlreadyInstalledException extends AddonsManagerException {
-
-  AddonAlreadyInstalledException(Addon addon) {
-    super("Add-on ${addon.id} already installed in version ${addon.version}. Use --force option to reinstall it")
+@InheritConstructors
+class AddonNotInstalledException extends AddonsManagerException {
+  @Override
+  int getErrorCode() {
+    return RETURN_CODE_ADDON_NOT_INSTALLED
   }
 }

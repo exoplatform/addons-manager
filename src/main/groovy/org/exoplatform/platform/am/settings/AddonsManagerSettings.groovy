@@ -20,9 +20,8 @@
  */
 package org.exoplatform.platform.am.settings
 
-import org.exoplatform.platform.am.utils.AddonsManagerException
+import org.exoplatform.platform.am.ex.ErroneousSetupException
 import org.exoplatform.platform.am.utils.Logger
-
 /**
  * This class stores the add-ons manager settings
  * @author Arnaud Héritier <aheritier@exoplatform.com>
@@ -48,13 +47,13 @@ class AddonsManagerSettings extends Properties {
     InputStream inputStream = getClass().getClassLoader().getResourceAsStream(ADDONS_MANAGER_PROPERTIES)
 
     if (inputStream == null) {
-      throw new AddonsManagerException(
+      throw new ErroneousSetupException(
           "Erroneous packaging, Property file \"${ADDONS_MANAGER_PROPERTIES}\" not found in the classpath")
     }
     try {
       load(inputStream)
     } catch (IOException ioe) {
-      throw new AddonsManagerException("Error while reading \"${ADDONS_MANAGER_PROPERTIES}\" : ${ioe.message}", ioe)
+      throw new ErroneousSetupException("Error while reading \"${ADDONS_MANAGER_PROPERTIES}\" : ${ioe.message}", ioe)
     } finally {
       try {
         inputStream.close()

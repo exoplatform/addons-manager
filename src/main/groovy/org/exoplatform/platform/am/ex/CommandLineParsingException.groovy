@@ -18,20 +18,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.platform.am.utils
+package org.exoplatform.platform.am.ex
 
-import org.exoplatform.platform.am.Addon
+import groovy.transform.InheritConstructors
 
+import static org.exoplatform.platform.am.AddonsManagerConstants.RETURN_CODE_INVALID_COMMAND_LINE_PARAMS
 /**
+ * When something goes wrong while parsing command line parameters
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class CompatibilityException extends AddonsManagerException {
+@InheritConstructors
+class CommandLineParsingException extends AddonsManagerException {
 
-  CompatibilityException(Addon addon, String plfVersion) {
-    super(
-        "The add-on ${addon.id}:${addon.version} defines a compatibility rule ${addon.compatibility}. Your version " +
-            "${plfVersion} of eXo Platform isn't compatible. Use --no-compat to ignore this compatibility check and install it " +
-            "anyway.")
+  @Override
+  int getErrorCode() {
+    return RETURN_CODE_INVALID_COMMAND_LINE_PARAMS
   }
-
 }

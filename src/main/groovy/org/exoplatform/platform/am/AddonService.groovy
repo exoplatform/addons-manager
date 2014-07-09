@@ -32,9 +32,12 @@ import org.eclipse.aether.version.VersionConstraint
 import org.eclipse.aether.version.VersionScheme
 import org.exoplatform.platform.am.cli.CommandLineParameters
 import org.exoplatform.platform.am.cli.Conflict
+import org.exoplatform.platform.am.ex.*
 import org.exoplatform.platform.am.settings.EnvironmentSettings
 import org.exoplatform.platform.am.settings.PlatformSettings
-import org.exoplatform.platform.am.utils.*
+import org.exoplatform.platform.am.utils.Console
+import org.exoplatform.platform.am.utils.FileUtils
+import org.exoplatform.platform.am.utils.Logger
 
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
@@ -86,15 +89,14 @@ class AddonService {
    * List add-ons given the current environment {@code env} and command line {@code parameters}.
    * @param env The execution environment
    * @param parameters Command line parameters for a list action
-   * @return a return code defined in {@link AddonsManagerConstants}
    */
-  int listAddons(
+  void listAddons(
       EnvironmentSettings env,
       CommandLineParameters.ListCommandParameters parameters) {
     if (parameters.installed) {
-      return listInstalledAddons(env)
+      listInstalledAddons(env)
     } else if (parameters.outdated) {
-      return listOutdatedAddons(
+      listOutdatedAddons(
           env,
           parameters.unstable,
           parameters.snapshots,
@@ -102,7 +104,7 @@ class AddonService {
           parameters.offline,
           parameters.catalog)
     } else {
-      return listAddonsFromCatalogs(
+      listAddonsFromCatalogs(
           env,
           parameters.unstable,
           parameters.snapshots,
@@ -116,9 +118,8 @@ class AddonService {
    * Describe an add-on given the current environment {@code env} and command line {@code parameters}.
    * @param env The execution environment
    * @param parameters Command line parameters for a describe action
-   * @return a return code defined in {@link AddonsManagerConstants}
    */
-  int describeAddon(
+  void describeAddon(
       EnvironmentSettings env,
       CommandLineParameters.DescribeCommandParameters parameters) {
     List<Addon> availableAddons = loadAddons(
@@ -139,21 +140,15 @@ class AddonService {
         parameters.addonVersion,
         parameters.snapshots,
         parameters.unstable)
-    if (addon == null) {
-      return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
-    } else {
-      describeAddon(addon)
-      return AddonsManagerConstants.RETURN_CODE_OK
-    }
+    describeAddon(addon)
   }
 
   /**
    * Install an add-on given the current environment {@code env} and command line {@code parameters}.
    * @param env The execution environment
    * @param parameters Command line parameters for an install action
-   * @return a return code defined in {@link AddonsManagerConstants}
    */
-  int installAddon(
+  void installAddon(
       EnvironmentSettings env,
       CommandLineParameters.InstallCommandParameters parameters) {
     List<Addon> availableAddons = loadAddons(
@@ -174,21 +169,15 @@ class AddonService {
         parameters.addonVersion,
         parameters.snapshots,
         parameters.unstable)
-    if (addon == null) {
-      return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
-    } else {
-      installAddon(env, addon, parameters.force, parameters.noCache, parameters.offline, parameters.noCompat, parameters.conflict)
-      return AddonsManagerConstants.RETURN_CODE_OK
-    }
+    installAddon(env, addon, parameters.force, parameters.noCache, parameters.offline, parameters.noCompat, parameters.conflict)
   }
 
   /**
    * Uninstall an add-on given the current environment {@code env} and command line {@code parameters}.
    * @param env The execution environment
    * @param parameters Command line parameters for an uninstall action
-   * @return a return code defined in {@link AddonsManagerConstants}
    */
-  int uninstallAddon(
+  void uninstallAddon(
       EnvironmentSettings env,
       CommandLineParameters.UninstallCommandParameters parameters) {
     File statusFile = getAddonStatusFile(env.statusesDirectory, parameters.addonId)
@@ -198,19 +187,16 @@ class AddonService {
         addon = createAddonFromJsonText(statusFile.text);
       }
       uninstallAddon(env, addon)
-      return AddonsManagerConstants.RETURN_CODE_OK
     } else {
-      LOG.error("Add-on not installed. It cannot be uninstalled.")
-      return AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED
+      throw new AddonNotInstalledException("Add-on not installed. It cannot be uninstalled.")
     }
   }
 
   /**
    * List add-ons installed in the current environment {@code env}.
    * @param env The execution environment
-   * @return a return code defined in {@link AddonsManagerConstants}
    */
-  protected int listInstalledAddons(
+  protected void listInstalledAddons(
       EnvironmentSettings env) {
     // Display only installed add-ons
     List<Addon> installedAddons = getInstalledAddons(env)
@@ -228,7 +214,6 @@ To uninstall an add-on:
     } else {
       LOG.info "No add-on installed"
     }
-    return AddonsManagerConstants.RETURN_CODE_OK
   }
 
   /**
@@ -240,9 +225,8 @@ To uninstall an add-on:
    * @param noCache Don't use catalog's cache if exist ?
    * @param offline Don't download anything ?
    * @param alternateCatalog Specific remote catalog URL to use
-   * @return a return code defined in {@link AddonsManagerConstants}
    */
-  protected int listOutdatedAddons(
+  protected void listOutdatedAddons(
       EnvironmentSettings env,
       Boolean allowUnstable,
       Boolean allowSnapshot,
@@ -290,7 +274,6 @@ To uninstall an add-on:
     } else {
       LOG.info "No add-on installed"
     }
-    return AddonsManagerConstants.RETURN_CODE_OK
   }
 
   /**
@@ -302,9 +285,8 @@ To uninstall an add-on:
    * @param noCache Don't use catalog's cache if exist ?
    * @param offline Don't download anything ?
    * @param alternateCatalog Specific remote catalog URL to use
-   * @return a return code defined in {@link AddonsManagerConstants}
    */
-  protected int listAddonsFromCatalogs(
+  protected void listAddonsFromCatalogs(
       EnvironmentSettings env,
       Boolean allowUnstable,
       Boolean allowSnapshot,
@@ -341,7 +323,6 @@ To install an add-on:
     } else {
       LOG.warn "No add-on found in remote and local catalogs"
     }
-    return AddonsManagerConstants.RETURN_CODE_OK
   }
 
   /**
@@ -441,7 +422,7 @@ To install an add-on:
         LOG.debug("REPLY : ${reply}")
         if (!"yes".equalsIgnoreCase(reply)) {
           licenseFile.delete()
-          throw new AddonsManagerException("You didn't accept the license. Installation aborted.")
+          throw new LicenseValidationException("You didn't accept the license. Installation aborted.")
         }
       }
     } else {
@@ -468,7 +449,7 @@ To install an add-on:
     if (!getAddonLocalArchive(env.archivesDirectory, addon).exists()) {
       // Let's download it
       if (addon.downloadUrl.startsWith("http")) {
-        if (offline) throw new AddonsManagerException(
+        if (offline) throw new UnknownErrorException(
             "${addon.name} ${addon.version} archive not found locally and offline mode activated")
         LOG.withStatus("Downloading add-on ${addon.name} ${addon.version}") {
           downloadFile(addon.downloadUrl, getAddonLocalArchive(env.archivesDirectory, addon))
@@ -481,14 +462,14 @@ To install an add-on:
           originFile = new File(addon.downloadUrl.replaceAll("file://", ""))
         }
         if (!originFile.exists()) {
-          throw new AddonsManagerException("File not found : ${addon.downloadUrl}")
+          throw new UnknownErrorException("File not found : ${addon.downloadUrl}")
         }
         LOG.withStatus("Copying add-on ${addon.name} ${addon.version}") {
           copyFile(originFile,
                    getAddonLocalArchive(env.archivesDirectory, addon))
         }
       } else {
-        throw new AddonsManagerException("Invalid or not supported download URL : ${addon.downloadUrl}")
+        throw new UnknownErrorException("Invalid or not supported download URL : ${addon.downloadUrl}")
       }
     }
     addon.installedLibraries = new ArrayList<String>()
@@ -540,7 +521,7 @@ To install an add-on:
           if (destinationFile.exists()) {
             switch (conflict) {
               case Conflict.FAIL:
-                throw new AddonsManagerException(
+                throw new UnknownErrorException(
                     "File ${plfHomeRelativePath} already exists. Installation aborted. Use --conflict=skip or --conflict=overwrite option to install it.")
                 break
               case Conflict.OVERWRITE:
@@ -882,7 +863,7 @@ To install an add-on:
             // Read the catalog content
             catalogContent = tempFile.text
           } catch (FileNotFoundException fne) {
-            throw new AddonsManagerException("Catalog ${catalogUrl} not found", fne)
+            throw new UnknownErrorException("Catalog ${catalogUrl} not found", fne)
           }
         }
         try {
@@ -1002,9 +983,9 @@ To install an add-on:
                                findAddonsByVersion(addons, allowSnapshots, allowUnstable))
       if (result == null) {
         if (!addons.find { it.id == addonId }) {
-          LOG.error "No add-on with identifier ${addonId} found in local or remote catalogs, check your add-on identifier"
+          throw new AddonNotFoundException(
+              "No add-on with identifier ${addonId} found in local or remote catalogs, check your add-on identifier")
         } else {
-          LOG.error "No add-on with identifier ${addonId} found in local or remote catalogs"
           // Let's try to find an unstable version of the addon
           if (!allowUnstable && findNewestAddon(addonId,
                                                 findAddonsByVersion(addons, allowSnapshots, true))) {
@@ -1017,15 +998,16 @@ To install an add-on:
             LOG.info(
                 "This add-on exists but doesn't have a stable released version yet! add --snapshots option to use a development version")
           }
+          throw new AddonNotFoundException("No add-on with identifier ${addonId} found in local or remote catalogs")
         }
       }
     } else {
       result = addons.find { it.id == addonId && it.version == addonVersion }
       if (result == null) {
         if (!addons.find { it.id == addonId }) {
-          LOG.error "No add-on with identifier ${addonId} found in local or remote catalogs, check your add-on identifier"
+          throw new AddonNotFoundException(
+              "No add-on with identifier ${addonId} found in local or remote catalogs, check your add-on identifier")
         } else {
-          LOG.error "No add-on with identifier ${addonId} and version ${addonVersion} found in local or remote catalogs"
           List<Addon> stableAddons = findAddonsByVersion(addons.findAll { it.id == addonId }, false, false)
           if (!stableAddons.empty) {
             LOG.info "Stable version(s) available for add-on @|bold,yellow ${addonId}|@ : ${stableAddons.sort().reverse().collect { it.version }.join(', ')}"
@@ -1038,6 +1020,8 @@ To install an add-on:
           if (!snapshotAddons.empty) {
             LOG.info "Development version(s) available for add-on @|bold,yellow ${addonId}|@ : ${snapshotAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
+          throw new AddonNotFoundException(
+              "No add-on with identifier ${addonId} and version ${addonVersion} found in local or remote catalogs")
         }
       }
     }

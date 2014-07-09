@@ -22,9 +22,11 @@ package org.exoplatform.platform.am
 
 import org.exoplatform.platform.am.cli.CommandLineParameters
 import org.exoplatform.platform.am.cli.CommandLineParser
-import org.exoplatform.platform.am.cli.CommandLineParsingException
+import org.exoplatform.platform.am.ex.AddonsManagerException
+import org.exoplatform.platform.am.ex.CommandLineParsingException
 import org.exoplatform.platform.am.settings.EnvironmentSettings
-import org.exoplatform.platform.am.utils.*
+import org.exoplatform.platform.am.utils.Console
+import org.exoplatform.platform.am.utils.Logger
 
 /*
  * Command line utility to manage add-ons inside a Platform installation.
@@ -61,31 +63,25 @@ try {
   // And execute the required action
   switch (commandLineParameters.command) {
     case CommandLineParameters.Command.LIST:
-      returnCode = addonService.listAddons(env, commandLineParameters.commandList)
+      addonService.listAddons(env, commandLineParameters.commandList)
       break
     case CommandLineParameters.Command.DESCRIBE:
-      returnCode = addonService.describeAddon(env, commandLineParameters.commandDescribe)
+      addonService.describeAddon(env, commandLineParameters.commandDescribe)
       break
     case CommandLineParameters.Command.INSTALL:
-      returnCode = addonService.installAddon(env, commandLineParameters.commandInstall)
+      addonService.installAddon(env, commandLineParameters.commandInstall)
       break
     case CommandLineParameters.Command.UNINSTALL:
-      returnCode = addonService.uninstallAddon(env, commandLineParameters.commandUninstall)
+      addonService.uninstallAddon(env, commandLineParameters.commandUninstall)
       break
   }
 } catch (CommandLineParsingException clpe) {
-  log.error "Invalid command line parameter(s) : ${clpe.message}"
+  log.error clpe.message
   clp.usage()
-  returnCode = AddonsManagerConstants.RETURN_CODE_INVALID_COMMAND_LINE_PARAMS
-} catch (AddonAlreadyInstalledException aaie) {
-  log.error aaie.message
-  returnCode = AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED
-} catch (CompatibilityException aie) {
-  log.error aie.message
-  returnCode = AddonsManagerConstants.RETURN_CODE_ADDON_INCOMPATIBLE
+  returnCode = clpe.errorCode
 } catch (AddonsManagerException ame) {
   log.error ame.message
-  returnCode = AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR
+  returnCode = ame.errorCode
 } catch (Throwable t) {
   log.error t
   returnCode = AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR

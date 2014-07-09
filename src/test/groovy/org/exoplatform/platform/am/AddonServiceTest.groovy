@@ -20,9 +20,9 @@
  */
 package org.exoplatform.platform.am
 
+import org.exoplatform.platform.am.ex.InvalidJSONException
 import org.exoplatform.platform.am.settings.PlatformSettings
 import org.exoplatform.platform.am.utils.Console
-import org.exoplatform.platform.am.utils.InvalidJSONException
 import org.exoplatform.platform.am.utils.Logger
 import spock.lang.Shared
 import spock.lang.Specification

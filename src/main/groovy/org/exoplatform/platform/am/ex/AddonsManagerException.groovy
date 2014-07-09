@@ -18,31 +18,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.platform.am.settings
+package org.exoplatform.platform.am.ex
 
-import org.exoplatform.platform.am.ex.ErroneousSetupException
-import org.exoplatform.platform.am.utils.Console
-import org.exoplatform.platform.am.utils.Logger
-import spock.lang.Specification
+import groovy.transform.InheritConstructors
 
 /**
+ * Addons Manager Exception
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class PlatformSettingsTest extends Specification {
+@InheritConstructors
+abstract class AddonsManagerException extends RuntimeException {
 
-  def setupSpec() {
-    Logger.getInstance().enableDebug()
-  }
+  abstract int getErrorCode()
 
-  def cleanSpec() {
-    Console.get().reset()
-  }
-
-
-  def "No plf.home property defined"() {
-    when:
-    new PlatformSettings()
-    then:
-    thrown(ErroneousSetupException)
-  }
 }

@@ -109,7 +109,7 @@
     "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-42.zip",
     "vendor": "eXo",
     "license": "fakeLicenseV1",
-    "licenseUrl": "http://localhost:${webserver.http.port}/fakeLicense.txt",
+    "licenseUrl": "http://localhost:${webserver.http.port}/fake.license",
     "mustAcceptLicense": true,
     "supportedDistributions": "community,enterprise",
     "supportedApplicationServers": "tomcat,jboss",

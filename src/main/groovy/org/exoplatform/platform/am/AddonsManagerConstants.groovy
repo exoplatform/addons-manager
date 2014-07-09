@@ -57,7 +57,22 @@ class AddonsManagerConstants {
   /**
    * Command line return code when trying to install an add-on on a PLF version incompatible
    */
-  static final int RETURN_CODE_ADDON_INCOMPATIBLE = 6
+  static final int RETURN_CODE_INCOMPATIBILITY_ERROR = 6
+
+  /**
+   * Command line return code when we don't trap an error while reading a JSON file
+   */
+  static final int RETURN_CODE_INVALID_JSON = 7
+
+  /**
+   * Command line return code when the user doesn't accept the license
+   */
+  static final int RETURN_CODE_LICENSE_NOT_ACCEPTED = 8
+
+  /**
+   * Command line return code when there is a setup issue
+   */
+  static final int RETURN_CODE_ERRONEOUS_SETUP = 9
 
   static final String STATUS_OK = "OK"
   static final String STATUS_KO = "KO"

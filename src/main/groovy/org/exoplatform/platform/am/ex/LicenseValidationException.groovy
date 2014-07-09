@@ -18,13 +18,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
-package org.exoplatform.platform.am.utils
+package org.exoplatform.platform.am.ex
+
+import groovy.transform.InheritConstructors
+
+import static org.exoplatform.platform.am.AddonsManagerConstants.RETURN_CODE_LICENSE_NOT_ACCEPTED
+
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class InvalidJSONException extends AddonsManagerException {
-
-  InvalidJSONException(Object object) {
-    super("This object is invalid : ${object}")
+@InheritConstructors
+class LicenseValidationException extends AddonsManagerException {
+  @Override
+  int getErrorCode() {
+    return RETURN_CODE_LICENSE_NOT_ACCEPTED
   }
 }
