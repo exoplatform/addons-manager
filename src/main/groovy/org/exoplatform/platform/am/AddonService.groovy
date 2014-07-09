@@ -308,13 +308,29 @@ To uninstall an add-on:
         env.versionsDirectory,
         env.archivesDirectory)
     if (availableAddons.size() > 0) {
-      LOG.info "\n@|bold Available add-ons:|@"
+      LOG.infoHR("=")
+      LOG.info "@|bold Available add-ons|@"
+      LOG.infoHR("=")
       availableAddons.groupBy { it.id }.sort().each {
         Addon anAddon = it.value.first()
-        LOG.info String.format("\n+ @|bold,yellow %-${availableAddons.id*.size().max()}s|@ : @|bold %s|@, %s", anAddon.id,
-                               anAddon.name, anAddon.description)
-        LOG.info String.format("     Available Version(s) : %s", it.value.sort().reverse().collect { "@|yellow ${it.version}|@" }
-            .join(', '))
+        //LOG.info String.format("\n+ @|bold,yellow %-${availableAddons.id*.size().max()}s|@ : @|bold %s|@", anAddon.id,anAddon.name)
+        LOG.info String.format("@|bold,yellow %s|@ - @|bold %s|@", anAddon.id,anAddon.name)
+        LOG.wrapLine(anAddon.description, Console.get().width - Logger.Level.INFO.prefix.length()).each {
+          LOG.info(it)
+        }
+        Addon latestStableAddon = findNewestAddon(anAddon.id, availableAddons.findAll { !it.snapshot && !it.unstable })
+        if (latestStableAddon) {
+          LOG.info "@|bold + Latest stable version :|@ @|yellow ${latestStableAddon.version}|@"
+        }
+        Addon latestUnstableAddon = findNewestAddon(anAddon.id, availableAddons.findAll { !it.snapshot && it.unstable })
+        if (latestUnstableAddon) {
+          LOG.info "@|bold + Latest unstable version :|@ @|yellow ${latestUnstableAddon.version}|@"
+        }
+        Addon latestSnapshotAddon = findNewestAddon(anAddon.id, availableAddons.findAll { it.snapshot })
+        if (latestSnapshotAddon) {
+          LOG.info "@|bold + Latest development version :|@ @|yellow ${latestSnapshotAddon.version}|@"
+        }
+        LOG.infoHR()
       }
       LOG.info String.format("""
 To install an add-on:
