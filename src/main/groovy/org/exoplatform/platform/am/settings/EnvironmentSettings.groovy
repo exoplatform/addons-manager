@@ -57,9 +57,21 @@ class EnvironmentSettings {
    */
   File localAddonsCatalogFile
 
+  /**
+   * Default constructor using default AddonsManagerSettings and PlatformSettings
+   */
   EnvironmentSettings() {
-    manager = new AddonsManagerSettings()
-    platform = new PlatformSettings()
+    this(new AddonsManagerSettings(), new PlatformSettings())
+  }
+
+  /**
+   * Instantiates it with custom @{code managerSettings} and @{code platformSettings}
+   * @param managerSettings manager settings
+   * @param platformSettings platform settings
+   */
+  EnvironmentSettings(AddonsManagerSettings managerSettings, PlatformSettings platformSettings) {
+    manager = managerSettings
+    platform = platformSettings
     addonsDirectory = new File(platform.homeDirectory, manager.addonsDirectoryPath)
     if (!addonsDirectory.exists()) {
       FileUtils.mkdirs(addonsDirectory)

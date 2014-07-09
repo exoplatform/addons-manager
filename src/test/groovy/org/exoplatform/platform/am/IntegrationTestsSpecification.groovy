@@ -21,6 +21,7 @@
 package org.exoplatform.platform.am
 
 import org.exoplatform.platform.am.settings.AddonsManagerSettings
+import org.exoplatform.platform.am.settings.EnvironmentSettings
 import org.exoplatform.platform.am.settings.PlatformSettings
 import spock.lang.Shared
 import spock.lang.Specification
@@ -85,16 +86,30 @@ abstract class IntegrationTestsSpecification extends Specification {
   }
 
   @Shared
-  private PlatformSettings _plfSettings
+  private EnvironmentSettings _envSettings
+
+  /**
+   * @return The Environment Settings
+   */
+  EnvironmentSettings getEnvironmentSettings() {
+    if (!_envSettings) {
+      _envSettings = new EnvironmentSettings(new AddonsManagerSettings(), new PlatformSettings(getPlatformHome()))
+    }
+    _envSettings
+  }
 
   /**
    * @return The PLF Settings for the instance to test
    */
   PlatformSettings getPlatformSettings() {
-    if (!_plfSettings) {
-      _plfSettings = new PlatformSettings(getPlatformHome())
-    }
-    _plfSettings
+    getEnvironmentSettings().platform
+  }
+
+  /**
+   * @return The Add-ons Manager Settings
+   */
+  AddonsManagerSettings getAddonsManagerSettings() {
+    getEnvironmentSettings().manager
   }
 
   /**
@@ -141,7 +156,7 @@ abstract class IntegrationTestsSpecification extends Specification {
     Process process = commandToExecute.execute()
     if (inputs) {
       process.withWriter { writer ->
-        inputs.each {writer << "${it}\n"}
+        inputs.each { writer << "${it}\n" }
       }
     }
     process.waitFor() // Wait for the command to finish

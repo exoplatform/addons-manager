@@ -411,13 +411,12 @@ To install an add-on:
     }
     if (addon.mustAcceptLicense && addon.licenseUrl) {
       // Local license file
-      URL licenseUrl = new URL(addon.licenseUrl)
-      File licenseFile = new File(env.statusesDirectory, "${addon.id}-${convertUrlToFilename(licenseUrl)}.license")
+      File licenseFile = getAddonLicenseFile(env.statusesDirectory, addon)
       // [LICENSE_05] Don't prompt to validate a license already accepted
       if (!licenseFile.exists()) {
         // [LICENSE_01] Download and display license if mustAcceptLicenseTerms=true
         LOG.withStatus("Downloading license ${addon.license} from ${addon.licenseUrl}") {
-          licenseFile << licenseUrl.text
+          licenseFile << new URL(addon.licenseUrl).text
         }
         // [LICENSE_02] Split the license per page (click on a touch to advance)
         LOG.infoHR('=')
@@ -1355,6 +1354,18 @@ To install an add-on:
       File statusesDirectory,
       Addon addon) {
     return getAddonStatusFile(statusesDirectory, addon.id)
+  }
+
+  /**
+   * Returns the License File for a given add-on
+   * @param statusesDirectory The directory where statuses are stored
+   * @param addon The add-on to find
+   * @return a File (existing or not)
+   */
+  protected File getAddonLicenseFile(
+      File statusesDirectory,
+      Addon addon) {
+    new File(statusesDirectory, "${addon.id}-${convertUrlToFilename(new URL(addon.licenseUrl))}.license")
   }
 
   /**

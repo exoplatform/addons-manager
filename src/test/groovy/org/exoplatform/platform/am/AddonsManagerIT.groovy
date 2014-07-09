@@ -24,6 +24,11 @@ package org.exoplatform.platform.am
  */
 class AddonsManagerIT extends IntegrationTestsSpecification {
 
+  def cleanup() {
+    // After each test we remove the content of the addons directory to be safe
+    getEnvironmentSettings().getAddonsDirectory().deleteDir()
+  }
+
   def "Without any param the program must return an error"() {
     expect:
     AddonsManagerConstants.RETURN_CODE_INVALID_COMMAND_LINE_PARAMS == launchAddonsManager([""]).exitValue()
@@ -874,48 +879,60 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").text == "TEST"
     cleanup:
-    // Manually remove or additional file
+    // Manually remove the additional file
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").delete()
   }
 
-//  /**
-//   * [LICENSE_01] Download and display license if mustAcceptLicenseTerms=true
-//   * [LICENSE_02] Split the license per page (click on a touch to advance)
-//   * [LICENSE_03] [LICENSE_04] interactive validation of license
-//   * [LICENSE_05] Don't prompt to validate a license already accepted
-//   * [LICENSE_06] no licenseUrl or mustAcceptLicenseTerms=false
-//   */
-//  def "[LICENSE_03] Download and display license if mustAcceptLicenseTerms=true. The user refuses it."() {
-//    expect:
-//    // Verify return code
-//    AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR == launchAddonsManager(
-//        ["install", "license-addon:42", "--verbose"],
-//        ['', '', 'no']).exitValue()
-//    // Verify that the add-on is correctly installed
-//    !new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
-//    !new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
-//  }
-//
-//  /**
-//   * [LICENSE_01] Download and display license if mustAcceptLicenseTerms=true
-//   * [LICENSE_02] Split the license per page (click on a touch to advance)
-//   * [LICENSE_03] [LICENSE_04] interactive validation of license
-//   * [LICENSE_05] Don't prompt to validate a license already accepted
-//   * [LICENSE_06] no licenseUrl or mustAcceptLicenseTerms=false
-//   */
-//  def "[LICENSE_03] Download and display license if mustAcceptLicenseTerms=true. The user accepts it."() {
-//    expect:
-//    // Verify return code
-//    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
-//        ["install", "license-addon:42", "--verbose"],
-//        ['', '', 'yes\n']).exitValue()
-//    // Verify that the add-on is correctly installed
-//    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
-//    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
-//    cleanup:
-//    // Uninstall it
-//    launchAddonsManager(["uninstall", "license-addon"])
-//  }
+  /**
+   * [LICENSE_01] Download and display license if mustAcceptLicenseTerms=true
+   * [LICENSE_03] [LICENSE_04] interactive validation of license
+   */
+  def "[LICENSE_01] [LICENSE_03] [LICENSE_04] Download and display license if mustAcceptLicenseTerms=true. The user refuses it."() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR == launchAddonsManager(
+        ["install", "license-addon:42", "--verbose"],
+        ['no\n']).exitValue()
+    // Verify that the add-on isn't installed
+    !new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    !new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+  }
 
+  /**
+   * [LICENSE_01] Download and display license if mustAcceptLicenseTerms=true
+   * [LICENSE_03] [LICENSE_04] interactive validation of license
+   */
+  def "[LICENSE_01] [LICENSE_03] [LICENSE_04] Download and display license if mustAcceptLicenseTerms=true. The user accepts it."() {
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
+        ["install", "license-addon:42", "--verbose"],
+        ['yes\n']).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "license-addon"])
+  }
+
+  /**
+   * [LICENSE_05] Don't prompt to validate a license already accepted
+   */
+  def "[LICENSE_05] Don't prompt to validate a license already accepted."() {
+    expect:
+    // Install it a first time
+    launchAddonsManager(["install", "license-addon:42"], ['yes\n'])
+    // Remove it
+    launchAddonsManager(["uninstall", "license-addon"])
+    // Reinstall it and verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "license-addon:42", "--verbose"]).exitValue()
+    // Verify that the add-on is correctly installed
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "license-addon"])
+  }
 
 }

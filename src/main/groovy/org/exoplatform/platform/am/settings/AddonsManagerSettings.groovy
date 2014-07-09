@@ -45,8 +45,7 @@ class AddonsManagerSettings extends Properties {
    * Automatically load properties for {@link AddonsManagerSettings#ADDONS_MANAGER_PROPERTIES}
    */
   protected void init() {
-    InputStream inputStream = getClass().getClassLoader().
-        getResourceAsStream(ADDONS_MANAGER_PROPERTIES)
+    InputStream inputStream = getClass().getClassLoader().getResourceAsStream(ADDONS_MANAGER_PROPERTIES)
 
     if (inputStream == null) {
       throw new AddonsManagerException(
