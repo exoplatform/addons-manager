@@ -753,13 +753,15 @@ class AddonService {
       String constraint
   ) {
     assert version
+    Boolean result
     if (constraint) {
-      LOG.debug("Checking compatibility for version ${version} with constraint ${constraint}")
       Version plfVersion = versionScheme.parseVersion(version)
       VersionConstraint addonConstraint = versionScheme.parseVersionConstraint(constraint)
-      return addonConstraint.containsVersion(plfVersion)
+      result = addonConstraint.containsVersion(plfVersion)
     } else {
-      return true
+      result = true
     }
+    LOG.debug("Checking compatibility for version ${version} with constraint ${constraint} : ${result}")
+    return result
   }
 }
