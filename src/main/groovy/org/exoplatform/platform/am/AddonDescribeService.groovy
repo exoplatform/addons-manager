@@ -81,9 +81,40 @@ public class AddonDescribeService {
         availableAddons,
         parameters.addonId,
         parameters.addonVersion,
-        parameters.snapshots,
-        parameters.unstable)
-    describeAddon(addon)
+        true,
+        true)
+    boolean displayIncompatibleAddonsNote
+    describeAddon(
+        addon,
+        ADDON_SERVICE.filterAddonsByVersion(
+            availableAddons.findAll { parameters.addonId == it.id }, true, false, false).collect {
+          displayIncompatibleAddonsNote = !ADDON_SERVICE.isCompatible(it, env.platform) || displayIncompatibleAddonsNote
+          String version = addon.version == it.version ? "@|yellow ${it.version}|@" : it.version
+          String compatibility = ADDON_SERVICE.isCompatible(it, env.platform) ? "" : " @|red,bold (*)|@"
+          return "${version}${compatibility}"
+        },
+        ADDON_SERVICE.filterAddonsByVersion(
+            availableAddons.findAll { parameters.addonId == it.id }, false, true, false).collect {
+          displayIncompatibleAddonsNote = !ADDON_SERVICE.isCompatible(it, env.platform) || displayIncompatibleAddonsNote
+          String version = addon.version == it.version ? "@|yellow ${it.version}|@" : it.version
+          String compatibility = ADDON_SERVICE.isCompatible(it, env.platform) ? "" : " @|red,bold (*)|@"
+          return "${version}${compatibility}"
+        },
+        ADDON_SERVICE.filterAddonsByVersion(
+            availableAddons.findAll { parameters.addonId == it.id }, false, false, true).collect {
+          displayIncompatibleAddonsNote = !ADDON_SERVICE.isCompatible(it, env.platform) || displayIncompatibleAddonsNote
+          String version = addon.version == it.version ? "@|yellow ${it.version}|@" : it.version
+          String compatibility = ADDON_SERVICE.isCompatible(it, env.platform) ? "" : " @|red,bold (*)|@"
+          return "${version}${compatibility}"
+        })
+    if (displayIncompatibleAddonsNote) {
+      LOG.info " @|red,bold (*)|@ Your eXo Platform instance is not compatible with this version of the add-on"
+    }
+    LOG.info String.format("""
+To install this add-on:
+  ${env.manager.scriptName} install @|yellow ${addon.id}:${addon.version}|@
+""")
+
   }
 
   /**
@@ -91,14 +122,19 @@ public class AddonDescribeService {
    * @param addon The add-on to describe
    */
   protected void describeAddon(
-      final Addon addon) {
+      final Addon addon,
+      List<String> stableVersions,
+      List<String> unstableVersions,
+      List<String> snapshotsVersions) {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd")
     LOG.infoHR("=")
-    LOG.info "Informations about add-on @|bold,yellow ${addon.id}|@@|bold :${addon.version}|@"
+    LOG.info "Informations about add-on @|bold,yellow ${addon.id}:${addon.version}|@"
     LOG.infoHR("=")
     Map map = [
         "Identifier"                        : addon.id,
-        "Version"                           : addon.version,
+        "Stable versions"                   : stableVersions.join(", "),
+        "Unstable versions"                 : unstableVersions.join(", "),
+        "Development versions"              : snapshotsVersions.join(", "),
         "Name"                              : addon.name,
         "Description"                       : addon.description,
         "Release date (YYYY-MM-DD)"         : addon.releaseDate ? sdf.format(sdf.parse(addon.releaseDate)) : null,
@@ -113,12 +149,12 @@ public class AddonDescribeService {
         "License"                           : addon.license,
         "License URL"                       : addon.licenseUrl ? URLDecoder.decode(addon.licenseUrl, "UTF-8") : null,
         "License must be accepted"          : addon.mustAcceptLicense,
-        "Supported application Server(s)"   : addon.supportedApplicationServers,
-        "Supported platform distribution(s)": addon.supportedDistributions,
+        "Supported application Server(s)"   : addon.supportedApplicationServers.join(", "),
+        "Supported platform distribution(s)": addon.supportedDistributions.join(", "),
         "Supported platform version(s)"     : addon.compatibility] as LinkedHashMap //LinkedHashMap to keep the insertion order
     map.keySet().findAll { map.get(it) }.each {
-      LOG.info String.format("@|bold %-${map.keySet()*.size().max()}s|@ : @|bold,yellow %s|@", it, map.get(it))
+      LOG.info String.format("@|bold %-${map.keySet()*.size().max()}s|@ : %s", it, map.get(it))
     }
-    LOG.infoHR("=")
+    LOG.infoHR()
   }
 }

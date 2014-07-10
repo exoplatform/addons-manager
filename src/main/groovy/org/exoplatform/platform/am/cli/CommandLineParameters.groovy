@@ -137,10 +137,6 @@ class CommandLineParameters {
    */
   @Parameters(commandDescription = "Describe an add-on", commandNames = CommandLineParameters.DESCRIBE_COMMAND, separators = "=")
   class DescribeCommandParameters {
-    @Parameter(names = ["--snapshots"], description = "If no version specified, allows to find the latest one including development versions")
-    boolean snapshots
-    @Parameter(names = ["--unstable"], description = "If no version specified, allows to find the latest one including unstable version.")
-    boolean unstable
     @Parameter(names = ["--catalog"], description = "=<URL> - Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog

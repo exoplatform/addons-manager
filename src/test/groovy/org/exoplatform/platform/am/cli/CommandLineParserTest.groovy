@@ -301,8 +301,6 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandDescribe.catalog
     !cliArgs.commandDescribe.noCache
     !cliArgs.commandDescribe.offline
-    !cliArgs.commandDescribe.snapshots
-    !cliArgs.commandDescribe.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
@@ -321,8 +319,6 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandDescribe.catalog
     cliArgs.commandDescribe.noCache
     !cliArgs.commandDescribe.offline
-    !cliArgs.commandDescribe.snapshots
-    !cliArgs.commandDescribe.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
@@ -341,8 +337,6 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandDescribe.catalog
     !cliArgs.commandDescribe.noCache
     cliArgs.commandDescribe.offline
-    !cliArgs.commandDescribe.snapshots
-    !cliArgs.commandDescribe.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
@@ -360,53 +354,11 @@ class CommandLineParserTest extends Specification {
     !cliArgs.commandDescribe.catalog
     !cliArgs.commandDescribe.noCache
     !cliArgs.commandDescribe.offline
-    !cliArgs.commandDescribe.snapshots
-    !cliArgs.commandDescribe.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
     args << [
         ["describe", "my-addon:42"],
-    ]
-  }
-
-  def "Test command line parameters to describe a SNAPSHOT version of an add-on"(String[] args) {
-    when:
-    CommandLineParameters cliArgs = clp.parse(args)
-    then:
-    CommandLineParameters.Command.DESCRIBE == cliArgs.command
-    "my-addon".equals(cliArgs.commandDescribe.addonId)
-    !cliArgs.commandDescribe.catalog
-    !cliArgs.commandDescribe.noCache
-    !cliArgs.commandDescribe.offline
-    cliArgs.commandDescribe.snapshots
-    !cliArgs.commandDescribe.unstable
-    !cliArgs.help
-    !cliArgs.verbose
-    where:
-    args << [
-        ["describe", "my-addon", "--snapshots"],
-        ["describe", "my-addon:42-SNAPSHOT", "--snapshots"],
-    ]
-  }
-
-  def "Test command line parameters to describe an unstable version of an add-on"(String[] args) {
-    when:
-    CommandLineParameters cliArgs = clp.parse(args)
-    then:
-    CommandLineParameters.Command.DESCRIBE == cliArgs.command
-    "my-addon".equals(cliArgs.commandDescribe.addonId)
-    !cliArgs.commandDescribe.catalog
-    !cliArgs.commandDescribe.noCache
-    !cliArgs.commandDescribe.offline
-    !cliArgs.commandDescribe.snapshots
-    cliArgs.commandDescribe.unstable
-    !cliArgs.help
-    !cliArgs.verbose
-    where:
-    args << [
-        ["describe", "my-addon", "--unstable"],
-        ["describe", "my-addon:42-RC1", "--unstable"],
     ]
   }
 
@@ -419,8 +371,6 @@ class CommandLineParserTest extends Specification {
     validCatalogUrl.equals(cliArgs.commandDescribe.catalog.toString())
     !cliArgs.commandDescribe.noCache
     !cliArgs.commandDescribe.offline
-    !cliArgs.commandDescribe.snapshots
-    !cliArgs.commandDescribe.unstable
     !cliArgs.help
     !cliArgs.verbose
     where:
