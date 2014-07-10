@@ -68,7 +68,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
     when:
     List<Addon> addons = addonService.loadAddonsFromUrl(catalogUrl, true, true, tmpDir)
     then:
-    // We receive an empty list of addons
+    // We receive an empty list of add-ons
     addons != null
     addons.size() == 0
     // And the catalog cache mustn't exist
@@ -90,7 +90,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
     when:
     List<Addon> addons = addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
     then:
-    // We correctly received the addons list
+    // We correctly received the add-ons list
     addons != null
     addons.size() == NB_ADDONS_CATALOG_JSON
     // And the catalog cache is filled
@@ -115,7 +115,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
     when:
     List<Addon> addons = addonService.loadAddonsFromUrl(catalogUrl, true, false, tmpDir)
     then:
-    // We correctly received the addons list
+    // We correctly received the add-ons list
     addons != null
     addons.size() == NB_ADDONS_CATALOG_JSON
     // And the catalog cache is filled

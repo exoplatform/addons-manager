@@ -40,7 +40,7 @@ public class AddonUninstallService {
   private static final Logger LOG = Logger.getInstance()
 
   /**
-   * Addon Services
+   * Add-on Services
    */
   private static final AddonService ADDON_SERVICE = AddonService.getInstance()
 
@@ -86,7 +86,7 @@ public class AddonUninstallService {
 
   /**
    * Uninstall the @{code addon} from the current @{code env}* @param env The environment where the add-on must be uninstalled
-   * @param addon The addon to remove
+   * @param addon The add-on to remove
    */
   protected void uninstallAddon(
       EnvironmentSettings env,

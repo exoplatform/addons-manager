@@ -51,7 +51,7 @@ public class AddonInstallService {
   private static final Logger LOG = Logger.getInstance()
 
   /**
-   * Addon Services
+   * Add-on Services
    */
   private static final AddonService ADDON_SERVICE = AddonService.getInstance()
 

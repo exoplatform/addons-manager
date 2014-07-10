@@ -227,7 +227,7 @@ class AddonServiceTest extends Specification {
 //                               PlatformSettings.AppServerType.TOMCAT).sort() == [addon1, addon4, addon4b, addon5].sort()
 //  }
 
-//  def "filterAddonsByCompatibility must keep addons supporting a given application server and distribution type"() {
+//  def "filterAddonsByCompatibility must keep add-ons supporting a given application server and distribution type"() {
 //    when:
 //    Addon addon1 = new Addon(
 //        id: "addon1", version: "42",
@@ -247,20 +247,20 @@ class AddonServiceTest extends Specification {
 //        supportedDistributions: [PlatformSettings.DistributionType.ENTERPRISE])
 //    List<Addon> addonsCatalog = [addon1, addon2, addon3, addon4]
 //    then:
-//    // addons 1 and 3 are supporting appsrv tomcat on community edition
+//    // add-ons 1 and 3 are supporting appsrv tomcat on community edition
 //    addonService.filterCompatibleAddons(addonsCatalog,
 //                                           PlatformSettings.DistributionType.COMMUNITY,
 //                                           PlatformSettings.AppServerType.TOMCAT).sort() == [addon1, addon3].sort()
-//    // addons 1 and 3 are supporting appsrv tomcat on enterprise edition
+//    // add-ons 1 and 3 are supporting appsrv tomcat on enterprise edition
 //    addonService.filterCompatibleAddons(addonsCatalog,
 //                                           PlatformSettings.DistributionType.ENTERPRISE,
 //                                           PlatformSettings.AppServerType.TOMCAT).sort() == [addon1, addon4].sort()
-//    // addon 1 is supporting appsrv jboss on community edition
+//    // add-on 1 is supporting appsrv jboss on community edition
 //    // TODO : The current model doesn't let us know that it is an impossible combination
 //    addonService.filterCompatibleAddons(addonsCatalog,
 //                                           PlatformSettings.DistributionType.COMMUNITY,
 //                                           PlatformSettings.AppServerType.JBOSS).sort() == [addon1].sort()
-//    // addons 1 and 2 are supporting appsrv jboss on enterprise edition
+//    // add-ons 1 and 2 are supporting appsrv jboss on enterprise edition
 //    addonService.filterCompatibleAddons(addonsCatalog,
 //                                           PlatformSettings.DistributionType.ENTERPRISE,
 //                                           PlatformSettings.AppServerType.JBOSS).sort() == [addon1, addon2].sort()
@@ -318,9 +318,9 @@ class AddonServiceTest extends Specification {
         new Addon(id: "addon", version: "42", unstable: false)].sort()
   }
 
-  def "findAddonsNewerThan must use version numbers to order and extract newer addons"() {
+  def "findAddonsNewerThan must use version numbers to order and extract newer add-ons"() {
     when:
-    // Unordered list of addons with the same id and different versions
+    // Unordered list of add-ons with the same id and different versions
     List<Addon> addons = [
         new Addon(id: "addon", version: "42-beta-01"),
         new Addon(id: "addon", version: "42-SNAPSHOT"),
@@ -345,7 +345,7 @@ class AddonServiceTest extends Specification {
 
   def "findNewestAddon must use version numbers to find the newest addon"() {
     when:
-    // Unordered list of addons with the same id and different versions
+    // Unordered list of add-ons with the same id and different versions
     List<Addon> addons = [
         new Addon(id: "addon", version: "42-beta-01"),
         new Addon(id: "addon", version: "42-SNAPSHOT"),
@@ -364,7 +364,7 @@ class AddonServiceTest extends Specification {
 
   def "findNewestAddon must return null if no addon with the given id is present in the list"() {
     when:
-    // Unordered list of addons with the same id and different versions
+    // Unordered list of add-ons with the same id and different versions
     List<Addon> addons = [
         new Addon(id: "addon", version: "42-beta-01"),
         new Addon(id: "addon", version: "42-SNAPSHOT"),

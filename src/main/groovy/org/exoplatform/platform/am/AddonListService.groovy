@@ -38,7 +38,7 @@ public class AddonListService {
   private static final Logger LOG = Logger.getInstance()
 
   /**
-   * Addon Services
+   * Add-on Services
    */
   private static final AddonService ADDON_SERVICE = AddonService.getInstance()
 
@@ -295,7 +295,7 @@ To install an add-on:
    * Display for a given add-on its version, a description and an optional mark if it is incompatible with the current PLF
    * instance
    * @param description The description of the version displayed
-   * @param addon The addon on which we extract the version and check the compatibility
+   * @param addon The add-on on which we extract the version and check the compatibility
    * @param plfSettings The PLF settings to check the compatibility
    * @return true if the version is incompatible
    */

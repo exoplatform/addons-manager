@@ -55,7 +55,7 @@ class AddonService {
    */
   private static final Logger LOG = Logger.getInstance()
   /**
-   * The identifier used in the catalog for the addons manager
+   * The identifier used in the catalog for the add-ons manager
    */
   private static final String ADDONS_MANAGER_CATALOG_ID = "exo-addons-manager"
 
@@ -83,14 +83,14 @@ class AddonService {
   }
 
   /**
-   * Load addons from local and remote catalogs
+   * Load add-ons from local and remote catalogs
    * @param env The execution environment
    * @param alternateCatalog The alternate remote catalog URL
    * @param noCache If the 1h cache must be used for the remote catalog
    * @param offline If the operation must be done offline (nothing will be downloaded)
-   * @param allowSnapshot allow addons with snapshot version
-   * @param allowUnstable allow addons with unstable version
-   * @return a list of addons
+   * @param allowSnapshot allow add-ons with snapshot version
+   * @param allowUnstable allow add-ons with unstable version
+   * @return a list of add-ons
    */
   protected List<Addon> loadAddons(
       EnvironmentSettings env,
@@ -109,23 +109,23 @@ class AddonService {
         filterAddonsByVersion(allAddons, true, false, false))?.max()
     if (newerAddonManager) {
       LOG.info(
-          "New Addons Manager version @|yellow,bold ${newerAddonManager.version}|@ found. It will be automatically updated " +
+          "New Add-ons Manager version @|yellow,bold ${newerAddonManager.version}|@ found. It will be automatically updated " +
               "after its restart.")
       // Backup the current library
       File backupDirectory = new File(env.versionsDirectory, env.manager.version)
       if (!backupDirectory.exists()) {
         FileUtils.mkdirs(backupDirectory)
       }
-      LOG.withStatus("Backing up current addons manager library") {
+      LOG.withStatus("Backing up current add-ons manager library") {
         FileUtils.copyFile(new File(env.addonsDirectory, "addons-manager.jar"), new File(backupDirectory, "addons-manager.jar"),
                            false)
       }
       // Let's download the new one
       File newAddonsManagerArchive = new File(env.archivesDirectory, "${newerAddonManager.id}-${newerAddonManager.version}.zip")
-      LOG.withStatus("Downloading Addons Manager version @|yellow,bold ${newerAddonManager.version}|@") {
+      LOG.withStatus("Downloading Add-ons Manager version @|yellow,bold ${newerAddonManager.version}|@") {
         FileUtils.downloadFile(newerAddonManager.downloadUrl, newAddonsManagerArchive)
       }
-      LOG.withStatus("Extracting Addons Manager version @|yellow,bold ${newerAddonManager.version}|@") {
+      LOG.withStatus("Extracting Add-ons Manager version @|yellow,bold ${newerAddonManager.version}|@") {
         ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(newAddonsManagerArchive))
         zipInputStream.withStream {
           ZipEntry entry
@@ -286,9 +286,9 @@ class AddonService {
    * @param addons The list of add-ons in wich to do the search
    * @param addonId The Identifier of the add-on to find
    * @param addonVersion The version of the add-on to find
-   * @param allowSnapshot allows addons with snapshot version Allow to retrieve a snapshot version if it is the most recent and
+   * @param allowSnapshot allows add-ons with snapshot version Allow to retrieve a snapshot version if it is the most recent and
    * @{code addonVersion} isn't set
-   * @param allowUnstable allows addons with snapshot version Allow to retrieve an unstable version if it is the most recent and
+   * @param allowUnstable allows add-ons with snapshot version Allow to retrieve an unstable version if it is the most recent and
    * @{code addonVersion} isn't set
    * @return the add-on or null if not found
    */
@@ -317,7 +317,7 @@ class AddonService {
             LOG.info(
                 "This add-on exists but doesn't have a stable released version yet! add --unstable option to use an unstable version")
           }
-          // Let's try to find a snapshot version of the addon
+          // Let's try to find a snapshot version of the add-on
           if (!allowSnapshots && findNewestAddon(addonId,
                                                  filterAddonsByVersion(addons, true, allowUnstable, true))) {
             LOG.info(
@@ -354,11 +354,11 @@ class AddonService {
   }
 
   /**
-   * Find in the list {@code addons} all addons with the same identifier {@link Addon#id} and a higher version number
+   * Find in the list {@code addons} all add-ons with the same identifier {@link Addon#id} and a higher version number
    * {@link Addon#version} than {@code addonRef}
-   * @param addonRef The addon reference
+   * @param addonRef The add-on reference
    * @param addons The list to filter
-   * @return A list of addons
+   * @return A list of add-ons
    */
   protected List<Addon> findAddonsNewerThan(
       Addon addonRef,
@@ -370,10 +370,10 @@ class AddonService {
   }
 
   /**
-   * Find in the list {@code addons} the addon with the identifier {@code addonId} and the highest version number
-   * @param addonId The addon identifier
+   * Find in the list {@code addons} the add-on with the identifier {@code addonId} and the highest version number
+   * @param addonId The add-on identifier
    * @param addons The list to filter
-   * @return The addon matching constraints or null if none.
+   * @return The add-on matching constraints or null if none.
    */
   protected Addon findNewestAddon(
       String addonId,
@@ -419,9 +419,9 @@ class AddonService {
 
   /**
    * Verify if an add-on is compatible with the platform instance (distributionType, appServerType, version)
-   * @param addon The addon to verify
+   * @param addon The add-on to verify
    * @param plfSettings The settings about the platform instance
-   * @return true is the addon is compatible
+   * @return true is the add-on is compatible
    */
   protected Boolean isCompatible(Addon addon, PlatformSettings plfSettings) {
     return addon.supportedDistributions.contains(plfSettings.distributionType) &&
@@ -458,9 +458,9 @@ class AddonService {
   }
 
   /**
-   * Loads a list of Addon from its JSON text representation
+   * Loads a list of Add-on from its JSON text representation
    * @param text The JSON text to parse
-   * @return A List of addons
+   * @return A List of add-ons
    */
   protected List<Addon> createAddonsFromJsonText(
       String text) {
@@ -476,7 +476,7 @@ class AddonService {
   }
 
   /**
-   * Loads an Addon from its object representation created by the JsonSlurper
+   * Loads an Add-on from its object representation created by the JsonSlurper
    * @param anAddon An Object built from JsonSlurper
    * @return an Addon
    */

@@ -25,7 +25,7 @@ package org.exoplatform.platform.am
 class AddonsManagerIT extends IntegrationTestsSpecification {
 
   def cleanup() {
-    // After each test we remove the content of the addons directory to be safe
+    // After each test we remove the content of the add-ons directory to be safe
     getEnvironmentSettings().getAddonsDirectory().deleteDir()
   }
 

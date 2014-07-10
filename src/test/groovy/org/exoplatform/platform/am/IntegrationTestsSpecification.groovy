@@ -54,7 +54,7 @@ abstract class IntegrationTestsSpecification extends Specification {
   private File _testDataDir
 
   /**
-   * @return the directory where data used for tests are stored (addons, catalogs...)
+   * @return the directory where data used for tests are stored (add-ons, catalogs...)
    */
   File getTestDataDir() {
     if (!_testDataDir) {
@@ -128,8 +128,8 @@ abstract class IntegrationTestsSpecification extends Specification {
   }
 
   /**
-   * Helper method used to execute the addons manager
-   * @param params Command line parameters to pass to the addons manager
+   * Helper method used to execute the add-ons manager
+   * @param params Command line parameters to pass to the add-ons manager
    * @return The process result
    */
   ProcessResult launchAddonsManager(List<String> params) {
@@ -137,8 +137,8 @@ abstract class IntegrationTestsSpecification extends Specification {
   }
 
   /**
-   * Helper method used to execute the addons manager
-   * @param params Command line parameters to pass to the addons manager
+   * Helper method used to execute the add-ons manager
+   * @param params Command line parameters to pass to the add-ons manager
    * @param inputs inputs to pass to the process
    * @return The process result
    */

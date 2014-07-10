@@ -23,7 +23,7 @@ package org.exoplatform.platform.am.ex
 import groovy.transform.InheritConstructors
 
 /**
- * Addons Manager Exception
+ * Add-ons Manager Exception
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 @InheritConstructors
