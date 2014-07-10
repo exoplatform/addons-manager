@@ -1,0 +1,41 @@
+[
+  {
+    "id": "foo-addon",
+    "version": "42",
+    "name": "Fake addon - ONE",
+    "description": "A fake addon",
+    "releaseDate": "2014-06-18T00:00:00.000Z",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-42.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss",
+    "compatibility": "[4.0.0,)"
+  },
+  {
+    "id": "foo-addon",
+    "version": "42",
+    "name": "Fake addon - TWO",
+    "description": "A fake addon",
+    "releaseDate": "2014-06-18T00:00:00.000Z",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-42.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss",
+    "compatibility": "[4.0.0,)"
+  },
+  {
+    "id": "foo-addon",
+    "version": "42",
+    "name": "Fake addon - TWO",
+    "description": "A fake addon",
+    "releaseDate": "2014-06-18T00:00:00.000Z",
+    "downloadUrl": "http://localhost:${webserver.http.port}/foo-addon-42.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss",
+    "compatibility": "[4.0.0,)"
+  }
+]

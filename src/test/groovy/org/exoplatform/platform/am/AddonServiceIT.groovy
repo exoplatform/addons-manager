@@ -142,6 +142,15 @@ class AddonServiceIT extends IntegrationTestsSpecification {
     catalog.size() == 1
   }
 
+  def "AM_CAT_07 : createAddonsFromJsonText removes duplicated entries (and keeps the first one)"() {
+    when:
+    List<Addon> catalog = addonService.createAddonsFromJsonText(
+        new File(getTestDataDir(), "catalog-with-duplicated-entries.json").text)
+    then:
+    catalog.size() == 1
+    catalog.first().name == "Fake addon - ONE"
+  }
+
   def "createAddonsFromJsonText cannot read invalid JSON"() {
     when:
     addonService.createAddonsFromJsonText(new File(getTestDataDir(), "catalog-unreadable.json").text)

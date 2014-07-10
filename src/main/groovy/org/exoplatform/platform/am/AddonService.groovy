@@ -174,7 +174,6 @@ class AddonService {
           new Date(catalogCacheFile.lastModified()) < 1.hours.ago)
           && !offline
       ) {
-        LOG.debug("Loading catalog from ${catalogUrl}")
         // Load the remote list
         File tempFile
         LOG.withStatus("Downloading catalog ${catalogUrl}") {
@@ -192,11 +191,11 @@ class AddonService {
           }
         }
         try {
-          LOG.withStatus("Loading add-ons list") {
+          LOG.withStatus("Loading add-ons list from catalog ${catalogUrl}") {
             addons.addAll(createAddonsFromJsonText(catalogContent))
           }
           // Everything was ok, let's store the cache
-          LOG.withStatus("Updating local cache") {
+          LOG.withStatus("Updating cache for catalog ${catalogUrl}") {
             copyFile(tempFile, catalogCacheFile, false)
           }
         } catch (groovy.json.JsonException je) {
@@ -213,12 +212,12 @@ class AddonService {
             catalogContent = catalogCacheFile.text
           }
           try {
-            LOG.withStatus("Loading add-ons list") {
+            LOG.withStatus("Loading add-ons list from cache") {
               addons.addAll(createAddonsFromJsonText(catalogContent))
             }
           } catch (groovy.json.JsonException je) {
-            LOG.warn("Invalid JSON content in cache file : ${catalogCacheFile}. Deleting it.", je)
             catalogCacheFile.delete()
+            throw InvalidJSONException("Invalid JSON content in cache file : ${catalogCacheFile}. Deleting it.",je)
           }
         } else {
           LOG.warn("No remote catalog cache and offline mode activated")
@@ -467,7 +466,12 @@ class AddonService {
     List<Addon> addonsList = new ArrayList<Addon>();
     new JsonSlurper().parseText(text).each { anAddon ->
       try {
-        addonsList.add(createAddonFromJsonObject(anAddon))
+        Addon addonToAdd = createAddonFromJsonObject(anAddon)
+        if (!addonsList.contains(addonToAdd)) {
+          addonsList.add(addonToAdd)
+        }else{
+          LOG.debug "ignored invalid entry ${addonToAdd.id}:${addonToAdd.version} : duplicated entry"
+        }
       } catch (InvalidJSONException ije) {
         LOG.debug(ije.message)
       }
