@@ -57,22 +57,19 @@ try {
     System.exit returnCode
   }
 
-  // Instantiate our Service class to manage add-ons
-  AddonService addonService = AddonService.getInstance()
-
   // And execute the required action
   switch (commandLineParameters.command) {
     case CommandLineParameters.Command.LIST:
-      addonService.listAddons(env, commandLineParameters.commandList)
+      AddonListService.instance.listAddons(env, commandLineParameters.commandList)
       break
     case CommandLineParameters.Command.DESCRIBE:
-      addonService.describeAddon(env, commandLineParameters.commandDescribe)
+      AddonDescribeService.instance.describeAddon(env, commandLineParameters.commandDescribe)
       break
     case CommandLineParameters.Command.INSTALL:
-      addonService.installAddon(env, commandLineParameters.commandInstall)
+      AddonInstallService.instance.installAddon(env, commandLineParameters.commandInstall)
       break
     case CommandLineParameters.Command.UNINSTALL:
-      addonService.uninstallAddon(env, commandLineParameters.commandUninstall)
+      AddonUninstallService.instance.uninstallAddon(env, commandLineParameters.commandUninstall)
       break
   }
 } catch (CommandLineParsingException clpe) {
