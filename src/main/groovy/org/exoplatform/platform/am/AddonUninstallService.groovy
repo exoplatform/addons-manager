@@ -131,7 +131,7 @@ public class AddonUninstallService {
                 // remove existing node
                 node.replaceNode {}
               }
-              serializeXml(applicationXmlContent)
+              ADDON_SERVICE.serializeXml(applicationXmlContent)
             }
           }
         }

@@ -314,7 +314,7 @@ public class AddonInstallService {
               }
             }
           }
-          serializeXml(applicationXmlContent)
+          ADDON_SERVICE.serializeXml(applicationXmlContent)
         }
       }
     } finally {
