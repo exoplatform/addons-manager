@@ -130,9 +130,9 @@ abstract class IntegrationTestsSpecification extends Specification {
   /**
    * Helper method used to execute the addons manager
    * @param params Command line parameters to pass to the addons manager
-   * @return The process return code
+   * @return The process result
    */
-  def launchAddonsManager(List<String> params) {
+  ProcessResult launchAddonsManager(List<String> params) {
     launchAddonsManager(params, null)
   }
 
@@ -140,9 +140,9 @@ abstract class IntegrationTestsSpecification extends Specification {
    * Helper method used to execute the addons manager
    * @param params Command line parameters to pass to the addons manager
    * @param inputs inputs to pass to the process
-   * @return The process return code
+   * @return The process result
    */
-  def launchAddonsManager(List<String> params, List<String> inputs) {
+  ProcessResult launchAddonsManager(List<String> params, List<String> inputs) {
     List<String> commandToExecute = ["${System.getProperty('java.home')}/bin/java"]
     // If Jacoco Agent is used, let's pass it to the forked VM
     if (System.getProperty('jacocoAgent') != null) {
@@ -153,18 +153,48 @@ abstract class IntegrationTestsSpecification extends Specification {
     commandToExecute << "-jar" << getTestedArtifact().absolutePath
     commandToExecute.addAll(params)
     println "Command launched : ${commandToExecute.join(' ')}"
-    Process process = commandToExecute.execute()
+    ProcessResult result = new ProcessResult(commandToExecute.execute())
     if (inputs) {
-      process.withWriter { writer ->
+      result.process.withWriter { writer ->
         inputs.each { writer << "${it}\n" }
       }
     }
-    process.waitFor() // Wait for the command to finish
+    result.waitFor() // Wait for the command to finish
     // Obtain status and output
-    println "return code: ${process.exitValue()}"
-    println "stderr: ${process.err.text}"
-    println "stdout: ${process.in.text}" // *out* from the external program is *in* for groovy
-    return process
+    println "return code: ${result.exitValue()}"
+    println "stderr: ${result.stderrText}"
+    println "stdout: ${result.stdoutText}" // *out* from the external program is *in* for groovy
+    return result
+  }
+
+  class ProcessResult {
+    @Delegate
+    private final Process process
+    private String _outText
+    private String _errText
+
+    ProcessResult(Process process) {
+      this.process = process
+    }
+
+    Process getProcess() {
+      return process
+    }
+
+    String getStdoutText() {
+      if (!_outText) {
+        // *out* from the external program is *in* for groovy
+        _outText = process.in.text
+      }
+      return _outText
+    }
+
+    String getStderrText() {
+      if (!_errText) {
+        _errText = process.err.text
+      }
+      return _errText
+    }
   }
 
 }

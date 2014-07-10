@@ -100,6 +100,7 @@ class AddonService {
           env,
           parameters.unstable,
           parameters.snapshots,
+          parameters.noCompat,
           parameters.noCache,
           parameters.offline,
           parameters.catalog)
@@ -108,6 +109,7 @@ class AddonService {
           env,
           parameters.unstable,
           parameters.snapshots,
+          parameters.noCompat,
           parameters.noCache,
           parameters.offline,
           parameters.catalog)
@@ -123,17 +125,12 @@ class AddonService {
       EnvironmentSettings env,
       CommandLineParameters.DescribeCommandParameters parameters) {
     List<Addon> availableAddons = loadAddons(
-        parameters.catalog ?: env.remoteCatalogUrl,
+        env,
+        parameters.catalog,
         parameters.noCache,
-        env.catalogsCacheDirectory,
         parameters.offline,
-        env.localAddonsCatalogFile,
-        env.platform.distributionType,
-        env.platform.appServerType,
-        env.manager.version,
-        env.addonsDirectory,
-        env.versionsDirectory,
-        env.archivesDirectory)
+        true,
+        true)
     Addon addon = findAddon(
         availableAddons,
         parameters.addonId,
@@ -152,17 +149,12 @@ class AddonService {
       EnvironmentSettings env,
       CommandLineParameters.InstallCommandParameters parameters) {
     List<Addon> availableAddons = loadAddons(
-        parameters.catalog ?: env.remoteCatalogUrl,
+        env,
+        parameters.catalog,
         parameters.noCache,
-        env.catalogsCacheDirectory,
         parameters.offline,
-        env.localAddonsCatalogFile,
-        env.platform.distributionType,
-        env.platform.appServerType,
-        env.manager.version,
-        env.addonsDirectory,
-        env.versionsDirectory,
-        env.archivesDirectory)
+        true,
+        true)
     Addon addon = findAddon(
         availableAddons,
         parameters.addonId,
@@ -201,11 +193,25 @@ class AddonService {
     // Display only installed add-ons
     List<Addon> installedAddons = getInstalledAddons(env)
     if (installedAddons.size() > 0) {
-      LOG.info "\n@|bold Installed add-ons:|@"
+      LOG.infoHR("=")
+      LOG.info "@|bold Installed add-ons|@"
+      LOG.infoHR("=")
+      boolean displayIncompatibleAddonsNote
       installedAddons.each {
-        LOG.info String.format(
-            "\n+ @|bold,yellow %-${installedAddons.id*.size().max() + installedAddons.version*.size().max()}s|@ : @|bold %s|@, %s",
-            "${it.id} ${it.version}", it.name, it.description)
+        Addon anAddon ->
+          LOG.info String.format("@|bold,yellow %s|@ - @|bold %s|@", anAddon.id, anAddon.name)
+          LOG.wrapLine(anAddon.description, Console.get().width - Logger.Level.INFO.prefix.length()).each {
+            LOG.info(it)
+          }
+          displayIncompatibleAddonsNote = displayVersion(
+              "Installed version",
+              anAddon,
+              env.platform
+          ) || displayIncompatibleAddonsNote
+          LOG.infoHR()
+      }
+      if (displayIncompatibleAddonsNote) {
+        LOG.info " @|red,bold (*)|@ This version of the add-on is referenced has incompatible with your platform instance"
       }
       LOG.info String.format("""
 To uninstall an add-on:
@@ -222,6 +228,7 @@ To uninstall an add-on:
    * @param env The execution environment
    * @param allowUnstable List also unstable versions ?
    * @param allowSnapshot List also development versions ?
+   * @param noCompat List also add-ons not referenced as compatible with the PLF instance
    * @param noCache Don't use catalog's cache if exist ?
    * @param offline Don't download anything ?
    * @param alternateCatalog Specific remote catalog URL to use
@@ -230,39 +237,59 @@ To uninstall an add-on:
       EnvironmentSettings env,
       Boolean allowUnstable,
       Boolean allowSnapshot,
+      Boolean noCompat,
       Boolean noCache,
       Boolean offline,
       URL alternateCatalog) {
     List<Addon> installedAddons = getInstalledAddons(env)
     if (installedAddons.size() > 0) {
       List<Addon> availableAddons = loadAddons(
-          alternateCatalog ?: env.remoteCatalogUrl,
+          env,
+          alternateCatalog,
           noCache,
-          env.catalogsCacheDirectory,
           offline,
-          env.localAddonsCatalogFile,
-          env.platform.distributionType,
-          env.platform.appServerType,
           allowSnapshot,
-          allowUnstable,
-          env.manager.version,
-          env.addonsDirectory,
-          env.versionsDirectory,
-          env.archivesDirectory
+          allowUnstable
       )
+      if (!noCompat) {
+        availableAddons = filterCompatibleAddons(availableAddons, env.platform)
+      }
       List<Addon> outdatedAddons = getOutdatedAddons(installedAddons, availableAddons)
       if (outdatedAddons.size() > 0) {
-        LOG.info "\n@|bold Outdated add-ons:|@"
+        LOG.infoHR("=")
+        LOG.info "@|bold Outdated add-ons|@"
+        LOG.infoHR("=")
+        boolean displayIncompatibleAddonsNote
         outdatedAddons.groupBy { it.id }.sort().each {
           Addon anAddon = it.value.first()
-          LOG.info String.format(
-              "\n+ @|bold,yellow %-${outdatedAddons.id*.size().max() + outdatedAddons.version*.size().max() + 1}s|@ : @|bold %s|@, %s",
-              "${anAddon.id} ${anAddon.version}", anAddon.name, anAddon.description)
-          LOG.info String.format(
-              "     Newest Version(s) : %s",
-              findAddonsNewerThan(anAddon, availableAddons).sort().reverse().collect {
-                newestAddon -> "@|yellow ${newestAddon.version}|@"
-              }.join(', '))
+          LOG.info String.format("@|bold,yellow %s|@ - @|bold %s|@", anAddon.id, anAddon.name)
+          LOG.wrapLine(anAddon.description, Console.get().width - Logger.Level.INFO.prefix.length()).each {
+            LOG.info(it)
+          }
+          displayIncompatibleAddonsNote = displayVersion(
+              "Installed version",
+              anAddon,
+              env.platform
+          ) || displayIncompatibleAddonsNote
+          displayIncompatibleAddonsNote = displayVersion(
+              "Latest stable version",
+              findNewestAddon(anAddon.id,
+                              findAddonsNewerThan(anAddon, filterAddonsByVersion(availableAddons, true, false, false))),
+              env.platform
+          ) || displayIncompatibleAddonsNote
+          displayIncompatibleAddonsNote = displayVersion(
+              "Latest unstable version",
+              findNewestAddon(anAddon.id,
+                              findAddonsNewerThan(anAddon, filterAddonsByVersion(availableAddons, false, true, false))),
+              env.platform
+          ) || displayIncompatibleAddonsNote
+          displayIncompatibleAddonsNote = displayVersion(
+              "Latest development version",
+              findNewestAddon(anAddon.id,
+                              findAddonsNewerThan(anAddon, filterAddonsByVersion(availableAddons, false, false, true))),
+              env.platform
+          ) || displayIncompatibleAddonsNote
+          LOG.infoHR()
         }
         LOG.info String.format("""
     To update an add-on:
@@ -282,6 +309,7 @@ To uninstall an add-on:
    * @param env The execution environment
    * @param allowUnstable List also unstable versions ?
    * @param allowSnapshot List also development versions ?
+   * @param noCompat List also add-ons not referenced as compatible with the PLF instance
    * @param noCache Don't use catalog's cache if exist ?
    * @param offline Don't download anything ?
    * @param alternateCatalog Specific remote catalog URL to use
@@ -290,47 +318,51 @@ To uninstall an add-on:
       EnvironmentSettings env,
       Boolean allowUnstable,
       Boolean allowSnapshot,
+      Boolean noCompat,
       Boolean noCache,
       Boolean offline,
       URL alternateCatalog) {
     List<Addon> availableAddons = loadAddons(
-        alternateCatalog ?: env.remoteCatalogUrl,
+        env,
+        alternateCatalog,
         noCache,
-        env.catalogsCacheDirectory,
         offline,
-        env.localAddonsCatalogFile,
-        env.platform.distributionType,
-        env.platform.appServerType,
         allowSnapshot,
-        allowUnstable,
-        env.manager.version,
-        env.addonsDirectory,
-        env.versionsDirectory,
-        env.archivesDirectory)
+        allowUnstable
+    )
+    if (!noCompat) {
+      availableAddons = filterCompatibleAddons(availableAddons, env.platform)
+    }
     if (availableAddons.size() > 0) {
       LOG.infoHR("=")
       LOG.info "@|bold Available add-ons|@"
       LOG.infoHR("=")
+      boolean displayIncompatibleAddonsNote
       availableAddons.groupBy { it.id }.sort().each {
         Addon anAddon = it.value.first()
-        //LOG.info String.format("\n+ @|bold,yellow %-${availableAddons.id*.size().max()}s|@ : @|bold %s|@", anAddon.id,anAddon.name)
         LOG.info String.format("@|bold,yellow %s|@ - @|bold %s|@", anAddon.id,anAddon.name)
         LOG.wrapLine(anAddon.description, Console.get().width - Logger.Level.INFO.prefix.length()).each {
           LOG.info(it)
         }
-        Addon latestStableAddon = findNewestAddon(anAddon.id, availableAddons.findAll { !it.snapshot && !it.unstable })
-        if (latestStableAddon) {
-          LOG.info "@|bold + Latest stable version :|@ @|yellow ${latestStableAddon.version}|@"
-        }
-        Addon latestUnstableAddon = findNewestAddon(anAddon.id, availableAddons.findAll { !it.snapshot && it.unstable })
-        if (latestUnstableAddon) {
-          LOG.info "@|bold + Latest unstable version :|@ @|yellow ${latestUnstableAddon.version}|@"
-        }
-        Addon latestSnapshotAddon = findNewestAddon(anAddon.id, availableAddons.findAll { it.snapshot })
-        if (latestSnapshotAddon) {
-          LOG.info "@|bold + Latest development version :|@ @|yellow ${latestSnapshotAddon.version}|@"
-        }
+        displayIncompatibleAddonsNote = displayVersion(
+            "Latest stable version",
+            findNewestAddon(anAddon.id, filterAddonsByVersion(availableAddons, true, false, false)),
+            env.platform
+        ) || displayIncompatibleAddonsNote
+        displayIncompatibleAddonsNote = displayVersion(
+            "Latest unstable version",
+            findNewestAddon(anAddon.id, filterAddonsByVersion(availableAddons, false, true, false)),
+            env.platform
+        ) || displayIncompatibleAddonsNote
+        displayIncompatibleAddonsNote = displayVersion(
+            "Latest development version",
+            findNewestAddon(anAddon.id, filterAddonsByVersion(availableAddons, false, false, true)),
+            env.platform
+        ) || displayIncompatibleAddonsNote
         LOG.infoHR()
+      }
+      if (displayIncompatibleAddonsNote) {
+        LOG.info " @|red,bold (*)|@ This version of the add-on is referenced has incompatible with your platform instance"
       }
       LOG.info String.format("""
 To install an add-on:
@@ -339,6 +371,27 @@ To install an add-on:
     } else {
       LOG.warn "No add-on found in remote and local catalogs"
     }
+  }
+
+  /**
+   * Display for a given add-on its version, a description and an optional mark if it is incompatible with the current PLF
+   * instance
+   * @param description The description of the version displayed
+   * @param addon The addon on which we extract the version and check the compatibility
+   * @param plfSettings The PLF settings to check the compatibility
+   * @return true if the version is incompatible
+   */
+  private boolean displayVersion(String description, Addon addon, PlatformSettings plfSettings) {
+    boolean isIncompatible
+    if (addon) {
+      String incompatibilityMark = ""
+      if (!isCompatible(addon, plfSettings)) {
+        incompatibilityMark = " @|red,bold (*)|@"
+        isIncompatible = true
+      }
+      LOG.info "@|bold + ${description} :|@ @|yellow ${addon.version}|@${incompatibilityMark}"
+    }
+    return isIncompatible
   }
 
   /**
@@ -397,10 +450,7 @@ To install an add-on:
       Conflict conflict) {
     // if a compatibility rule is defined
     if (addon.compatibility && !noCompat) {
-      Version plfVersion = versionScheme.parseVersion(env.platform.version)
-      VersionConstraint addonConstraint = versionScheme.parseVersionConstraint(addon.compatibility)
-      LOG.debug("Checking compatibility for PLF version ${plfVersion} with constraint ${addonConstraint}")
-      if (!addonConstraint.containsVersion(plfVersion)) {
+      if (!testVersionCompatibility(env.platform.version, addon.compatibility)) {
         throw new CompatibilityException(addon, env.platform.version)
       }
     } else {
@@ -738,82 +788,44 @@ To install an add-on:
 
   /**
    * Load addons from local and remote catalogs
-   * @param remoteCatalogUrl The remote catalog URL
+   * @param env The execution environment
+   * @param alternateCatalog The alternate remote catalog URL
    * @param noCache If the 1h cache must be used for the remote catalog
-   * @param catalogsCacheDirectory The directory where are cached remote catalogs
    * @param offline If the operation must be done offline (nothing will be downloaded)
-   * @param localCatalogFile The local catalog file
-   * @param distributionType The distribution type which addons listed must be compatible with
-   * @param appServerType The application seerver type which addons listed must be compatible with
-   * @return a list of addons
-   */
-  protected List<Addon> loadAddons(
-      URL remoteCatalogUrl,
-      Boolean noCache,
-      File catalogsCacheDirectory,
-      Boolean offline,
-      File localCatalogFile,
-      PlatformSettings.DistributionType distributionType,
-      PlatformSettings.AppServerType appServerType,
-      String currentAddonsManagerVersion,
-      File addonsDirectory,
-      File versionsDirectory,
-      File archivesDirectory) {
-    return loadAddons(remoteCatalogUrl, noCache, catalogsCacheDirectory, offline, localCatalogFile, distributionType,
-                      appServerType, true, true, currentAddonsManagerVersion, addonsDirectory, versionsDirectory,
-                      archivesDirectory)
-  }
-
-  /**
-   * Load addons from local and remote catalogs
-   * @param remoteCatalogUrl The remote catalog URL
-   * @param noCache If the 1h cache must be used for the remote catalog
-   * @param catalogsCacheDirectory The directory where are cached remote catalogs
-   * @param offline If the operation must be done offline (nothing will be downloaded)
-   * @param localCatalogFile The local catalog file
-   * @param distributionType The distribution type which addons listed must be compatible with
-   * @param appServerType The application seerver type which addons listed must be compatible with
    * @param allowSnapshot allow addons with snapshot version
    * @param allowUnstable allow addons with unstable version
    * @return a list of addons
    */
   protected List<Addon> loadAddons(
-      URL remoteCatalogUrl,
+      EnvironmentSettings env,
+      URL alternateCatalog,
       Boolean noCache,
-      File catalogsCacheDirectory,
       Boolean offline,
-      File localCatalogFile,
-      PlatformSettings.DistributionType distributionType,
-      PlatformSettings.AppServerType appServerType,
       Boolean allowSnapshot,
-      Boolean allowUnstable,
-      String currentAddonsManagerVersion,
-      File addonsDirectory,
-      File versionsDirectory,
-      File archivesDirectory) {
+      Boolean allowUnstable) {
+    URL remoteCatalogUrl = alternateCatalog ?: env.remoteCatalogUrl
     List<Addon> allAddons = mergeCatalogs(
-        loadAddonsFromUrl(remoteCatalogUrl, noCache, offline, catalogsCacheDirectory),
-        loadAddonsFromFile(localCatalogFile),
-        distributionType,
-        appServerType)
+        loadAddonsFromUrl(remoteCatalogUrl, noCache, offline, env.catalogsCacheDirectory),
+        loadAddonsFromFile(env.localAddonsCatalogFile)
+    )
     Addon newerAddonManager = findAddonsNewerThan(
-        new Addon(id: ADDONS_MANAGER_CATALOG_ID, version: currentAddonsManagerVersion),
-        findAddonsByVersion(allAddons, false, false))?.max()
+        new Addon(id: ADDONS_MANAGER_CATALOG_ID, version: env.manager.version),
+        filterAddonsByVersion(allAddons, true, false, false))?.max()
     if (newerAddonManager) {
       LOG.info(
           "New Addons Manager version @|yellow,bold ${newerAddonManager.version}|@ found. It will be automatically updated " +
               "after its restart.")
       // Backup the current library
-      File backupDirectory = new File(versionsDirectory, currentAddonsManagerVersion)
+      File backupDirectory = new File(env.versionsDirectory, env.manager.version)
       if (!backupDirectory.exists()) {
         FileUtils.mkdirs(backupDirectory)
       }
       LOG.withStatus("Backing up current addons manager library") {
-        FileUtils.copyFile(new File(addonsDirectory, "addons-manager.jar"), new File(backupDirectory, "addons-manager.jar"),
+        FileUtils.copyFile(new File(env.addonsDirectory, "addons-manager.jar"), new File(backupDirectory, "addons-manager.jar"),
                            false)
       }
       // Let's download the new one
-      File newAddonsManagerArchive = new File(archivesDirectory, "${newerAddonManager.id}-${newerAddonManager.version}.zip")
+      File newAddonsManagerArchive = new File(env.archivesDirectory, "${newerAddonManager.id}-${newerAddonManager.version}.zip")
       LOG.withStatus("Downloading Addons Manager version @|yellow,bold ${newerAddonManager.version}|@") {
         FileUtils.downloadFile(newerAddonManager.downloadUrl, newAddonsManagerArchive)
       }
@@ -823,7 +835,7 @@ To install an add-on:
           ZipEntry entry
           while (entry = zipInputStream.nextEntry) {
             if (entry.name == "addons/addons-manager.jar") {
-              FileOutputStream output = new FileOutputStream(new File(addonsDirectory, "addons-manager.jar.new"))
+              FileOutputStream output = new FileOutputStream(new File(env.addonsDirectory, "addons-manager.jar.new"))
               output.withStream {
                 int len = 0;
                 byte[] buffer = new byte[4096]
@@ -836,10 +848,11 @@ To install an add-on:
         }
       }
     }
-    return findAddonsByVersion(
+    return filterAddonsByVersion(
         allAddons.findAll { !ADDONS_MANAGER_CATALOG_ID.equals(it.id) },
-        allowSnapshot,
-        allowUnstable)
+        true,
+        allowUnstable,
+        allowSnapshot)
   }
 
   /**
@@ -996,7 +1009,7 @@ To install an add-on:
       // No version specified thus we need to find the newer version available
       // Let's find the first add-on with the given id (including or not snapshots depending of the option)
       result = findNewestAddon(addonId,
-                               findAddonsByVersion(addons, allowSnapshots, allowUnstable))
+                               filterAddonsByVersion(addons, true, allowUnstable, allowSnapshots))
       if (result == null) {
         if (!addons.find { it.id == addonId }) {
           throw new AddonNotFoundException(
@@ -1004,13 +1017,13 @@ To install an add-on:
         } else {
           // Let's try to find an unstable version of the addon
           if (!allowUnstable && findNewestAddon(addonId,
-                                                findAddonsByVersion(addons, allowSnapshots, true))) {
+                                                filterAddonsByVersion(addons, true, true, allowSnapshots))) {
             LOG.info(
                 "This add-on exists but doesn't have a stable released version yet! add --unstable option to use an unstable version")
           }
           // Let's try to find a snapshot version of the addon
           if (!allowSnapshots && findNewestAddon(addonId,
-                                                 findAddonsByVersion(addons, true, allowUnstable))) {
+                                                 filterAddonsByVersion(addons, true, allowUnstable, true))) {
             LOG.info(
                 "This add-on exists but doesn't have a stable released version yet! add --snapshots option to use a development version")
           }
@@ -1024,15 +1037,15 @@ To install an add-on:
           throw new AddonNotFoundException(
               "No add-on with identifier ${addonId} found in local or remote catalogs, check your add-on identifier")
         } else {
-          List<Addon> stableAddons = findAddonsByVersion(addons.findAll { it.id == addonId }, false, false)
+          List<Addon> stableAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, true, false, false)
           if (!stableAddons.empty) {
             LOG.info "Stable version(s) available for add-on @|bold,yellow ${addonId}|@ : ${stableAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
-          List<Addon> unstableAddons = findAddonsByVersion(addons.findAll { it.id == addonId }, false, true)
+          List<Addon> unstableAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, true, true, false)
           if (!unstableAddons.empty) {
             LOG.info "Unstable version(s) available for add-on @|bold,yellow ${addonId}|@ : ${unstableAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
-          List<Addon> snapshotAddons = findAddonsByVersion(addons.findAll { it.id == addonId }, true, false)
+          List<Addon> snapshotAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, true, false, true)
           if (!snapshotAddons.empty) {
             LOG.info "Development version(s) available for add-on @|bold,yellow ${addonId}|@ : ${snapshotAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
@@ -1074,60 +1087,67 @@ To install an add-on:
   }
 
   /**
-   * Filter entries in {@code addons} to keep only stable versions. Return also snapshot versions if {@code allowSnapshot} is
-   * true and unstable versions if {@code allowUnstable} is true
-   * @param addons The list of addons to filter
-   * @param allowSnapshot Also return addons with snapshot versions (-SNAPSHOT)
-   * @param allowUnstable Also return addons with unstable versions (alpha, beta, RC, ...)
-   * @return the list of addons.
+   * Filter entries in {@code addons} to keep only versions matching some criteria.
+   * @param addons The list of add-ons to filter
+   * @param allowStable Return add-ons with stable versions
+   * @param allowUnstable Return add-ons with unstable versions (alpha, beta, RC, ...)
+   * @param allowSnapshot Return add-ons with snapshot versions (-SNAPSHOT)
+   * @return the filtered list of add-ons.
    */
-  protected List<Addon> findAddonsByVersion(
+  protected List<Addon> filterAddonsByVersion(
       List<Addon> addons,
-      Boolean allowSnapshot,
-      Boolean allowUnstable) {
+      Boolean allowStable,
+      Boolean allowUnstable,
+      Boolean allowSnapshot
+  ) {
     return addons.findAll {
-      !it.unstable && !it.isSnapshot() || it.unstable && !it.isSnapshot() && allowUnstable || it.isSnapshot() && allowSnapshot
+      !it.unstable && !it.isSnapshot() && allowStable ||
+          it.unstable && !it.isSnapshot() && allowUnstable ||
+          it.isSnapshot() && allowSnapshot
     }
   }
 
   /**
-   * Returns all add-ons supporting a distributionType+appServerType
+   * Returns all add-ons supporting a platform instance (distributionType, appServerType, version)
    * @param addons The catalog to filter entries
-   * @param distributionType The distribution type to support
-   * @param appServerType The application server type to support
-   * @return
+   * @param plfSettings The settings about the platform instance
+   * @return the filtered list
    */
-  protected List<Addon> findAddonsByCompatibility(
+  protected List<Addon> filterCompatibleAddons(
       final List<Addon> addons,
-      PlatformSettings.DistributionType distributionType,
-      PlatformSettings.AppServerType appServerType) {
+      PlatformSettings plfSettings) {
     return addons.findAll {
-      it.supportedDistributions.contains(distributionType) && it.supportedApplicationServers.contains(appServerType)
+      isCompatible(it, plfSettings)
     }
   }
 
   /**
-   * [AM_CAT_07] At merge, de-duplication of add-on entries of the local and remote catalogs is
+   * Verify if an add-on is compatible with the platform instance (distributionType, appServerType, version)
+   * @param addon The addon to verify
+   * @param plfSettings The settings about the platform instance
+   * @return true is the addon is compatible
+   */
+  protected Boolean isCompatible(Addon addon, PlatformSettings plfSettings) {
+    return addon.supportedDistributions.contains(plfSettings.distributionType) &&
+        addon.supportedApplicationServers.contains(plfSettings.appServerType) &&
+        testVersionCompatibility(plfSettings.version, addon.compatibility)
+  }
+
+  /**
+   * TODO : [AM_CAT_07] At merge, de-duplication of add-on entries of the local and remote catalogs is
    * done using ID, Version, Distributions, Application Servers as the identifier.
    * In case of duplication, the remote entry takes precedence
    * @param remoteCatalog
    * @param localCatalog
-   * @param distributionType The distribution type which addons listed must be compatible with
-   * @param appServerType The application seerver type which addons listed must be compatible with
-   * @return a list of addons
+   * @return a list of add-ons
    */
   protected List<Addon> mergeCatalogs(
       final List<Addon> remoteCatalog,
-      final List<Addon> localCatalog,
-      PlatformSettings.DistributionType distributionType,
-      PlatformSettings.AppServerType appServerType) {
-    // Let's keep on entries that are interesting us
-    List<Addon> filteredCentralCatalog = findAddonsByCompatibility(remoteCatalog, distributionType, appServerType)
-    List<Addon> filteredLocalCatalog = findAddonsByCompatibility(localCatalog, distributionType, appServerType)
+      final List<Addon> localCatalog) {
     // Let's initiate a new list from the filtered list of the remote catalog
-    List<Addon> mergedCatalog = filteredCentralCatalog.clone()
+    List<Addon> mergedCatalog = remoteCatalog.clone()
     // Let's add entries from the filtered local catalog which aren't already in the catalog (based on id+version identifiers)
-    filteredLocalCatalog.findAll { !mergedCatalog.contains(it) }.each { mergedCatalog.add(it) }
+    localCatalog.findAll { !mergedCatalog.contains(it) }.each { mergedCatalog.add(it) }
     return mergedCatalog
   }
 
@@ -1413,5 +1433,26 @@ To install an add-on:
       URL catalogUrl) {
     return new BigInteger(1, MessageDigest.getInstance("MD5").digest(catalogUrl.toString().getBytes()))
         .toString(16).padLeft(32, "0").toUpperCase()
+  }
+
+  /**
+   * Test if a version is compatible with the given constraint
+   * @param version A version
+   * @param constraint A constraint (range)
+   * @return true if the version is compatible with the constraint
+   */
+  protected Boolean testVersionCompatibility(
+      String version,
+      String constraint
+  ) {
+    assert version
+    if (constraint) {
+      LOG.debug("Checking compatibility for version ${version} with constraint ${constraint}")
+      Version plfVersion = versionScheme.parseVersion(version)
+      VersionConstraint addonConstraint = versionScheme.parseVersionConstraint(constraint)
+      return addonConstraint.containsVersion(plfVersion)
+    } else {
+      return true
+    }
   }
 }

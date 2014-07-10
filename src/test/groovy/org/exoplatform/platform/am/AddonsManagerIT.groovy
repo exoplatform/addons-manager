@@ -117,7 +117,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   }
 
   /**
-   * List installed add-ons(stable, unstable or development) for which a newer version is available based on release date indicated in the catalog.
+   * List installed stable add-ons for which a newer version is available based aether generic version order
    */
   def "[AM_LIST_09] addon.(sh|bat) list --outdated"() {
     setup:
@@ -132,10 +132,24 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   }
 
   /**
-   * List installed add-ons(stable, unstable or development) for which a newer version (snapshots included) is available based on
-   * release date indicated in the catalog.
+   * List installed stable and unstable add-ons for which a newer version is available based aether generic version order
    */
-  def "addon.(sh|bat) list --outdated --snapshots"() {
+  def "[AM_LIST_09a] addon.(sh|bat) list --outdated --unstable"() {
+    setup:
+    // Install it first
+    launchAddonsManager(["install", "foo-addon:40"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--outdated", "--unstable", "--verbose"]).exitValue()
+    cleanup:
+    // Uninstall it
+    launchAddonsManager(["uninstall", "foo-addon"])
+  }
+
+  /**
+   * List installed stable and snapshots add-ons for which a newer version is available based aether generic version order
+   */
+  def "[AM_LIST_09b] addon.(sh|bat) list --outdated --snapshots"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon:40"])
@@ -148,19 +162,17 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   }
 
   /**
-   * List installed add-ons(stable, unstable or development) for which a newer version (unstable included) is available based on
-   * release date indicated in the catalog.
+   * Unless --no-compat option is passed, the list is filtered to match the app server with supportedApplicationServers,
+   * supportedDistributions, compatibility.
    */
-  def "addon.(sh|bat) list --outdated --unstable"() {
+  def "[AM_LIST_10] [AM_LIST_11] [AM_LIST_12] addon.(sh|bat) list --no-compat"() {
     setup:
-    // Install it first
-    launchAddonsManager(["install", "foo-addon:40"])
+    ProcessResult process = launchAddonsManager(["list", "--no-compat", "--verbose"])
     expect:
     // Verify return code
-    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--outdated", "--unstable", "--verbose"]).exitValue()
-    cleanup:
-    // Uninstall it
-    launchAddonsManager(["uninstall", "foo-addon"])
+    AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
+    // Verify the output
+    process.stdoutText =~ "incompatible-foo-addon"
   }
 
   /**

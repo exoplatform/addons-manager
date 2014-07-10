@@ -117,6 +117,8 @@ class CommandLineParameters {
     boolean installed
     @Parameter(names = ["--outdated"], description = "List all add-ons installed locally for which a newer version is available")
     boolean outdated
+    @Parameter(names = ["--no-compat"], description = "Display also add-ons not marked as compatible with your platform instance")
+    boolean noCompat
     @Parameter(names = ["--catalog"], description = "=<URL> - Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog
