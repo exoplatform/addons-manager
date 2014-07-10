@@ -21,13 +21,14 @@
 package org.exoplatform.platform.am.ex
 
 import static org.exoplatform.platform.am.AddonsManagerConstants.RETURN_CODE_INVALID_JSON
+
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class InvalidJSONException extends AddonsManagerException {
 
   InvalidJSONException(Object object) {
-    super("This object is invalid : ${object}")
+    super("ignored invalid entry N/A:N/A : Unreadable JSON ${object}")
   }
 
   @Override

@@ -167,7 +167,7 @@ class AddonService {
     List<Addon> addons = new ArrayList<Addon>()
     String catalogContent
     File catalogCacheFile = new File(catalogCacheDir, "${convertUrlToFilename(catalogUrl)}.json");
-    LOG.debug("Remote catalog cache file for ${catalogUrl} : ${catalogCacheFile}")
+    LOG.debug("Catalog cache file for ${catalogUrl} : ${catalogCacheFile}")
     // If there is no local cache of the remote catalog or if it is older than 1h
     use([TimeCategory]) {
       if ((noCache || !catalogCacheFile.exists() ||
@@ -191,9 +191,7 @@ class AddonService {
           }
         }
         try {
-          LOG.withStatus("Loading add-ons list from catalog ${catalogUrl}") {
-            addons.addAll(createAddonsFromJsonText(catalogContent))
-          }
+          addons.addAll(createAddonsFromJsonText(catalogContent))
           // Everything was ok, let's store the cache
           LOG.withStatus("Updating cache for catalog ${catalogUrl}") {
             copyFile(tempFile, catalogCacheFile, false)
@@ -207,17 +205,14 @@ class AddonService {
       } else {
         if (catalogCacheFile.exists()) {
           // Let's load add-ons from the cache
-          LOG.debug("Loading remote catalog from cache ${catalogCacheFile}")
           LOG.withStatus("Reading catalog cache for ${catalogUrl}") {
             catalogContent = catalogCacheFile.text
           }
           try {
-            LOG.withStatus("Loading add-ons list from cache") {
-              addons.addAll(createAddonsFromJsonText(catalogContent))
-            }
+            addons.addAll(createAddonsFromJsonText(catalogContent))
           } catch (groovy.json.JsonException je) {
             catalogCacheFile.delete()
-            throw InvalidJSONException("Invalid JSON content in cache file : ${catalogCacheFile}. Deleting it.",je)
+            throw InvalidJSONException("Invalid JSON content in cache file : ${catalogCacheFile}. Deleting it.", je)
           }
         } else {
           LOG.warn("No remote catalog cache and offline mode activated")
@@ -242,9 +237,7 @@ class AddonService {
         catalogContent = catalogFile.text
       }
       try {
-        LOG.withStatus("Loading add-ons list") {
-          addons.addAll(createAddonsFromJsonText(catalogContent))
-        }
+        addons.addAll(createAddonsFromJsonText(catalogContent))
       } catch (groovy.json.JsonException je) {
         LOG.warn("Invalid JSON content in file : ${catalogFile}", je)
       }
@@ -453,7 +446,12 @@ class AddonService {
    */
   protected Addon createAddonFromJsonText(
       String text) {
-    return createAddonFromJsonObject(new JsonSlurper().parseText(text))
+    List<String> errorMessages = new ArrayList<>()
+    List<String> warnMessages = new ArrayList<>()
+    Addon result = createAddonFromJsonObject(new JsonSlurper().parseText(text), warnMessages, errorMessages)
+    warnMessages.each { LOG.debug it }
+    errorMessages.each { LOG.debug it }
+    return result
   }
 
   /**
@@ -464,28 +462,38 @@ class AddonService {
   protected List<Addon> createAddonsFromJsonText(
       String text) {
     List<Addon> addonsList = new ArrayList<Addon>();
-    new JsonSlurper().parseText(text).each { anAddon ->
-      try {
-        Addon addonToAdd = createAddonFromJsonObject(anAddon)
-        if (!addonsList.contains(addonToAdd)) {
-          addonsList.add(addonToAdd)
-        }else{
-          LOG.debug "ignored invalid entry ${addonToAdd.id}:${addonToAdd.version} : duplicated entry"
+    List<String> errorMessages = new ArrayList<>()
+    List<String> warnMessages = new ArrayList<>()
+    LOG.withStatus("Loading add-ons list") {
+      new JsonSlurper().parseText(text).each { anAddon ->
+        try {
+          Addon addonToAdd = createAddonFromJsonObject(anAddon, warnMessages, errorMessages)
+          if (!addonsList.contains(addonToAdd)) {
+            addonsList.add(addonToAdd)
+          } else {
+            errorMessages.add("ignored invalid entry ${addonToAdd.id}:${addonToAdd.version} : duplicated entry")
+          }
+        } catch (InvalidJSONException ije) {
+          // skip it
         }
-      } catch (InvalidJSONException ije) {
-        LOG.debug(ije.message)
       }
     }
+    warnMessages.each { LOG.debug it }
+    errorMessages.each { LOG.debug it }
     return addonsList
   }
 
   /**
    * Loads an Add-on from its object representation created by the JsonSlurper
    * @param anAddon An Object built from JsonSlurper
-   * @return an Addon
+   * @param warnMessages A list to populate with warning messages discovered while parsing the add-on
+   * @param errorMessages A list to populate with error messages discovered while parsing the add-on
+   * @return an Addon or null if there are some errors
    */
   protected Addon createAddonFromJsonObject(
-      Object anAddon) {
+      Object anAddon,
+      List<String> warnMessages,
+      List<String> errorMessages) {
     Addon addonObj = new Addon(
         id: anAddon.id,
         version: anAddon.version);
@@ -510,7 +518,8 @@ class AddonService {
           try {
             PlatformSettings.DistributionType.valueOf(it.trim().toUpperCase())
           } catch (IllegalArgumentException iae) {
-            LOG.debug("Unknown distribution type for add-on ${addonObj} : ${it}")
+            warnMessages.add(
+                "malformed descriptor for ${addonObj.id}:${addonObj.version} : Unknown distribution type ${it}")
             PlatformSettings.DistributionType.UNKNOWN
           }
       }
@@ -520,7 +529,7 @@ class AddonService {
           try {
             PlatformSettings.DistributionType.valueOf(it.trim().toUpperCase())
           } catch (IllegalArgumentException iae) {
-            LOG.debug("Unknown distribution type for add-on ${addonObj} : ${it}")
+            warnMessages.add("malformed descriptor for ${addonObj.id}:${addonObj.version} : Unknown distribution type ${it}")
             PlatformSettings.DistributionType.UNKNOWN
           }
       } : []
@@ -533,7 +542,8 @@ class AddonService {
             PlatformSettings.AppServerType.valueOf(it.trim().toUpperCase())
           }
           catch (IllegalArgumentException iae) {
-            LOG.debug("Unknown application server type for add-on ${addonObj} : ${it}")
+            warnMessages.add(
+                "malformed descriptor for ${addonObj.id}:${addonObj.version} : Unknown application server type ${it}")
             PlatformSettings.AppServerType.UNKNOWN
           }
       }
@@ -543,7 +553,8 @@ class AddonService {
           try {
             PlatformSettings.AppServerType.valueOf(it.trim().toUpperCase())
           } catch (IllegalArgumentException iae) {
-            LOG.debug("Unknown application server type for add-on ${addonObj} : ${it}")
+            warnMessages.add(
+                "malformed descriptor for ${addonObj.id}:${addonObj.version} : Unknown application server type ${it}")
             PlatformSettings.AppServerType.UNKNOWN
           }
       } : []
@@ -554,28 +565,23 @@ class AddonService {
     addonObj.installedWebapps = anAddon.installedWebapps
     addonObj.installedOthersFiles = anAddon.installedOthersFiles
     addonObj.overwrittenFiles = anAddon.overwrittenFiles
-    int errors = 0
     if (!addonObj.id) {
-      LOG.debug("No id for add-on ${anAddon}")
-      errors++
+      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No id")
     }
     if (!addonObj.version) {
-      LOG.debug("No version for add-on ${anAddon}")
-      errors++
+      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No version")
     }
     if (!addonObj.name) {
-      LOG.debug("No name for add-on ${anAddon}")
-      errors++
+      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No name")
     }
     if (!addonObj.downloadUrl) {
-      LOG.debug("No downloadUrl for add-on ${anAddon}")
-      errors++
+      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No downloadUrl")
     } else {
       try {
         new URL(addonObj.downloadUrl)
       } catch (MalformedURLException mue) {
-        LOG.debug("Invalid downloadUrl for add-on ${anAddon}")
-        errors++
+        errorMessages.add(
+            "ignored invalid entry ${addonObj.id}:${addonObj.version} : Invalid downloadUrl ${addonObj.downloadUrl}")
       }
     }
     if (addonObj.sourceUrl) {
@@ -583,7 +589,7 @@ class AddonService {
         new URL(addonObj.sourceUrl)
       } catch (MalformedURLException mue) {
         // Not critical. Just a debug error
-        LOG.debug("Invalid sourceUrl for add-on ${anAddon}")
+        warnMessages.add("malformed descriptor for ${addonObj.id}:${addonObj.version} : Invalid sourceUrl ${addonObj.sourceUrl}")
       }
     }
     if (addonObj.screenshotUrl) {
@@ -591,7 +597,8 @@ class AddonService {
         new URL(addonObj.screenshotUrl)
       } catch (MalformedURLException mue) {
         // Not critical. Just a debug error
-        LOG.debug("Invalid screenshotUrl for add-on ${anAddon}")
+        warnMessages.add(
+            "malformed descriptor for ${addonObj.id}:${addonObj.version} : Invalid screenshotUrl ${addonObj.screenshotUrl}")
       }
     }
     if (addonObj.thumbnailUrl) {
@@ -599,7 +606,8 @@ class AddonService {
         new URL(addonObj.thumbnailUrl)
       } catch (MalformedURLException mue) {
         // Not critical. Just a debug error
-        LOG.debug("Invalid thumbnailUrl for add-on ${anAddon}")
+        warnMessages.add(
+            "malformed descriptor for ${addonObj.id}:${addonObj.version} : Invalid thumbnailUrl ${addonObj.thumbnailUrl}")
       }
     }
     if (addonObj.documentationUrl) {
@@ -607,7 +615,8 @@ class AddonService {
         new URL(addonObj.documentationUrl)
       } catch (MalformedURLException mue) {
         // Not critical. Just a debug error
-        LOG.debug("Invalid documentationUrl for add-on ${anAddon}")
+        warnMessages.add(
+            "malformed descriptor for ${addonObj.id}:${addonObj.version} : Invalid documentationUrl ${addonObj.documentationUrl}")
       }
     }
     if (addonObj.licenseUrl) {
@@ -615,28 +624,26 @@ class AddonService {
         new URL(addonObj.licenseUrl)
       } catch (MalformedURLException mue) {
         // Not critical. Just a debug error
-        LOG.debug("Invalid licenseUrl for add-on ${anAddon}")
+        warnMessages.add(
+            "malformed descriptor for ${addonObj.id}:${addonObj.version} : Invalid licenseUrl ${addonObj.licenseUrl}")
       }
     }
     if (!addonObj.vendor) {
-      LOG.debug("No vendor for add-on ${anAddon}")
-      errors++
+      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No vendor")
     }
     if (!addonObj.license) {
-      LOG.debug("No license for add-on ${anAddon}")
-      errors++
+      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No license")
     }
     if (addonObj.supportedApplicationServers.size() == 0) {
-      LOG.debug("No supportedApplicationServers for add-on ${anAddon}")
-      errors++
+      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No supportedApplicationServers")
     }
     if (addonObj.supportedDistributions.size() == 0) {
-      LOG.debug("No supportedDistributions for add-on ${anAddon}")
-      errors++
+      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No supportedDistributions")
     }
-    if (errors > 0) {
+    if (errorMessages.size() > 0) {
       throw new InvalidJSONException(anAddon)
     }
+
     return addonObj
   }
 
