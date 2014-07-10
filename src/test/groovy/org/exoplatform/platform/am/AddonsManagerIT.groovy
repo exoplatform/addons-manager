@@ -45,7 +45,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * for each listed Add-on, never list the development and unstable versions
    * don't list add-ons which contains only development or unstable versions
    */
-  def "[AM_LIST_01] addon.(sh|bat) list"() {
+  def "[AM_LIST_01] addon(.bat) list"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--verbose"]).exitValue()
@@ -55,7 +55,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * list each add-on of the Catalog (stable and development versions)
    * for each listed Add-on, list all the versions (stable and development)
    */
-  def "[AM_LIST_02] addon.(sh|bat) list --snapshots"() {
+  def "[AM_LIST_02] addon(.bat) list --snapshots"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--snapshots", "--verbose"]).exitValue()
@@ -64,7 +64,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * List stable and unstable add-ons
    */
-  def "[AM_LIST_03] addon.(sh|bat) list --unstable"() {
+  def "[AM_LIST_03] addon(.bat) list --unstable"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--unstable", "--verbose"]).exitValue()
@@ -92,7 +92,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * same as list without arguments,only using the local + cached catalogs
    */
-  def "[AM_LIST_06] addon.(sh|bat) list --offline"() {
+  def "[AM_LIST_06] addon(.bat) list --offline"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["list", "--offline", "--verbose"]).exitValue()
@@ -119,7 +119,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * List installed stable add-ons for which a newer version is available based aether generic version order
    */
-  def "[AM_LIST_09] addon.(sh|bat) list --outdated"() {
+  def "[AM_LIST_09] addon(.bat) list --outdated"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon:40"])
@@ -134,7 +134,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * List installed stable and unstable add-ons for which a newer version is available based aether generic version order
    */
-  def "[AM_LIST_09a] addon.(sh|bat) list --outdated --unstable"() {
+  def "[AM_LIST_09a] addon(.bat) list --outdated --unstable"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon:40"])
@@ -149,7 +149,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * List installed stable and snapshots add-ons for which a newer version is available based aether generic version order
    */
-  def "[AM_LIST_09b] addon.(sh|bat) list --outdated --snapshots"() {
+  def "[AM_LIST_09b] addon(.bat) list --outdated --snapshots"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon:40"])
@@ -165,7 +165,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * Unless --no-compat option is passed, the list is filtered to match the app server with supportedApplicationServers,
    * supportedDistributions, compatibility.
    */
-  def "[AM_LIST_10] [AM_LIST_11] [AM_LIST_12] addon.(sh|bat) list --no-compat"() {
+  def "[AM_LIST_10] [AM_LIST_11] [AM_LIST_12] addon(.bat) list --no-compat"() {
     setup:
     ProcessResult process = launchAddonsManager(["list", "--no-compat", "--verbose"])
     expect:
@@ -180,7 +180,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if the foo-addon exists and has no released version (only snapshots) : must raise an error saying "The add-on foo-addon doesn't doesn't have a released version yet ! add snapshot option to use the snapshot version [KO]"
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the catalog, check your add-on name [KO]"
    */
-  def "[AM_INF_01] addons.(sh|bat) describe foo-addon"() {
+  def "[AM_INF_01] addon(.bat) describe foo-addon"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["describe", "foo-addon", "--verbose"]).exitValue()
@@ -191,7 +191,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if the foo-addon exists and has no released version 42 : must raise an error saying "The add-on foo-addon doesn't have a released version 42 yet ! check the version you specify [KO]"
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the catalog, check your add-on name [KO]"
    */
-  def "[AM_INF_02] addons.(sh|bat) describe foo-addon:42"() {
+  def "[AM_INF_02] addon(.bat) describe foo-addon:42"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["describe", "foo-addon:42", "--verbose"]).exitValue()
@@ -200,7 +200,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon not already installed : must install the most recent stable version of foo-addon
    */
-  def "[AM_INST_01] addons.(sh|bat) install foo-addon - not yet installed"() {
+  def "[AM_INST_01] addon(.bat) install foo-addon - not yet installed"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--verbose"]).exitValue()
@@ -215,7 +215,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon is already installed : must not install anything
    */
-  def "[AM_INST_01] addons.(sh|bat) install foo-addon - already installed"() {
+  def "[AM_INST_01] addon(.bat) install foo-addon - already installed"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon"])
@@ -232,7 +232,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
    * catalog, check your add-on name [KO]"
    */
-  def "[AM_INST_01] addons.(sh|bat) install foo-addon - not found"() {
+  def "[AM_INST_01] addon(.bat) install foo-addon - not found"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
@@ -242,7 +242,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon not already installed : must install the most recent development version of the foo-addon
    */
-  def "[AM_INST_02] addons.(sh|bat) install foo-addon --snapshots - not yet installed"() {
+  def "[AM_INST_02] addon(.bat) install foo-addon --snapshots - not yet installed"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--snapshots", "--verbose"]).exitValue()
@@ -258,7 +258,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon is already installed : must not install anything
    * TODO : if the last stable version is more recent than the most recent development version, we must install the stable version
    */
-  def "[AM_INST_02] addons.(sh|bat) install foo-addon --snapshots - already installed"() {
+  def "[AM_INST_02] addon(.bat) install foo-addon --snapshots - already installed"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon", "--snapshots"])
@@ -275,7 +275,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
    * catalog, check your add-on name [KO]"
    */
-  def "[AM_INST_02] addons.(sh|bat) install foo-addon --snapshots - not found"() {
+  def "[AM_INST_02] addon(.bat) install foo-addon --snapshots - not found"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
@@ -285,7 +285,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon not already installed : must install the most recent unstable version of the foo-addon
    */
-  def "addons.(sh|bat) install foo-addon --unstable - not yet installed"() {
+  def "addon(.bat) install foo-addon --unstable - not yet installed"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--unstable", "--verbose"]).exitValue()
@@ -301,7 +301,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon is already installed : must not install anything
    * TODO : if the last stable version is more recent than the most recent unstable version, we must install the stable version
    */
-  def "addons.(sh|bat) install foo-addon --unstable - already installed"() {
+  def "addon(.bat) install foo-addon --unstable - already installed"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon", "--unstable"])
@@ -318,7 +318,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
    * catalog, check your add-on name [KO]"
    */
-  def "addons.(sh|bat) install foo-addon --unstable - not found"() {
+  def "addon(.bat) install foo-addon --unstable - not found"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
@@ -328,7 +328,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon not already installed : must install the most recent stable version of the foo-addon
    */
-  def "[AM_INST_03] addons.(sh|bat) install foo-addon --force - not yet installed"() {
+  def "[AM_INST_03] addon(.bat) install foo-addon --force - not yet installed"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--force", "--verbose"]).exitValue()
@@ -343,7 +343,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon is already installed : must enforce to reinstall the foo-addon
    */
-  def "[AM_INST_03] addons.(sh|bat) install foo-addon --force - already installed"() {
+  def "[AM_INST_03] addon(.bat) install foo-addon --force - already installed"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon"])
@@ -362,7 +362,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
    * catalog, check your add-on name [KO]"
    */
-  def "[AM_INST_03] addons.(sh|bat) install foo-addon --force - not found"() {
+  def "[AM_INST_03] addon(.bat) install foo-addon --force - not found"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
@@ -372,7 +372,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon not already installed : must install the most recent development version of the foo-addon
    */
-  def "[AM_INST_04] addons.(sh|bat) install foo-addon --snapshots --force - not yet installed"() {
+  def "[AM_INST_04] addon(.bat) install foo-addon --snapshots --force - not yet installed"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
@@ -390,7 +390,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * TODO : if the last stable version is more recent than the most recent development version, we must install / reinstall the stable
    * version
    */
-  def "[AM_INST_04] addons.(sh|bat) install foo-addon --snapshots --force - already installed"() {
+  def "[AM_INST_04] addon(.bat) install foo-addon --snapshots --force - already installed"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon", "--snapshots"])
@@ -410,7 +410,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
    * catalog, check your add-on name [KO]"
    */
-  def "[AM_INST_04] addons.(sh|bat) install foo-addon --snapshots --force - not found"() {
+  def "[AM_INST_04] addon(.bat) install foo-addon --snapshots --force - not found"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
@@ -420,7 +420,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon not already installed : must install the most recent unstable version of the foo-addon
    */
-  def "addons.(sh|bat) install foo-addon --unstable --force - not yet installed"() {
+  def "addon(.bat) install foo-addon --unstable --force - not yet installed"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
@@ -438,7 +438,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * TODO : if the last stable version is more recent than the most recent unstable version, we must install / reinstall the stable
    * version
    */
-  def "addons.(sh|bat) install foo-addon --unstable --force - already installed"() {
+  def "addon(.bat) install foo-addon --unstable --force - already installed"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon", "--unstable"])
@@ -458,7 +458,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
    * catalog, check your add-on name [KO]"
    */
-  def "addons.(sh|bat) install foo-addon --unstable --force - not found"() {
+  def "addon(.bat) install foo-addon --unstable --force - not found"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
@@ -468,7 +468,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon not already installed : must install the version 42 of the foo-addon
    */
-  def "[AM_INST_05] addons.(sh|bat) install foo-addon:42 - not yet installed"() {
+  def "[AM_INST_05] addon(.bat) install foo-addon:42 - not yet installed"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon:42", "--verbose"]).exitValue()
@@ -483,7 +483,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon is already installed : must not install anything
    */
-  def "[AM_INST_05] addons.(sh|bat) install foo-addon:42 - already installed"() {
+  def "[AM_INST_05] addon(.bat) install foo-addon:42 - already installed"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon"])
@@ -500,7 +500,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
    * catalog, check your add-on name [KO]"
    */
-  def "[AM_INST_05] addons.(sh|bat) install foo-addon - not found"() {
+  def "[AM_INST_05] addon(.bat) install foo-addon - not found"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
@@ -510,7 +510,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon not already installed : must install the last 42 snapshot version available of the foo-addon
    */
-  def "[AM_INST_06] addons.(sh|bat) install foo-addon:43-SNAPSHOT --snapshots - not yet installed"() {
+  def "[AM_INST_06] addon(.bat) install foo-addon:43-SNAPSHOT --snapshots - not yet installed"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
@@ -526,7 +526,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon is already installed : must not install anything
    */
-  def "[AM_INST_06] addons.(sh|bat) install foo-addon:43-SNAPSHOT --snapshots - already installed"() {
+  def "[AM_INST_06] addon(.bat) install foo-addon:43-SNAPSHOT --snapshots - already installed"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon:43-SNAPSHOT", "--snapshots"])
@@ -543,7 +543,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
    * catalog, check your add-on name [KO]"
    */
-  def "[AM_INST_06] addons.(sh|bat) install foo-addon:43-SNAPSHOT --snapshots - not found"() {
+  def "[AM_INST_06] addon(.bat) install foo-addon:43-SNAPSHOT --snapshots - not found"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
@@ -553,7 +553,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon not already installed : must install the 43-RC1 version of the foo-addon
    */
-  def "addons.(sh|bat) install foo-addon:43-RC1 --unstable - not yet installed"() {
+  def "addon(.bat) install foo-addon:43-RC1 --unstable - not yet installed"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
@@ -569,7 +569,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon is already installed : must not install anything
    */
-  def "addons.(sh|bat) install foo-addon:43-RC1 --unstable - already installed"() {
+  def "addon(.bat) install foo-addon:43-RC1 --unstable - already installed"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon:43-RC1", "--unstable"])
@@ -586,7 +586,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
    * catalog, check your add-on name [KO]"
    */
-  def "addons.(sh|bat) install foo-addon:43-RC1 --unstable - not found"() {
+  def "addon(.bat) install foo-addon:43-RC1 --unstable - not found"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
@@ -596,7 +596,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon not already installed : must install the version 42 of the foo-addon
    */
-  def "[AM_INST_07] addons.(sh|bat) install foo-addon:42 --force - not yet installed"() {
+  def "[AM_INST_07] addon(.bat) install foo-addon:42 --force - not yet installed"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon:42", "--force", "--verbose"]).exitValue()
@@ -611,7 +611,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon is already installed : must enforce to reinstall the version 42 of the foo-addon
    */
-  def "[AM_INST_07] addons.(sh|bat) install foo-addon:42 --force - already installed"() {
+  def "[AM_INST_07] addon(.bat) install foo-addon:42 --force - already installed"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon"])
@@ -630,7 +630,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
    * catalog, check your add-on name [KO]"
    */
-  def "[AM_INST_07] addons.(sh|bat) install foo-addon:42 --force - not found"() {
+  def "[AM_INST_07] addon(.bat) install foo-addon:42 --force - not found"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
@@ -640,7 +640,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon not already installed : must install the most recent 43-SNAPSHOT development version of the foo-addon
    */
-  def "[AM_INST_08] addons.(sh|bat) install foo-addon:43-SNAPSHOT --snapshots --force - not yet installed"() {
+  def "[AM_INST_08] addon(.bat) install foo-addon:43-SNAPSHOT --snapshots --force - not yet installed"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
@@ -657,7 +657,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon is already installed : must enforce to reinstall the foo-addon with its more recent 43-SNAPSHOT development
    * version
    */
-  def "[AM_INST_08] addons.(sh|bat) install foo-addon:43-SNAPSHOT --snapshots --force - already installed"() {
+  def "[AM_INST_08] addon(.bat) install foo-addon:43-SNAPSHOT --snapshots --force - already installed"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon", "--snapshots"])
@@ -677,7 +677,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
    * catalog, check your add-on name [KO]"
    */
-  def "[AM_INST_08] addons.(sh|bat) install foo-addon:43-SNAPSHOT --snapshots --force - not found"() {
+  def "[AM_INST_08] addon(.bat) install foo-addon:43-SNAPSHOT --snapshots --force - not found"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
@@ -687,7 +687,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon not already installed : must install the 43-RC1 version of the foo-addon
    */
-  def "addons.(sh|bat) install foo-addon:43-RC1 --unstable --force - not yet installed"() {
+  def "addon(.bat) install foo-addon:43-RC1 --unstable --force - not yet installed"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
@@ -703,7 +703,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon is already installed : must enforce to reinstall the foo-addon with its 43-RC1 version
    */
-  def "addons.(sh|bat) install foo-addon:43-RC1 --unstable --force - already installed"() {
+  def "addon(.bat) install foo-addon:43-RC1 --unstable --force - already installed"() {
     setup:
     // Install it first
     launchAddonsManager(["install", "foo-addon", "--unstable"])
@@ -723,7 +723,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the remote
    * catalog, check your add-on name [KO]"
    */
-  def "addons.(sh|bat) install foo-addon:43-RC1 --unstable --force - not found"() {
+  def "addon(.bat) install foo-addon:43-RC1 --unstable --force - not found"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == launchAddonsManager(
@@ -745,7 +745,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * installs foo-addon version 1.2 ignoring the compatiblity check
    */
-  def "[AM_INST_10] addons.(sh|bat) install foo-addon --no-compat"() {
+  def "[AM_INST_10] addon(.bat) install foo-addon --no-compat"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
@@ -762,7 +762,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * --conflict=overwrite will overwrite the conflicted files by the one contained in the add-on and log a warning for each one
    * : File XYZ already exists. Overwritten.
    */
-  def "[AM_INST_11] addons.(sh|bat) install foo-addon --conflict=skip"() {
+  def "[AM_INST_11] addon(.bat) install foo-addon --conflict=skip"() {
     setup:
     // Let's create a file existing in the addon
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar") << "TEST"
@@ -789,7 +789,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * --conflict=overwrite will overwrite the conflicted files by the one contained in the add-on and log a warning for each one
    * : File XYZ already exists. Overwritten.
    */
-  def "[AM_INST_11] addons.(sh|bat) install foo-addon --conflict=overwrite"() {
+  def "[AM_INST_11] addon(.bat) install foo-addon --conflict=overwrite"() {
     setup:
     // Let's create a file existing in the addon
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar") << "TEST"
@@ -828,7 +828,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * Other files and folders located at the root of the add-on archive are copied as-is under $PLATFORM_HOME
    */
-  def "[AM_STRUCT_04] addons.(sh|bat) install other-files-addon"() {
+  def "[AM_STRUCT_04] addon(.bat) install other-files-addon"() {
     expect:
     // Install it
     // Verify return code
@@ -851,7 +851,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon not already installed : must raise an error saying "The add-on foo-addon was not installed [KO]"
    */
-  def "[AM_UNINST_01] addons.(sh|bat) uninstall foo-addon - not already installed"() {
+  def "[AM_UNINST_01] addon(.bat) uninstall foo-addon - not already installed"() {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED == launchAddonsManager(
@@ -861,7 +861,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   /**
    * if foo-addon is already installed : must uninstall the add-on whatever the installed version is stable or development
    */
-  def "[AM_UNINST_01] addons.(sh|bat) uninstall foo-addon - already installed"() {
+  def "[AM_UNINST_01] addon(.bat) uninstall foo-addon - already installed"() {
     setup:
     launchAddonsManager(["install", "foo-addon:42"])
     expect:

@@ -65,7 +65,7 @@ class AddonsManagerSettings extends Properties {
     if (System.properties['os.name'].toLowerCase().contains('windows')) {
       setProperty("scriptName", "${scriptBaseName}.bat")
     } else {
-      setProperty("scriptName", "${scriptBaseName}.sh")
+      setProperty("scriptName", "${scriptBaseName}")
     }
   }
 

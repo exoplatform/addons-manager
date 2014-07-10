@@ -33,63 +33,63 @@ Command line tool for eXo platform 4.x to install/uninstall add-ons
     git clone git@github.com:exoplatform/addons-manager.git && mvn package
 
 Unpack the content of the generated archive ```target/addons-manager-VERSION.zip``` into you eXo platform installation directory
-and then use the script ```addons.bat``` on windows systems and ```addons.sh``` on linux/unix systems.
+and then use the script ```addon.bat``` on windows systems and ```addon``` on linux/unix systems.
 
 ## Usage
 
-We are using ```addons.sh``` in our samples. If you are on a windows system, just use ```addons.bat``` instead.
+We are using ```addon``` in our samples. If you are on a windows system, just use ```addon.bat``` instead.
 
 Display all available addons :
 
-    addons.sh list
+    addon list
 
 Display all available addons including development versions (snapshots) :
 
-    addons.sh list --snapshots
+    addon list --snapshots
 
 Display all available addons including unstable versions (alpha, beta, ...) :
 
-    addons.sh list --unstable
+    addon list --unstable
 
 Display all installed addons in your platform server :
 
-    addons.sh list --installed
+    addon list --installed
 
 Display all installed addons with an existing more recent stable version :
 
-    addons.sh list --outdated
+    addon list --outdated
 
 Display all installed addons with an existing more recent stable or snapshot version :
 
-    addons.sh list --outdated  --snapshots
+    addon list --outdated  --snapshots
 
 Display all installed addons with an existing more recent stable or unstable version :
 
-    addons.sh list --outdated --unstable
+    addon list --outdated --unstable
 
 Install the latest stable version of the add-on ```foo```
 
-    addons.sh install foo
+    addon install foo
 
 Install the latest stable or development version of the add-on ```foo```
 
-    addons.sh install foo --snapshots
+    addon install foo --snapshots
 
 Install the latest stable or unstable version of the add-on ```foo```
 
-    addons.sh install foo --unstable
+    addon install foo --unstable
 
 Install the version ```42.0``` of the add-on ```foo```
 
-    addons.sh install foo:42.0
+    addon install foo:42.0
 
 Enforce to reinstall the latest stable version of the add-on ```foo```
 
-    addons.sh install foo --force
+    addon install foo --force
 
 Uninstall the add-on ```foo```
 
-    addons.sh uninstall foo
+    addon uninstall foo
 
 ## BUILD (AND AUTOMATED TESTS)
 
