@@ -19,19 +19,29 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.ex
+
 import org.exoplatform.platform.am.Addon
+import org.exoplatform.platform.am.AddonService
+import org.exoplatform.platform.am.settings.PlatformSettings
 
 import static org.exoplatform.platform.am.AddonsManagerConstants.RETURN_CODE_INCOMPATIBILITY_ERROR
+
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 class CompatibilityException extends AddonsManagerException {
 
-  CompatibilityException(Addon addon, String plfVersion) {
+  CompatibilityException(Addon addon, PlatformSettings plfSettings) {
     super(
-        "The add-on ${addon.id}:${addon.version} defines a compatibility rule ${addon.compatibility}. Your version " +
-            "${plfVersion} of eXo Platform isn't compatible. Use --no-compat to ignore this compatibility check and install it " +
-            "anyway.")
+        "The add-on ${addon.id} is not compatible : " +
+            (!addon.supportedDistributions.contains(
+                plfSettings.distributionType) ? "Distribution ${plfSettings.distributionType} not supported. " : "") +
+            (!addon.supportedApplicationServers.contains(
+                plfSettings.appServerType) ? "Application server ${plfSettings.appServerType} not supported. " : "") +
+            (!AddonService.instance.testVersionCompatibility(
+                plfSettings.version, addon.compatibility) ? "eXo platform version ${plfSettings.version} not supported. " : "") +
+            "Use --no-compat to bypass this compatibility check and install anyway"
+    )
   }
 
   @Override

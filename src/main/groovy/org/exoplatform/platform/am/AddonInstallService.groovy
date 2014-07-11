@@ -117,10 +117,12 @@ public class AddonInstallService {
       Boolean offline,
       Boolean noCompat,
       Conflict conflict) {
-    // if a compatibility rule is defined
-    if (addon.compatibility && !noCompat) {
-      if (!ADDON_SERVICE.testVersionCompatibility(env.platform.version, addon.compatibility)) {
-        throw new CompatibilityException(addon, env.platform.version)
+    // Compatibility check
+    if (!noCompat) {
+      LOG.withStatus("Checking compatibility of your add-on with your eXo platform instance") {
+        if (!ADDON_SERVICE.isCompatible(addon, env.platform)) {
+          throw new CompatibilityException(addon, env.platform)
+        }
       }
     } else {
       LOG.debug("Compatibility check deactivated")
