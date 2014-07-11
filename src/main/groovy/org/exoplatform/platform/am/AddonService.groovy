@@ -761,7 +761,6 @@ class AddonService {
     } else {
       result = true
     }
-    LOG.debug("Checking compatibility for version ${version} with constraint ${constraint} : ${result}")
     return result
   }
 }
