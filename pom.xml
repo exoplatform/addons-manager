@@ -53,7 +53,7 @@
     <!-- Project Dependencies -->
     <!-- **************************************** -->
     <aether-util.version>1.0.0.v20140518</aether-util.version>
-    <groovy.version>2.3.3</groovy.version>
+    <groovy.version>2.3.4</groovy.version>
     <jcommander.version>1.35</jcommander.version>
     <jline.version>2.12</jline.version>
     <!-- Tests dependencies -->
