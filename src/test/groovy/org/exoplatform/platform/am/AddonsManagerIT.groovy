@@ -24,6 +24,32 @@ package org.exoplatform.platform.am
  */
 class AddonsManagerIT extends IntegrationTestsSpecification {
 
+  final static Map<String, String[]> FOO_ADDON_42_CONTENT = [
+      libraries: ["foo-addon-42.jar"],
+      webapps  : ["foo-addon-42.war"]
+  ]
+
+  final static Map<String, String[]> OTHER_FILES_ADDON_42_CONTENT = [
+      libraries  : ["other-files-addon-42.jar"],
+      webapps    : ["other-files-addon-42.war"],
+      othersFiles: ["conf/other-files-addon/configuration1.properties", "conf/other-files-addon/configuration2.properties"]
+  ]
+
+  final static Map<String, String[]> README_ADDON_42_CONTENT = [
+      libraries: ["readme-addon-42.jar"],
+      webapps  : ["readme-addon-42.war"]
+  ]
+
+  final static Map<String, String[]> FOO_ADDON_43_RC1_CONTENT = [
+      libraries: ["foo-addon-43-RC1.jar"],
+      webapps  : ["foo-addon-43-RC1.war"]
+  ]
+
+  final static Map<String, String[]> FOO_ADDON_43_SNAPSHOT_CONTENT = [
+      libraries: ["foo-addon-43-SNAPSHOT.jar"],
+      webapps  : ["foo-addon-43-SNAPSHOT.war"]
+  ]
+
   def cleanup() {
     // After each test we remove the content of the add-ons directory to be safe
     getEnvironmentSettings().getAddonsDirectory().deleteDir()
@@ -205,8 +231,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -247,8 +272,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--snapshots", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-43-SNAPSHOT.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-43-SNAPSHOT.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_43_SNAPSHOT_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -290,8 +314,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--unstable", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-43-RC1.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-43-RC1.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_43_RC1_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -333,8 +356,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--force", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -351,8 +373,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon", "--force", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -378,8 +399,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "foo-addon", "--snapshots", "--force", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-43-SNAPSHOT.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-43-SNAPSHOT.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_43_SNAPSHOT_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -399,8 +419,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "foo-addon", "--snapshots", "--force", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-43-SNAPSHOT.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-43-SNAPSHOT.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_43_SNAPSHOT_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -426,8 +445,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "foo-addon", "--unstable", "--force", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-43-RC1.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-43-RC1.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_43_RC1_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -447,8 +465,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "foo-addon", "--unstable", "--force", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-43-RC1.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-43-RC1.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_43_RC1_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -473,8 +490,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon:42", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -516,8 +532,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "foo-addon:43-SNAPSHOT", "--snapshots", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-43-SNAPSHOT.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-43-SNAPSHOT.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_43_SNAPSHOT_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -559,8 +574,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "foo-addon:43-RC1", "--unstable", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-43-RC1.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-43-RC1.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_43_RC1_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -601,8 +615,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon:42", "--force", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -619,8 +632,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "foo-addon:42", "--force", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -646,8 +658,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "foo-addon:43-SNAPSHOT", "--snapshots", "--force", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-43-SNAPSHOT.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-43-SNAPSHOT.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_43_SNAPSHOT_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -666,8 +677,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "foo-addon:43-SNAPSHOT", "--snapshots", "--force", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-43-SNAPSHOT.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-43-SNAPSHOT.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_43_SNAPSHOT_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -693,8 +703,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "foo-addon:43-RC1", "--unstable", "--force", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-43-RC1.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-43-RC1.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_43_RC1_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -712,8 +721,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "foo-addon:43-RC1", "--unstable", "--force", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-43-RC1.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-43-RC1.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_43_RC1_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -771,10 +779,9 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "foo-addon:42", "--conflict=skip", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     // It shouldn't have been touched
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").text == "TEST"
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -798,10 +805,9 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "foo-addon:42", "--conflict=overwrite", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
+    verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     // It should have been replaced
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").text != "TEST"
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "foo-addon"])
@@ -818,8 +824,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(
         ["install", "readme-addon:42", "--verbose"], ['', '', '', '', '', '', '', '', '', '', '']).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "readme-addon-42.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "readme-addon-42.war").exists()
+    verifyAddonContentPresent(README_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "readme-addon"])
@@ -834,18 +839,12 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "other-files-addon:42", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "other-files-addon-42.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "other-files-addon-42.war").exists()
-    new File(getPlatformSettings().homeDirectory, "conf/other-files-addon/configuration1.properties").exists()
-    new File(getPlatformSettings().homeDirectory, "conf/other-files-addon/configuration2.properties").exists()
+    verifyAddonContentPresent(OTHER_FILES_ADDON_42_CONTENT)
     // Uninstall it
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["uninstall", "other-files-addon", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    !new File(getPlatformSettings().librariesDirectory, "other-files-addon-42.jar").exists()
-    !new File(getPlatformSettings().webappsDirectory, "other-files-addon-42.war").exists()
-    !new File(getPlatformSettings().homeDirectory, "conf/other-files-addon/configuration1.properties").exists()
-    !new File(getPlatformSettings().homeDirectory, "conf/other-files-addon/configuration2.properties").exists()
+    verifyAddonContentNotPresent(OTHER_FILES_ADDON_42_CONTENT)
   }
 
   /**
@@ -867,9 +866,8 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["uninstall", "foo-addon", "--verbose"]).exitValue()
-    // Verify that the add-on is correctly installed
-    !new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
-    !new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    // Verify that the add-on is not installed
+    verifyAddonContentNotPresent(FOO_ADDON_42_CONTENT)
   }
 
   /**
@@ -906,8 +904,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
         ["install", "license-addon:42", "--verbose"],
         ['no\n']).exitValue()
     // Verify that the add-on isn't installed
-    !new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
-    !new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    verifyAddonContentNotPresent(FOO_ADDON_42_CONTENT)
   }
 
   /**
@@ -921,8 +918,7 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
         ["install", "license-addon:42", "--verbose"],
         ['yes\n']).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "license-addon"])
@@ -940,11 +936,58 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
     // Reinstall it and verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager(["install", "license-addon:42", "--verbose"]).exitValue()
     // Verify that the add-on is correctly installed
-    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").exists()
-    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
+    verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
     launchAddonsManager(["uninstall", "license-addon"])
+  }
+
+  /**
+   * Helper method to check that an add-on is correctly installed
+   * @param addonContent a Map describing the add-on content. It may have 3 keys and for each a list of paths in the archive.
+   * @{code libraries} gives le list of libraries (*.jar) in the archive. @{code webapps} gives le list of webapps (*.war)
+   * in the archive. @{code othersFiles} gives le list of others files.
+   */
+  void verifyAddonContentPresent(Map<String, String[]> addonContent) {
+    if (addonContent.libraries) {
+      addonContent.libraries.each {
+        assert new File(getPlatformSettings().librariesDirectory, it).exists()
+      }
+    }
+    if (addonContent.webapps) {
+      addonContent.webapps.each {
+        assert new File(getPlatformSettings().webappsDirectory, it).exists()
+      }
+    }
+    if (addonContent.othersFiles) {
+      addonContent.othersFiles.each {
+        assert new File(getPlatformSettings().homeDirectory, it).exists()
+      }
+    }
+  }
+
+  /**
+   * Helper method to check that an add-on is not installed
+   * @param addonContent a Map describing the add-on content. It may have 3 keys and for each a list of paths in the archive.
+   * @{code libraries} gives le list of libraries (*.jar) in the archive. @{code webapps} gives le list of webapps (*.war)
+   * in the archive. @{code othersFiles} gives le list of others files.
+   */
+  void verifyAddonContentNotPresent(Map<String, String[]> addonContent) {
+    if (addonContent.libraries) {
+      addonContent.libraries.each {
+        assert !new File(getPlatformSettings().librariesDirectory, it).exists()
+      }
+    }
+    if (addonContent.webapps) {
+      addonContent.webapps.each {
+        assert !new File(getPlatformSettings().webappsDirectory, it).exists()
+      }
+    }
+    if (addonContent.othersFiles) {
+      addonContent.othersFiles.each {
+        assert !new File(getPlatformSettings().homeDirectory, it).exists()
+      }
+    }
   }
 
 }
