@@ -19,6 +19,10 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
+
+import groovy.util.slurpersupport.GPathResult
+import org.exoplatform.platform.am.settings.PlatformSettings
+
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
@@ -950,18 +954,28 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    */
   void verifyAddonContentPresent(Map<String, String[]> addonContent) {
     if (addonContent.libraries) {
-      addonContent.libraries.each {
-        assert new File(getPlatformSettings().librariesDirectory, it).exists()
+      addonContent.libraries.each { library ->
+        assert new File(getPlatformSettings().librariesDirectory, library).exists()
       }
     }
     if (addonContent.webapps) {
-      addonContent.webapps.each {
-        assert new File(getPlatformSettings().webappsDirectory, it).exists()
+      addonContent.webapps.each { webapp ->
+        assert new File(getPlatformSettings().webappsDirectory, webapp).exists()
+        if (PlatformSettings.AppServerType.JBOSS == getPlatformSettings().appServerType) {
+          // Verify the application.xml
+          GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(
+              new File(getPlatformSettings().webappsDirectory, "META-INF/application.xml").text)
+          assert applicationXmlContent.depthFirst().findAll {
+            (it.name() == 'module') &&
+                (it.'web'.'context-root'.text() == webapp.substring(0, webapp.size() - 4)) &&
+                (it.'web'.'web-uri'.text() == webapp)
+          }.size() == 1
+        }
       }
     }
     if (addonContent.othersFiles) {
-      addonContent.othersFiles.each {
-        assert new File(getPlatformSettings().homeDirectory, it).exists()
+      addonContent.othersFiles.each { otherFile ->
+        assert new File(getPlatformSettings().homeDirectory, otherFile).exists()
       }
     }
   }
@@ -974,18 +988,29 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    */
   void verifyAddonContentNotPresent(Map<String, String[]> addonContent) {
     if (addonContent.libraries) {
-      addonContent.libraries.each {
-        assert !new File(getPlatformSettings().librariesDirectory, it).exists()
+      addonContent.libraries.each { library ->
+        assert !new File(getPlatformSettings().librariesDirectory, library).exists()
       }
     }
     if (addonContent.webapps) {
-      addonContent.webapps.each {
-        assert !new File(getPlatformSettings().webappsDirectory, it).exists()
+      addonContent.webapps.each { webapp ->
+        assert !new File(getPlatformSettings().webappsDirectory, webapp).exists()
+        if (PlatformSettings.AppServerType.JBOSS == getPlatformSettings().appServerType) {
+          // Verify the application.xml
+          GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(
+              new File(getPlatformSettings().webappsDirectory, "META-INF/application.xml").text)
+          assert applicationXmlContent.depthFirst().findAll {
+            (it.name() == 'module') &&
+                ((it.'web'.'context-root'.text() == webapp.substring(0, webapp.size() - 4)) ||
+                    (it.'web'.'web-uri'.text() == webapp))
+          }.size() == 0
+        }
+
       }
     }
     if (addonContent.othersFiles) {
-      addonContent.othersFiles.each {
-        assert !new File(getPlatformSettings().homeDirectory, it).exists()
+      addonContent.othersFiles.each { otherFile ->
+        assert !new File(getPlatformSettings().homeDirectory, otherFile).exists()
       }
     }
   }

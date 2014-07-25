@@ -298,8 +298,9 @@ public class AddonInstallService {
         ADDON_SERVICE.processFileInplace(applicationDescriptorFile) { text ->
           GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(text)
           addon.installedWebapps.each { file ->
-            String webContext = file.substring(0, file.length() - 4)
-            LOG.withStatus("Adding context declaration /${webContext} for ${file} in application.xml") {
+            String contextRoot = file.substring(file.lastIndexOf('/')+1, file.length() - 4)
+            String webUri = file.substring(file.lastIndexOf('/')+1, file.length())
+            LOG.withStatus("Adding context declaration /${contextRoot} for ${webUri} in application.xml") {
               applicationXmlContent.depthFirst().findAll {
                 (it.name() == 'module') && (it.'web'.'web-uri'.text() == file)
               }.each { node ->
@@ -309,8 +310,8 @@ public class AddonInstallService {
               applicationXmlContent."initialize-in-order" + {
                 module {
                   web {
-                    'web-uri'(file)
-                    'context-root'(webContext)
+                    'web-uri'(webUri)
+                    'context-root'(contextRoot)
                   }
                 }
               }

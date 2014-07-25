@@ -111,8 +111,9 @@ public class AddonUninstallService {
 
     addon.installedWebapps.each {
       webapp ->
+        String contextRoot = webapp.substring(webapp.lastIndexOf('/')+1, webapp.length() - 4)
+        String webUri = webapp.substring(webapp.lastIndexOf('/')+1, webapp.length())
         File fileToDelete = new File(env.platform.homeDirectory, webapp)
-        String webContext = webapp.substring(0, webapp.length() - 4)
         if (!fileToDelete.exists()) {
           LOG.warn("No web application ${webapp} to delete")
         } else {
@@ -122,11 +123,11 @@ public class AddonUninstallService {
           }
         }
         if (applicationDescriptorFile.exists()) {
-          LOG.withStatus("Adding context declaration /${webContext} for ${webapp} in application.xml") {
+          LOG.withStatus("Removing context declaration /${contextRoot} for ${webUri} in application.xml") {
             ADDON_SERVICE.processFileInplace(applicationDescriptorFile) { text ->
               GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(text)
               applicationXmlContent.depthFirst().findAll {
-                (it.name() == 'module') && (it.'web'.'web-uri'.text() == webapp)
+                (it.name() == 'module') && (it.'web'.'web-uri'.text() == webUri)
               }.each { node ->
                 // remove existing node
                 node.replaceNode {}
