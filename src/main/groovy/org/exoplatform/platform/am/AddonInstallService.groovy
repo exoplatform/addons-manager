@@ -100,7 +100,7 @@ public class AddonInstallService {
   }
 
   /**
-   * Install the @{code addon} into the current @{code env}*
+   * Install the @{code addon} into the current @{code env}
    * @param env The execution environment
    * @param addon The add-on to install
    * @param force Enforce to install it even if it was already installed
