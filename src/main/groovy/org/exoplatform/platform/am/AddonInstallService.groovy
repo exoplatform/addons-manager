@@ -189,7 +189,7 @@ public class AddonInstallService {
       // Let's download it
       if (addon.downloadUrl.startsWith("http")) {
         if (offline) throw new UnknownErrorException(
-            "${addon.name} ${addon.version} archive not found locally and offline mode activated")
+            "Failed to install : ${addon.id}:${addon.version} not found in local archives. Remove --offline to download it.")
         LOG.withStatus("Downloading add-on ${addon.name} ${addon.version}") {
           downloadFile(addon.downloadUrl, ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon))
         }
