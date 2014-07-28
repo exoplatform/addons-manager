@@ -85,7 +85,8 @@ public class AddonUninstallService {
   }
 
   /**
-   * Uninstall the @{code addon} from the current @{code env}* @param env The environment where the add-on must be uninstalled
+   * Uninstall the @{code addon} from the current @{code env}.
+   * @param env The environment where the add-on must be uninstalled
    * @param addon The add-on to remove
    */
   protected void uninstallAddon(

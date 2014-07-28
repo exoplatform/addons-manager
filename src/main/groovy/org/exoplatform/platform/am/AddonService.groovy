@@ -251,7 +251,9 @@ class AddonService {
   }
 
   /**
-   * Returns the list of add-ons installed in the current environment @{code env}* @param env The environment where the add-on must be uninstalled
+   * Returns the list of add-ons installed in the current environment @{code env}.
+   * @param env The environment where the add-on
+   * must be uninstalled
    * @return A list of @{link Addon}
    */
   protected List<Addon> getInstalledAddons(
@@ -263,7 +265,8 @@ class AddonService {
 
   /**
    * Returns the list of outdated add-ons by comparing the list of @{code installedAddons} with the one of
-   * @{code availableAddons}* @param installedAddons The list of installed add-ons
+   * @{code availableAddons}.
+   * @param installedAddons The list of installed add-ons
    * @param availableAddons The list of available add-ons
    * @return The list of outdated add-ons
    */
@@ -277,7 +280,8 @@ class AddonService {
 
   /**
    * Find in the @{code addons} list the one with the current @{code addonId} and @{code addonVersion}. If
-   * @{code addonVersion} isn't set it will find the more recent version (stable per default excepted if @{code allowUnstable}* or @{code allowSnapshot} are set.
+   * @{code addonVersion} isn't set it will find the more recent version (stable per default excepted if @{code allowUnstable},
+   * or @{code allowSnapshot} are set.
    * @param addons The list of add-ons in wich to do the search
    * @param addonId The Identifier of the add-on to find
    * @param addonVersion The version of the add-on to find
@@ -636,6 +640,10 @@ class AddonService {
     return addonObj
   }
 
+  /**
+   * Displays the list of @{code errors}.
+   * @param errors The list of errors to display
+   */
   void printMessages(ParsingErrors errors) {
     errors.each { id, msgs ->
       if (msgs.findAll { it.type == MALFORMED_ENTRY }) {
