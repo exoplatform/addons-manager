@@ -180,11 +180,11 @@ public class AddonInstallService {
       }
     }
     if (noCache && ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon).exists()) {
-      LOG.withStatus("Deleting ${addon.name} ${addon.version} archive") {
+      LOG.withStatus("Deleting ${addon.id}:${addon.version} archive") {
         ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon).delete()
       }
     }
-    LOG.info("Installing @|yellow ${addon.name} ${addon.version}|@")
+    LOG.info("Installing @|yellow ${addon.id}:${addon.version}|@")
     if (!ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon).exists()) {
       // Let's download it
       if (addon.downloadUrl.startsWith("http")) {
@@ -204,17 +204,16 @@ public class AddonInstallService {
           originFile = new File(addon.downloadUrl.replaceAll("file://", ""))
         }
         if (!originFile.exists()) {
-          throw new UnknownErrorException("File not found : ${addon.downloadUrl}")
+          throw new UnknownErrorException("Failed to install : File not found ${addon.downloadUrl}")
         }
-        LOG.withStatus("Copying add-on ${addon.name} ${addon.version}") {
-          copyFile(originFile,
-                   ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon))
+        LOG.withStatus("Copying add-on ${addon.id}:${addon.version} archive") {
+          copyFile(originFile, ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon))
         }
       } else {
-        throw new UnknownErrorException("Invalid or not supported download URL : ${addon.downloadUrl}")
+        throw new UnknownErrorException("Failed to install : Invalid or not supported download URL ${addon.downloadUrl}")
       }
     } else {
-      LOG.withStatusOK("Using ${addon.name} ${addon.version} archive from local archives directory")
+      LOG.withStatusOK("Using ${addon.id}:${addon.version} archive from local archives directory")
     }
     addon.installedLibraries = new ArrayList<String>()
     addon.installedWebapps = new ArrayList<String>()
@@ -378,6 +377,6 @@ public class AddonInstallService {
       LOG.infoHR()
       readmeFile.delete()
     }
-    LOG.withStatusOK("Add-on ${addon.name} ${addon.version} installed.")
+    LOG.withStatusOK("Add-on ${addon.id}:${addon.version} installed.")
   }
 }

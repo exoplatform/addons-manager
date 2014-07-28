@@ -91,7 +91,7 @@ public class AddonUninstallService {
   protected void uninstallAddon(
       EnvironmentSettings env,
       Addon addon) {
-    LOG.info("Uninstalling @|yellow ${addon.name} ${addon.version}|@")
+    LOG.info("Uninstalling @|yellow ${addon.id}:${addon.version}|@")
 
     addon.installedLibraries.each {
       library ->
@@ -168,6 +168,6 @@ public class AddonUninstallService {
       ADDON_SERVICE.getAddonStatusFile(env.statusesDirectory, addon).delete()
       assert !ADDON_SERVICE.getAddonStatusFile(env.statusesDirectory, addon).exists()
     }
-    LOG.withStatusOK("Add-on ${addon.name} ${addon.version} uninstalled")
+    LOG.withStatusOK("Add-on ${addon.id}:${addon.version} uninstalled")
   }
 }
