@@ -188,9 +188,12 @@ public class AddonInstallService {
     if (!ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon).exists()) {
       // Let's download it
       if (addon.downloadUrl.startsWith("http")) {
-        if (offline) throw new UnknownErrorException(
-            "Failed to install : ${addon.id}:${addon.version} not found in local archives. Remove --offline to download it.")
-        LOG.withStatus("Downloading add-on ${addon.name} ${addon.version}") {
+        if (offline) {
+          LOG.withStatusKO("Using ${addon.id}:${addon.version} archive from local archives directory")
+          throw new UnknownErrorException(
+              "Failed to install : ${addon.id}:${addon.version} not found in local archives. Remove --offline to download it.")
+        }
+        LOG.withStatus("Downloading add-on ${addon.id}:${addon.version} archive") {
           downloadFile(addon.downloadUrl, ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon))
         }
       } else if (addon.downloadUrl.startsWith("file://")) {
@@ -210,6 +213,8 @@ public class AddonInstallService {
       } else {
         throw new UnknownErrorException("Invalid or not supported download URL : ${addon.downloadUrl}")
       }
+    } else {
+      LOG.withStatusOK("Using ${addon.name} ${addon.version} archive from local archives directory")
     }
     addon.installedLibraries = new ArrayList<String>()
     addon.installedWebapps = new ArrayList<String>()
