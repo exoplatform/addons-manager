@@ -80,7 +80,7 @@ public class AddonUninstallService {
       }
       uninstallAddon(env, addon)
     } else {
-      throw new AddonNotInstalledException("Add-on not installed. It cannot be uninstalled.")
+      throw new AddonNotInstalledException("The add-on ${parameters.addonId} was not installed")
     }
   }
 
