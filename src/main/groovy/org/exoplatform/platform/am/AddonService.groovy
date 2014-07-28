@@ -327,18 +327,18 @@ class AddonService {
         } else {
           List<Addon> stableAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, true, false, false)
           if (!stableAddons.empty) {
-            LOG.info "Stable version(s) available for add-on @|bold,yellow ${addonId}|@ : ${stableAddons.sort().reverse().collect { it.version }.join(', ')}"
+            LOG.error "Stable version(s) available for add-on ${addonId} : ${stableAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
           List<Addon> unstableAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, true, true, false)
           if (!unstableAddons.empty) {
-            LOG.info "Unstable version(s) available for add-on @|bold,yellow ${addonId}|@ : ${unstableAddons.sort().reverse().collect { it.version }.join(', ')}"
+            LOG.error "Unstable version(s) available for add-on ${addonId} : ${unstableAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
           List<Addon> snapshotAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, true, false, true)
           if (!snapshotAddons.empty) {
-            LOG.info "Development version(s) available for add-on @|bold,yellow ${addonId}|@ : ${snapshotAddons.sort().reverse().collect { it.version }.join(', ')}"
+            LOG.error "Development version(s) available for add-on ${addonId} : ${snapshotAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
           throw new AddonNotFoundException(
-              "No add-on with identifier ${addonId} and version ${addonVersion} found in local or remote catalogs")
+              "The add-on ${addonId} doesn't have a version ${addonVersion}. Check the version number.")
         }
       }
     }
