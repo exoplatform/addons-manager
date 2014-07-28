@@ -20,15 +20,18 @@
  */
 package org.exoplatform.platform.am.ex
 
+import groovy.transform.InheritConstructors
+
 import static org.exoplatform.platform.am.AddonsManagerConstants.RETURN_CODE_INVALID_JSON
 
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
+@InheritConstructors
 class InvalidJSONException extends AddonsManagerException {
 
   InvalidJSONException(Object object) {
-    super("ignored invalid entry N/A:N/A : Unreadable JSON ${object}")
+    super("Unreadable JSON ${object}")
   }
 
   @Override

@@ -200,7 +200,7 @@ class AddonService {
             copyFile(tempFile, catalogCacheFile, false)
           }
         } catch (groovy.json.JsonException je) {
-          throw new InvalidJSONException(("Invalid JSON content from URL : ${catalogUrl}", je)
+          throw new InvalidJSONException("Invalid JSON content from URL : ${catalogUrl}", je)
         } finally {
           // Delete the temp file
           tempFile.delete()
