@@ -21,14 +21,14 @@
 package org.exoplatform.platform.am.utils
 
 import jline.TerminalFactory
+import org.exoplatform.platform.am.UnitTestsSpecification
 import org.fusesource.jansi.AnsiRenderer
 import spock.lang.Shared
-import spock.lang.Specification
 
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class LoggerTest extends Specification {
+class LoggerTest extends UnitTestsSpecification {
 
   @Shared
   ByteArrayOutputStream outbaos
@@ -56,7 +56,7 @@ class LoggerTest extends Specification {
     console.reset()
   }
 
-  def clean() {
+  def cleanup() {
     System.setProperty(TerminalFactory.JLINE_TERMINAL, TerminalFactory.AUTO)
   }
 

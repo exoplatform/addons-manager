@@ -20,22 +20,13 @@
  */
 package org.exoplatform.platform.am.settings
 
-import org.exoplatform.platform.am.utils.Console
+import org.exoplatform.platform.am.UnitTestsSpecification
 import org.exoplatform.platform.am.utils.Logger
-import spock.lang.Specification
 
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class AddonsManagerSettingsTest extends Specification {
-
-  def setupSpec() {
-    Logger.getInstance().enableDebug()
-  }
-
-  def cleanSpec() {
-    Console.get().reset()
-  }
+class AddonsManagerSettingsTest extends UnitTestsSpecification {
 
   def "default properties are defined"() {
     setup:

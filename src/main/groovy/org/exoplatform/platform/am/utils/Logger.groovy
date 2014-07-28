@@ -82,6 +82,10 @@ class Logger {
     return _debug
   }
 
+  void disableDebug() {
+    _debug = false
+  }
+
   void enableDebug() {
     _debug = true
     debug("Verbose logs activated")

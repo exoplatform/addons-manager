@@ -19,11 +19,8 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
-
 import groovy.json.JsonException
-import org.exoplatform.platform.am.utils.Logger
 import spock.lang.Shared
-
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
@@ -32,12 +29,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
   /**
    * Logger
    */
-  private static final Logger LOG = Logger.getInstance()
   private static final int NB_ADDONS_CATALOG_JSON = 10
-
-  def setupSpec() {
-    LOG.enableDebug()
-  }
 
   @Shared
   AddonService addonService = AddonService.getInstance()

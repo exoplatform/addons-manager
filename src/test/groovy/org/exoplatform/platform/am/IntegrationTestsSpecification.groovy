@@ -35,6 +35,13 @@ import static org.junit.Assert.assertTrue
  */
 abstract class IntegrationTestsSpecification extends Specification {
 
+  public static final String IT_SYSPROP_VERBOSE = "integration.tests.verbose"
+  public static final String IT_SYSPROP_WEB_SERVER_HTTP_PORT = "integration.tests.webServerHttpPort"
+  public static final String IT_SYSPROP_JACOCO_AGENT = 'integration.tests.jacocoAgent'
+  public static final String IT_SYSPROP_TESTS_WORKING_DIR_PATH = "integration.tests.workingDirPath"
+  public static final String IT_SYSPROP_TESTS_DATA_DIR_PATH = "integration.tests.dataDirPath"
+  public static final String IT_SYSPROP_TESTED_ARTIFACT_PATH = "integration.tests.testedArtifactPath"
+  public static final String JAVA_HOME = 'java.home'
   @Shared
   private File _testedArtifact
 
@@ -43,8 +50,8 @@ abstract class IntegrationTestsSpecification extends Specification {
    */
   File getTestedArtifact() {
     if (!_testedArtifact) {
-      assertNotNull("Tested artifact path mustn't be null", System.getProperty("testedArtifactPath"))
-      _testedArtifact = new File(System.getProperty("testedArtifactPath"))
+      assertNotNull("Tested artifact path mustn't be null", System.getProperty(IT_SYSPROP_TESTED_ARTIFACT_PATH))
+      _testedArtifact = new File(System.getProperty(IT_SYSPROP_TESTED_ARTIFACT_PATH))
       assertTrue("Tested artifact must exist", _testedArtifact.exists())
     }
     _testedArtifact
@@ -58,8 +65,8 @@ abstract class IntegrationTestsSpecification extends Specification {
    */
   File getTestDataDir() {
     if (!_testDataDir) {
-      assertNotNull("Path to tests data mustn't be null", System.getProperty("testDataPath"))
-      _testDataDir = new File(System.getProperty("testDataPath"))
+      assertNotNull("Path to tests data mustn't be null", System.getProperty(IT_SYSPROP_TESTS_DATA_DIR_PATH))
+      _testDataDir = new File(System.getProperty(IT_SYSPROP_TESTS_DATA_DIR_PATH))
       assertTrue("Path to tests data must exist", _testDataDir.exists())
       assertTrue("Path to tests data must be a directory", _testDataDir.directory)
     }
@@ -74,8 +81,8 @@ abstract class IntegrationTestsSpecification extends Specification {
    */
   File getPlatformHome() {
     if (!_plfHome) {
-      assertNotNull("Integration tests directory path mustn't be null", System.getProperty("integrationTestsDirPath"))
-      def integrationTestsDir = new File(System.getProperty("integrationTestsDirPath"))
+      assertNotNull("Integration tests directory path mustn't be null", System.getProperty(IT_SYSPROP_TESTS_WORKING_DIR_PATH))
+      def integrationTestsDir = new File(System.getProperty(IT_SYSPROP_TESTS_WORKING_DIR_PATH))
       assertTrue("Integration tests directory (${integrationTestsDir}) must be a directory",
                  integrationTestsDir.isDirectory())
       _plfHome = integrationTestsDir.listFiles(
@@ -116,15 +123,23 @@ abstract class IntegrationTestsSpecification extends Specification {
    * @return The HTTP port on which the test serer must serve its content
    */
   Integer getWebServerPort() {
-    assertNotNull("System property testWebServerHttpPort must be set", Integer.getInteger("testWebServerHttpPort"))
-    Integer.getInteger("testWebServerHttpPort")
+    assertNotNull("System property ${IT_SYSPROP_WEB_SERVER_HTTP_PORT} must be set",
+                  Integer.getInteger(IT_SYSPROP_WEB_SERVER_HTTP_PORT))
+    Integer.getInteger(IT_SYSPROP_WEB_SERVER_HTTP_PORT)
   }
 
   /**
    * @return The root URL of the web server used for tests
    */
   String getWebServerRootUrl() {
-    return "http://localhost:${getWebServerPort()}"
+    "http://localhost:${getWebServerPort()}"
+  }
+
+  /**
+   * @return true if verbose mode must be used while executing tests
+   */
+  boolean isVerbose() {
+    Boolean.getBoolean(IT_SYSPROP_VERBOSE)
   }
 
   /**
@@ -143,15 +158,18 @@ abstract class IntegrationTestsSpecification extends Specification {
    * @return The process result
    */
   ProcessResult launchAddonsManager(List<String> params, List<String> inputs) {
-    List<String> commandToExecute = ["${System.getProperty('java.home')}/bin/java"]
+    List<String> commandToExecute = ["${System.getProperty(JAVA_HOME)}/bin/java"]
     // If Jacoco Agent is used, let's pass it to the forked VM
-    if (System.getProperty('jacocoAgent') != null) {
-      commandToExecute << "${System.getProperty('jacocoAgent')}"
+    if (System.getProperty(IT_SYSPROP_JACOCO_AGENT) != null) {
+      commandToExecute << "${System.getProperty(IT_SYSPROP_JACOCO_AGENT)}"
     }
     commandToExecute << "-D${PlatformSettings.PLATFORM_HOME_SYS_PROP}=${getPlatformHome().absolutePath}"
     commandToExecute << "-D${AddonsManagerSettings.PROPERTY_PREFIX}.remoteCatalogUrl=${getWebServerRootUrl()}/catalog.json"
     commandToExecute << "-jar" << getTestedArtifact().absolutePath
     commandToExecute.addAll(params)
+    if (verbose) {
+      commandToExecute << "--verbose"
+    }
     println "Command launched : ${commandToExecute.join(' ')}"
     ProcessResult result = new ProcessResult(commandToExecute.execute())
     if (inputs) {

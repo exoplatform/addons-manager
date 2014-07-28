@@ -20,24 +20,19 @@
  */
 package org.exoplatform.platform.am.cli
 
+import org.exoplatform.platform.am.UnitTestsSpecification
 import org.exoplatform.platform.am.ex.CommandLineParsingException
 import org.exoplatform.platform.am.utils.Console
-import spock.lang.Specification
 
 /**
  * Command line parameters parsing
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class CommandLineParserTest extends Specification {
+class CommandLineParserTest extends UnitTestsSpecification {
   private static final String validCatalogUrl = "http://somewhere.com/catalog"
   private static final String invalidCatalogUrl = "thisIsNotAnUrl"
 
   CommandLineParser clp = new CommandLineParser("FAKE.sh", Console.get().width)
-
-
-  def cleanSpec() {
-    Console.get().reset()
-  }
 
   def "Test command line parameters to display help"(String[] args) {
     when:

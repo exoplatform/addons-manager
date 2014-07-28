@@ -19,29 +19,16 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
-
 import org.exoplatform.platform.am.ex.InvalidJSONException
 import org.exoplatform.platform.am.settings.PlatformSettings
-import org.exoplatform.platform.am.utils.Console
-import org.exoplatform.platform.am.utils.Logger
 import spock.lang.Shared
-import spock.lang.Specification
-
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
-class AddonServiceTest extends Specification {
+class AddonServiceTest extends UnitTestsSpecification {
 
   @Shared
   AddonService addonService = AddonService.getInstance()
-
-  def setupSpec() {
-    Logger.getInstance().enableDebug()
-  }
-
-  def cleanSpec() {
-    Console.get().reset()
-  }
 
   def "createAddonFromJsonText parse a valid JSON text"() {
     when:
