@@ -221,6 +221,45 @@ public class AddonInstallService {
     addon.overwrittenFiles = new ArrayList<String>()
     File readmeFile = File.createTempFile("readme", "txt")
     readmeFile.deleteOnExit()
+    if (Conflict.FAIL == conflict) {
+      List<String> conflictingFiles = new ArrayList<>()
+        ZipInputStream zipInputStream = new ZipInputStream(
+            new FileInputStream(ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon)))
+        zipInputStream.withStream {
+          ZipEntry entry
+          while (entry = zipInputStream.nextEntry) {
+            File destinationFile
+            LOG.debug("ZIP entry : ${entry.name}")
+            if (entry.isDirectory() || entry.name?.equalsIgnoreCase("README")) {
+              // Do nothing
+              continue
+            } else if (entry.name =~ '^.*jar$') {
+              // [AM_STRUCT_02] Add-ons libraries target directory
+              destinationFile = new File(env.platform.librariesDirectory, FileUtils.extractFilename(entry.name))
+            } else if (entry.name =~ '^.*war$') {
+              // [AM_STRUCT_03] Add-ons webapps target directory
+              destinationFile = new File(env.platform.webappsDirectory, FileUtils.extractFilename(entry.name))
+            } else {
+              // see [AM_STRUCT_04] non war/jar files locations
+              destinationFile = new File(env.platform.homeDirectory, entry.name)
+            }
+            LOG.debug("Destination : ${destinationFile}")
+            String plfHomeRelativePath = env.platform.homeDirectory.toURI().relativize(destinationFile.toURI()).getPath()
+            if (destinationFile.exists()) {
+              conflictingFiles << plfHomeRelativePath
+            }
+          }
+        }
+      if (conflictingFiles) {
+        LOG.withStatusKO("Checking add-on archive")
+        conflictingFiles.each { LOG.error("File ${it} already exists.") }
+        throw new UnknownErrorException(
+            "Installation aborted. Use --conflict=skip or --conflict=overwrite option to install it.")
+      } else {
+        LOG.withStatusOK("Checking add-on archive")
+      }
+    }
+    // Process installation
     try {
       ZipInputStream zipInputStream = new ZipInputStream(
           new FileInputStream(ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon)))
@@ -264,10 +303,6 @@ public class AddonInstallService {
           String plfHomeRelativePath = env.platform.homeDirectory.toURI().relativize(destinationFile.toURI()).getPath()
           if (destinationFile.exists()) {
             switch (conflict) {
-              case Conflict.FAIL:
-                throw new UnknownErrorException(
-                    "File ${plfHomeRelativePath} already exists. Installation aborted. Use --conflict=skip or --conflict=overwrite option to install it.")
-                break
               case Conflict.OVERWRITE:
                 LOG.warn("File ${plfHomeRelativePath} already exists. Overwritten.")
                 // Let's save it before

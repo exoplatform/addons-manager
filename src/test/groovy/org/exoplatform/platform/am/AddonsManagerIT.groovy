@@ -774,6 +774,31 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
    * --conflict=overwrite will overwrite the conflicted files by the one contained in the add-on and log a warning for each one
    * : File XYZ already exists. Overwritten.
    */
+  def "[AM_INST_11] addon(.bat) install foo-addon --conflict=fail"() {
+    setup:
+    // Let's create files existing in the addon
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar") << "TEST"
+    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war") << "TEST"
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR == launchAddonsManager(
+        ["install", "foo-addon:42", "--conflict=fail"]).exitValue()
+    // Existing file shouldn't have been touched
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").text == "TEST"
+    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").text == "TEST"
+    cleanup:
+    // Manually remove or additional file
+    new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").delete()
+    new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").delete()
+  }
+
+  /**
+   * If installation requires to install an existing file, the default behaviour is to abort the installation with an error :
+   * File XYZ already exists. Installation aborted. Use --conflict=skip|overwrite.
+   * --conflict=skip will skip the conflicted files and log a warning for each one : File XYZ already exists. Skipped.
+   * --conflict=overwrite will overwrite the conflicted files by the one contained in the add-on and log a warning for each one
+   * : File XYZ already exists. Overwritten.
+   */
   def "[AM_INST_11] addon(.bat) install foo-addon --conflict=skip"() {
     setup:
     // Let's create a file existing in the addon
