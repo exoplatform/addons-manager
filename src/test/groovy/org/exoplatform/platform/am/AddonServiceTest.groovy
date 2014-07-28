@@ -177,42 +177,25 @@ class AddonServiceTest extends UnitTestsSpecification {
         supportedDistributions: [PlatformSettings.DistributionType.COMMUNITY, PlatformSettings.DistributionType.ENTERPRISE])
   }
 
-//  /**
-//   * [AM_CAT_07] At merge, de-duplication of add-on entries of the local and remote catalogs is done using  ID, Version,
-//   * Distributions, Application Servers as the identifier. In case of duplication, the remote entry takes precedence
-//   */
-//  def "mergeCatalogs must implement [AM_CAT_07]"() {
-//    when:
-//    Addon addon1 = new Addon(
-//        id: "addon1", version: "42",
-//        supportedApplicationServers: [PlatformSettings.AppServerType.JBOSS, PlatformSettings.AppServerType.TOMCAT],
-//        supportedDistributions: [PlatformSettings.DistributionType.COMMUNITY, PlatformSettings.DistributionType.ENTERPRISE])
-//    Addon addon2 = new Addon(
-//        id: "addon2", version: "42",
-//        supportedApplicationServers: [PlatformSettings.AppServerType.JBOSS],
-//        supportedDistributions: [PlatformSettings.DistributionType.ENTERPRISE])
-//    Addon addon3 = new Addon(
-//        id: "addon3", version: "42",
-//        supportedApplicationServers: [PlatformSettings.AppServerType.TOMCAT],
-//        supportedDistributions: [PlatformSettings.DistributionType.COMMUNITY])
-//    Addon addon4 = new Addon(
-//        id: "addon4", version: "42",
-//        supportedApplicationServers: [PlatformSettings.AppServerType.TOMCAT],
-//        supportedDistributions: [PlatformSettings.DistributionType.ENTERPRISE])
-//    Addon addon4b = new Addon(
-//        id: "addon4", version: "43",
-//        supportedApplicationServers: [PlatformSettings.AppServerType.TOMCAT],
-//        supportedDistributions: [PlatformSettings.DistributionType.ENTERPRISE])
-//    Addon addon5 = new Addon(
-//        id: "addon5", version: "42",
-//        supportedApplicationServers: [PlatformSettings.AppServerType.TOMCAT],
-//        supportedDistributions: [PlatformSettings.DistributionType.ENTERPRISE])
-//    List<Addon> remoteCatalog = [addon1, addon2, addon3, addon4]
-//    List<Addon> localCatalog = [addon1, addon4b, addon5]
-//    then:
-//    addonService.mergeCatalogs(remoteCatalog, localCatalog, PlatformSettings.DistributionType.ENTERPRISE,
-//                               PlatformSettings.AppServerType.TOMCAT).sort() == [addon1, addon4, addon4b, addon5].sort()
-//  }
+  /**
+   * [AM_CAT_07] At merge, de-duplication of add-on entries of the local and remote catalogs is done using  ID, Version,
+   * Distributions, Application Servers as the identifier. In case of duplication, the remote entry takes precedence
+   * TODO : Only ID+Version are used in comparison. It should take care of Distributions, Application Servers.
+   */
+  def "mergeCatalogs must implement [AM_CAT_07]"() {
+    when:
+    Addon remoteAddon1 = new Addon(id: "addon1", version: "41", name: "Remote #1")
+    Addon remoteAddon2 = new Addon(id: "addon1", version: "42", name: "Remote #2")
+    Addon remoteAddon3 = new Addon(id: "addon2", version: "42", name: "Remote #3")
+    Addon localAddon1 = new Addon(id: "addon1", version: "41", name: "Local #1")
+    Addon localAddon2 = new Addon(id: "addon1", version: "44", name: "Local #2")
+    Addon localAddon3 = new Addon(id: "addon3", version: "42", name: "Local #3")
+    List<Addon> remoteCatalog = [remoteAddon1, remoteAddon2, remoteAddon3]
+    List<Addon> localCatalog = [localAddon1, localAddon2, localAddon3]
+    then:
+    addonService.mergeCatalogs(remoteCatalog,
+                               localCatalog).sort() == [remoteAddon1, remoteAddon2, remoteAddon3, localAddon2, localAddon3].sort()
+  }
 
 //  def "filterAddonsByCompatibility must keep add-ons supporting a given application server and distribution type"() {
 //    when:
