@@ -136,7 +136,18 @@ class CommandLineParser {
         throw new CommandLineParsingException(
             "Invalid command line parameter(s) : Command ${CommandLineParameters.Command.UNINSTALL} must have one and only one value (found : ${_cliArgs?.commandUninstall?.addon})");
       }
-      _cliArgs.commandUninstall.addonId = _cliArgs.commandUninstall.addon[0]
+      if (_cliArgs.commandUninstall.addon[0].indexOf(':') > 0) {
+        // A specific version is asked
+        _cliArgs.commandUninstall.addonId = _cliArgs.commandUninstall.addon[0].substring(0, _cliArgs.commandUninstall.addon[0].indexOf(':'))
+        // Version is useless. Let's warn
+        String addonVersion = _cliArgs.commandUninstall.addon[0].substring(
+                    _cliArgs.commandUninstall.addon[0].indexOf(':') + 1,
+                    _cliArgs.commandUninstall.addon[0].length())
+        LOG.warn(
+            "Command line parameter(s) : The add-on version (${addonVersion}) is useless for command ${CommandLineParameters.Command.UNINSTALL} and won't be used")
+      } else {
+        _cliArgs.commandUninstall.addonId = _cliArgs.commandUninstall.addon[0]
+      }
     } else {
       throw new CommandLineParsingException("Invalid command line parameter(s) : No command defined")
     }

@@ -194,7 +194,7 @@ class CommandLineParameters {
    */
   @Parameters(commandDescription = "Uninstall an add-on", commandNames = CommandLineParameters.UNINSTALL_COMMAND, separators = "=")
   class UninstallCommandParameters {
-    @Parameter(description = "addon ", arity = 1, required = true)
+    @Parameter(description = "identifier", arity = 1, required = true)
     protected List<String> addon;
     @Parameter(names = ["-v", "--verbose"], hidden = true)
     protected boolean verbose
