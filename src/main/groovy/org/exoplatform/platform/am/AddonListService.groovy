@@ -290,7 +290,16 @@ To install an add-on:
     ${env.manager.scriptName} install @|yellow <addonId:[version]>|@
   """)
     } else {
-      LOG.warn "No add-on found in remote and local catalogs"
+      LOG.warn "No add-on found in remote and local catalogs matching your criteria"
+      if (!allowUnstable) {
+        LOG.warn "Use --unstable to display also unstable versions of add-ons"
+      }
+      if (!allowSnapshot) {
+        LOG.warn "Use --snapshots to display also development versions of add-ons"
+      }
+      if (!noCompat) {
+        LOG.warn "Use --no-compat to display also incompatible versions of add-ons"
+      }
     }
   }
 
