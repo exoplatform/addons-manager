@@ -429,9 +429,10 @@ class AddonService {
   }
 
   /**
-   * TODO : [AM_CAT_07] At merge, de-duplication of add-on entries of the local and remote catalogs is
+   * [AM_CAT_07] At merge, de-duplication of add-on entries of the local and remote catalogs is
    * done using ID, Version, Distributions, Application Servers as the identifier.
    * In case of duplication, the remote entry takes precedence
+   * TODO : Only ID+Version are used in comparison. It should take care of Distributions, Application Servers.
    * @param remoteCatalog
    * @param localCatalog
    * @return a list of add-ons
@@ -439,10 +440,26 @@ class AddonService {
   protected List<Addon> mergeCatalogs(
       final List<Addon> remoteCatalog,
       final List<Addon> localCatalog) {
-    // Let's initiate a new list from the filtered list of the remote catalog
+    // Let's initiate a new list from the remote catalog content
     List<Addon> mergedCatalog = remoteCatalog.clone()
-    // Let's add entries from the filtered local catalog which aren't already in the catalog (based on id+version identifiers)
-    localCatalog.findAll { !mergedCatalog.contains(it) }.each { mergedCatalog.add(it) }
+    if (localCatalog) {
+      List<Addon> duplicatedEntries = new ArrayList<>();
+      // Let's add entries from the local catalog which aren't already in the catalog (based on id+version identifiers)
+      LOG.withStatus("Merging local and remote catalogs") {
+        localCatalog.each {
+          if (!mergedCatalog.contains(it)) {
+            mergedCatalog.add(it)
+          } else {
+            duplicatedEntries.add(it)
+          }
+        }
+      }
+      if (duplicatedEntries) {
+        duplicatedEntries.each {
+          LOG.error("Ignored invalid entry ${it.id}:${it.version} in local catalog: already existing in remote catalog")
+        }
+      }
+    }
     return mergedCatalog
   }
 
