@@ -19,9 +19,11 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
+
 import org.exoplatform.platform.am.ex.InvalidJSONException
 import org.exoplatform.platform.am.settings.PlatformSettings
 import spock.lang.Shared
+
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
@@ -197,45 +199,6 @@ class AddonServiceTest extends UnitTestsSpecification {
                                localCatalog).sort() == [remoteAddon1, remoteAddon2, remoteAddon3, localAddon2, localAddon3].sort()
   }
 
-//  def "filterAddonsByCompatibility must keep add-ons supporting a given application server and distribution type"() {
-//    when:
-//    Addon addon1 = new Addon(
-//        id: "addon1", version: "42",
-//        supportedApplicationServers: [PlatformSettings.AppServerType.JBOSS, PlatformSettings.AppServerType.TOMCAT],
-//        supportedDistributions: [PlatformSettings.DistributionType.COMMUNITY, PlatformSettings.DistributionType.ENTERPRISE])
-//    Addon addon2 = new Addon(
-//        id: "addon2", version: "42",
-//        supportedApplicationServers: [PlatformSettings.AppServerType.JBOSS],
-//        supportedDistributions: [PlatformSettings.DistributionType.ENTERPRISE])
-//    Addon addon3 = new Addon(
-//        id: "addon3", version: "42",
-//        supportedApplicationServers: [PlatformSettings.AppServerType.TOMCAT],
-//        supportedDistributions: [PlatformSettings.DistributionType.COMMUNITY])
-//    Addon addon4 = new Addon(
-//        id: "addon4", version: "42",
-//        supportedApplicationServers: [PlatformSettings.AppServerType.TOMCAT],
-//        supportedDistributions: [PlatformSettings.DistributionType.ENTERPRISE])
-//    List<Addon> addonsCatalog = [addon1, addon2, addon3, addon4]
-//    then:
-//    // add-ons 1 and 3 are supporting appsrv tomcat on community edition
-//    addonService.filterCompatibleAddons(addonsCatalog,
-//                                           PlatformSettings.DistributionType.COMMUNITY,
-//                                           PlatformSettings.AppServerType.TOMCAT).sort() == [addon1, addon3].sort()
-//    // add-ons 1 and 3 are supporting appsrv tomcat on enterprise edition
-//    addonService.filterCompatibleAddons(addonsCatalog,
-//                                           PlatformSettings.DistributionType.ENTERPRISE,
-//                                           PlatformSettings.AppServerType.TOMCAT).sort() == [addon1, addon4].sort()
-//    // add-on 1 is supporting appsrv jboss on community edition
-//    // TODO : The current model doesn't let us know that it is an impossible combination
-//    addonService.filterCompatibleAddons(addonsCatalog,
-//                                           PlatformSettings.DistributionType.COMMUNITY,
-//                                           PlatformSettings.AppServerType.JBOSS).sort() == [addon1].sort()
-//    // add-ons 1 and 2 are supporting appsrv jboss on enterprise edition
-//    addonService.filterCompatibleAddons(addonsCatalog,
-//                                           PlatformSettings.DistributionType.ENTERPRISE,
-//                                           PlatformSettings.AppServerType.JBOSS).sort() == [addon1, addon2].sort()
-//  }
-
   def "filterAddonsByVersion must keep only stable versions"() {
     when:
     List<Addon> addons = [
@@ -245,7 +208,7 @@ class AddonServiceTest extends UnitTestsSpecification {
     ]
     then:
     addonService.filterAddonsByVersion(addons, true, false, false).sort() == [new Addon(id: "addon", version: "42",
-                                                                                unstable: false)].sort()
+                                                                                        unstable: false)].sort()
   }
 
   def "filterAddonsByVersion must keep stable and snapshot versions"() {
