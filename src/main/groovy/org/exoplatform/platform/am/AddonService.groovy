@@ -22,6 +22,7 @@ package org.exoplatform.platform.am
 
 import groovy.json.JsonSlurper
 import groovy.time.TimeCategory
+import groovy.transform.Canonical
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
@@ -41,6 +42,8 @@ import java.security.MessageDigest
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
+import static org.exoplatform.platform.am.AddonService.ParsingErrorType.INVALID_ENTRY
+import static org.exoplatform.platform.am.AddonService.ParsingErrorType.MALFORMED_ENTRY
 import static org.exoplatform.platform.am.utils.FileUtils.copyFile
 import static org.exoplatform.platform.am.utils.FileUtils.downloadFile
 
@@ -446,11 +449,9 @@ class AddonService {
    */
   protected Addon createAddonFromJsonText(
       String text) {
-    List<String> errorMessages = new ArrayList<>()
-    List<String> warnMessages = new ArrayList<>()
-    Addon result = createAddonFromJsonObject(new JsonSlurper().parseText(text), warnMessages, errorMessages)
-    warnMessages.each { LOG.debug it }
-    errorMessages.each { LOG.debug it }
+    ParsingErrors errors = new ParsingErrors();
+    Addon result = createAddonFromJsonObject(new JsonSlurper().parseText(text), errors)
+    printMessages(errors)
     return result
   }
 
@@ -462,38 +463,34 @@ class AddonService {
   protected List<Addon> createAddonsFromJsonText(
       String text) {
     List<Addon> addonsList = new ArrayList<Addon>();
-    List<String> errorMessages = new ArrayList<>()
-    List<String> warnMessages = new ArrayList<>()
+    ParsingErrors errors = new ParsingErrors();
     LOG.withStatus("Loading add-ons list") {
       new JsonSlurper().parseText(text).each { anAddon ->
         try {
-          Addon addonToAdd = createAddonFromJsonObject(anAddon, warnMessages, errorMessages)
+          Addon addonToAdd = createAddonFromJsonObject(anAddon, errors)
           if (!addonsList.contains(addonToAdd)) {
             addonsList.add(addonToAdd)
           } else {
-            errorMessages.add("ignored invalid entry ${addonToAdd.id}:${addonToAdd.version} : duplicated entry")
+            errors.addInvalid("${addonToAdd.id}:${addonToAdd.version}", "Duplicated entry")
           }
         } catch (InvalidJSONException ije) {
           // skip it
         }
       }
     }
-    warnMessages.each { LOG.debug it }
-    errorMessages.each { LOG.debug it }
+    printMessages(errors)
     return addonsList
   }
 
   /**
    * Loads an Add-on from its object representation created by the JsonSlurper
    * @param anAddon An Object built from JsonSlurper
-   * @param warnMessages A list to populate with warning messages discovered while parsing the add-on
-   * @param errorMessages A list to populate with error messages discovered while parsing the add-on
+   * @param errors Error messages to populate while reading
    * @return an Addon or null if there are some errors
    */
   protected Addon createAddonFromJsonObject(
       Object anAddon,
-      List<String> warnMessages,
-      List<String> errorMessages) {
+      ParsingErrors errors) {
     Addon addonObj = new Addon(
         id: anAddon.id,
         version: anAddon.version);
@@ -518,8 +515,7 @@ class AddonService {
           try {
             PlatformSettings.DistributionType.valueOf(it.trim().toUpperCase())
           } catch (IllegalArgumentException iae) {
-            warnMessages.add(
-                "malformed descriptor for ${addonObj.id}:${addonObj.version} : Unknown distribution type ${it}")
+            errors.addMalformed("${addonObj.id}:${addonObj.version}", "Unknown distribution type <${it}>")
             PlatformSettings.DistributionType.UNKNOWN
           }
       }
@@ -529,7 +525,7 @@ class AddonService {
           try {
             PlatformSettings.DistributionType.valueOf(it.trim().toUpperCase())
           } catch (IllegalArgumentException iae) {
-            warnMessages.add("malformed descriptor for ${addonObj.id}:${addonObj.version} : Unknown distribution type ${it}")
+            errors.addMalformed("${addonObj.id}:${addonObj.version}", "Unknown distribution type <${it}>")
             PlatformSettings.DistributionType.UNKNOWN
           }
       } : []
@@ -542,8 +538,7 @@ class AddonService {
             PlatformSettings.AppServerType.valueOf(it.trim().toUpperCase())
           }
           catch (IllegalArgumentException iae) {
-            warnMessages.add(
-                "malformed descriptor for ${addonObj.id}:${addonObj.version} : Unknown application server type ${it}")
+            errors.addMalformed("${addonObj.id}:${addonObj.version}", "Unknown application server type <${it}>")
             PlatformSettings.AppServerType.UNKNOWN
           }
       }
@@ -553,8 +548,7 @@ class AddonService {
           try {
             PlatformSettings.AppServerType.valueOf(it.trim().toUpperCase())
           } catch (IllegalArgumentException iae) {
-            warnMessages.add(
-                "malformed descriptor for ${addonObj.id}:${addonObj.version} : Unknown application server type ${it}")
+            errors.addMalformed("${addonObj.id}:${addonObj.version}", "Unknown application server type <${it}>")
             PlatformSettings.AppServerType.UNKNOWN
           }
       } : []
@@ -566,22 +560,21 @@ class AddonService {
     addonObj.installedOthersFiles = anAddon.installedOthersFiles
     addonObj.overwrittenFiles = anAddon.overwrittenFiles
     if (!addonObj.id) {
-      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No id")
+      errors.addInvalid("${addonObj.id}:${addonObj.version}", "No id")
     }
     if (!addonObj.version) {
-      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No version")
+      errors.addInvalid("${addonObj.id}:${addonObj.version}", "No version")
     }
     if (!addonObj.name) {
-      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No name")
+      errors.addInvalid("${addonObj.id}:${addonObj.version}", "No name")
     }
     if (!addonObj.downloadUrl) {
-      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No downloadUrl")
+      errors.addInvalid("${addonObj.id}:${addonObj.version}", "No downloadUrl")
     } else {
       try {
         new URL(addonObj.downloadUrl)
       } catch (MalformedURLException mue) {
-        errorMessages.add(
-            "ignored invalid entry ${addonObj.id}:${addonObj.version} : Invalid downloadUrl ${addonObj.downloadUrl}")
+        errors.addInvalid("${addonObj.id}:${addonObj.version}", "Invalid downloadUrl <${addonObj.downloadUrl}>")
       }
     }
     if (addonObj.sourceUrl) {
@@ -589,7 +582,7 @@ class AddonService {
         new URL(addonObj.sourceUrl)
       } catch (MalformedURLException mue) {
         // Not critical. Just a debug error
-        warnMessages.add("malformed descriptor for ${addonObj.id}:${addonObj.version} : Invalid sourceUrl ${addonObj.sourceUrl}")
+        errors.addMalformed("${addonObj.id}:${addonObj.version}", "Invalid sourceUrl <${addonObj.sourceUrl}>")
       }
     }
     if (addonObj.screenshotUrl) {
@@ -597,8 +590,7 @@ class AddonService {
         new URL(addonObj.screenshotUrl)
       } catch (MalformedURLException mue) {
         // Not critical. Just a debug error
-        warnMessages.add(
-            "malformed descriptor for ${addonObj.id}:${addonObj.version} : Invalid screenshotUrl ${addonObj.screenshotUrl}")
+        errors.addMalformed("${addonObj.id}:${addonObj.version}", "Invalid screenshotUrl <${addonObj.screenshotUrl}>")
       }
     }
     if (addonObj.thumbnailUrl) {
@@ -606,8 +598,7 @@ class AddonService {
         new URL(addonObj.thumbnailUrl)
       } catch (MalformedURLException mue) {
         // Not critical. Just a debug error
-        warnMessages.add(
-            "malformed descriptor for ${addonObj.id}:${addonObj.version} : Invalid thumbnailUrl ${addonObj.thumbnailUrl}")
+        errors.addMalformed("${addonObj.id}:${addonObj.version}", "Invalid thumbnailUrl <${addonObj.thumbnailUrl}>")
       }
     }
     if (addonObj.documentationUrl) {
@@ -615,8 +606,7 @@ class AddonService {
         new URL(addonObj.documentationUrl)
       } catch (MalformedURLException mue) {
         // Not critical. Just a debug error
-        warnMessages.add(
-            "malformed descriptor for ${addonObj.id}:${addonObj.version} : Invalid documentationUrl ${addonObj.documentationUrl}")
+        errors.addMalformed("${addonObj.id}:${addonObj.version}", "Invalid documentationUrl <${addonObj.documentationUrl}>")
       }
     }
     if (addonObj.licenseUrl) {
@@ -624,27 +614,39 @@ class AddonService {
         new URL(addonObj.licenseUrl)
       } catch (MalformedURLException mue) {
         // Not critical. Just a debug error
-        warnMessages.add(
-            "malformed descriptor for ${addonObj.id}:${addonObj.version} : Invalid licenseUrl ${addonObj.licenseUrl}")
+        errors.addMalformed("${addonObj.id}:${addonObj.version}", "Invalid licenseUrl <${addonObj.licenseUrl}>")
       }
     }
     if (!addonObj.vendor) {
-      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No vendor")
+      errors.addInvalid("${addonObj.id}:${addonObj.version}", "No vendor")
     }
     if (!addonObj.license) {
-      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No license")
+      errors.addInvalid("${addonObj.id}:${addonObj.version}", "No license")
     }
     if (addonObj.supportedApplicationServers.size() == 0) {
-      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No supportedApplicationServers")
+      errors.addInvalid("${addonObj.id}:${addonObj.version}", "No supportedApplicationServers")
     }
     if (addonObj.supportedDistributions.size() == 0) {
-      errorMessages.add("ignored invalid entry ${addonObj.id}:${addonObj.version} : No supportedDistributions")
+      errors.addInvalid("${addonObj.id}:${addonObj.version}", "No supportedDistributions")
     }
-    if (errorMessages.size() > 0) {
+    // Reject it only it is marked as invalid
+    if (errors.get("${addonObj.id}:${addonObj.version}")?.size()) {
       throw new InvalidJSONException(anAddon)
     }
-
     return addonObj
+  }
+
+  void printMessages(ParsingErrors errors) {
+    errors.each { id, msgs ->
+      if (msgs.findAll { it.type == MALFORMED_ENTRY }) {
+        LOG.warn(
+            "Malformed descriptor ${id} : ${msgs.findAll { it.type == MALFORMED_ENTRY }*.content.join(', ')}")
+      }
+      if (msgs.findAll { it.type == INVALID_ENTRY }) {
+        LOG.error(
+            "Ignored invalid entry ${id} : ${msgs.findAll { it.type == INVALID_ENTRY }*.content.join(', ')}")
+      }
+    }
   }
 
   /**
@@ -763,4 +765,41 @@ class AddonService {
     }
     return result
   }
+
+  private enum ParsingErrorType {
+    INVALID_ENTRY, MALFORMED_ENTRY
+  }
+
+  /**
+   * An inner class used to store messages
+   */
+  @Canonical
+  private class ParsingError {
+    ParsingErrorType type
+    String content
+  }
+
+  @Canonical
+  private class ParsingErrors {
+    @Delegate
+    Map<String, List<ParsingError>> errors = new TreeMap<>()
+
+    void addMalformed(String identifier, String reason) {
+      if (this.errors.containsKey(identifier)) {
+        this.errors.get(identifier) << new ParsingError(MALFORMED_ENTRY, reason)
+      } else {
+        this.errors[identifier] = [new ParsingError(MALFORMED_ENTRY, reason)]
+      }
+    }
+
+    void addInvalid(String identifier, String reason) {
+      if (this.errors.containsKey(identifier)) {
+        this.errors.get(identifier) << new ParsingError(INVALID_ENTRY, reason)
+      } else {
+        this.errors[identifier] = [new ParsingError(INVALID_ENTRY, reason)]
+      }
+    }
+
+  }
+
 }
