@@ -200,7 +200,7 @@ class AddonService {
             copyFile(tempFile, catalogCacheFile, false)
           }
         } catch (groovy.json.JsonException je) {
-          LOG.warn("Invalid JSON content from URL : ${catalogUrl}", je)
+          throw new InvalidJSONException(("Invalid JSON content from URL : ${catalogUrl}", je)
         } finally {
           // Delete the temp file
           tempFile.delete()
@@ -215,7 +215,7 @@ class AddonService {
             addons.addAll(createAddonsFromJsonText(catalogContent))
           } catch (groovy.json.JsonException je) {
             catalogCacheFile.delete()
-            throw InvalidJSONException("Invalid JSON content in cache file : ${catalogCacheFile}. Deleting it.", je)
+            throw new InvalidJSONException("Invalid JSON content in cache file : ${catalogCacheFile.name}. Deleting it.", je)
           }
         } else {
           LOG.warn("No remote catalog cache and offline mode activated")
@@ -242,7 +242,7 @@ class AddonService {
       try {
         addons.addAll(createAddonsFromJsonText(catalogContent))
       } catch (groovy.json.JsonException je) {
-        LOG.warn("Invalid JSON content in file : ${catalogFile}", je)
+        throw new InvalidJSONException("Invalid JSON content in file : ${catalogFile}", je)
       }
     } else {
       LOG.debug("No local catalog to load from ${catalogFile}")
