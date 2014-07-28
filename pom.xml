@@ -52,7 +52,7 @@
     <!-- **************************************** -->
     <!-- Project Dependencies -->
     <!-- **************************************** -->
-    <aether-util.version>1.0.0.v20140518</aether-util.version>
+    <aether.version>1.0.0.v20140518</aether.version>
     <groovy.version>2.3.6</groovy.version>
     <jcommander.version>1.35</jcommander.version>
     <jline.version>2.12</jline.version>
@@ -98,8 +98,13 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-api</artifactId>
+      <version>${aether.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-util</artifactId>
-      <version>${aether-util.version}</version>
+      <version>${aether.version}</version>
     </dependency>
     <!-- groovy-groovydoc is required for the site generation -->
     <!-- We don't want to bundle it -->
