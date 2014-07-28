@@ -306,13 +306,13 @@ class AddonService {
           // Let's try to find an unstable version of the addon
           if (!allowUnstable && findNewestAddon(addonId,
                                                 filterAddonsByVersion(addons, true, true, allowSnapshots))) {
-            LOG.info(
+            LOG.error(
                 "This add-on exists but doesn't have a stable released version yet! add --unstable option to use an unstable version")
           }
           // Let's try to find a snapshot version of the add-on
           if (!allowSnapshots && findNewestAddon(addonId,
                                                  filterAddonsByVersion(addons, true, allowUnstable, true))) {
-            LOG.info(
+            LOG.error(
                 "This add-on exists but doesn't have a stable released version yet! add --snapshots option to use a development version")
           }
           throw new AddonNotFoundException("No add-on with identifier ${addonId} found in local or remote catalogs")
