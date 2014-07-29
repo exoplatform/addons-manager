@@ -109,7 +109,7 @@ public class AddonListService {
       installedAddons.each {
         Addon anAddon ->
           LOG.info String.format("@|bold,yellow %s|@ - @|bold %s|@", anAddon.id, anAddon.name)
-          LOG.wrapLine(anAddon.description, Console.get().width - Logger.Level.INFO.prefix.length()).each {
+          LOG.wrapLine(anAddon.description, Console.get().width - Logger.Level.INFO.prefix.length() - 1).each {
             LOG.info(it)
           }
           displayIncompatibleAddonsNote = displayVersion(
@@ -172,7 +172,7 @@ To uninstall an add-on:
         outdatedAddons.groupBy { it.id }.sort().each {
           Addon anAddon = it.value.first()
           LOG.info String.format("@|bold,yellow %s|@ - @|bold %s|@", anAddon.id, anAddon.name)
-          LOG.wrapLine(anAddon.description, Console.get().width - Logger.Level.INFO.prefix.length()).each {
+          LOG.wrapLine(anAddon.description, Console.get().width - Logger.Level.INFO.prefix.length() - 1).each {
             LOG.info(it)
           }
           displayIncompatibleAddonsNote = displayVersion(
@@ -262,7 +262,7 @@ To uninstall an add-on:
       availableAddons.groupBy { it.id }.sort().each {
         Addon anAddon = it.value.first()
         LOG.info String.format("@|bold,yellow %s|@ - @|bold %s|@", anAddon.id, anAddon.name)
-        LOG.wrapLine(anAddon.description, Console.get().width - Logger.Level.INFO.prefix.length()).each {
+        LOG.wrapLine(anAddon.description, Console.get().width - Logger.Level.INFO.prefix.length() - 1).each {
           LOG.info(it)
         }
         displayIncompatibleAddonsNote = displayVersion(

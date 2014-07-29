@@ -142,7 +142,7 @@ public class AddonInstallService {
         LOG.infoHR('=')
         int i = 0
         licenseFile?.text?.split('\n').collect().each {
-          LOG.wrapLine(it, Console.get().width - Logger.Level.INFO.prefix.length()).each {
+          LOG.wrapLine(it, Console.get().width - Logger.Level.INFO.prefix.length() - 1).each {
             LOG.info(it)
             i++
             if (i == Console.get().height - 2) {
@@ -399,7 +399,7 @@ public class AddonInstallService {
       LOG.infoHR()
       int i = 0
       readmeFile.text.split('\n').collect().each {
-        LOG.wrapLine(it, Console.get().width - Logger.Level.INFO.prefix.length()).each {
+        LOG.wrapLine(it, Console.get().width - Logger.Level.INFO.prefix.length() - 1).each {
           LOG.info(it)
           i++
           if (i == Console.get().height - 2) {

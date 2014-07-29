@@ -119,7 +119,7 @@ class Logger {
   }
 
   void debugHR(final String padding) {
-    debug("".padRight(console.width - Level.DEBUG.prefix.length(), padding))
+    debug("".padRight(console.width - Level.DEBUG.prefix.length() - 1, padding))
   }
 
   void debugHR() {
@@ -135,7 +135,7 @@ class Logger {
   }
 
   void infoHR(final String padding) {
-    info("".padRight(console.width - Level.INFO.prefix.length(), padding))
+    info("".padRight(console.width - Level.INFO.prefix.length() - 1, padding))
   }
 
   void infoHR() {
@@ -151,7 +151,7 @@ class Logger {
   }
 
   void warnHR(final String padding) {
-    warn("".padRight(console.width - Level.WARN.prefix.length(), padding))
+    warn("".padRight(console.width - Level.WARN.prefix.length() - 1, padding))
   }
 
   void warnHR() {
@@ -167,7 +167,7 @@ class Logger {
   }
 
   void errorHR(final String padding) {
-    error("".padRight(console.width - Level.ERROR.prefix.length(), padding))
+    error("".padRight(console.width - Level.ERROR.prefix.length() - 1, padding))
   }
 
   void errorHR() {
@@ -303,7 +303,7 @@ class Logger {
 
   private void displayStatus(String text, String status, Ansi.Color color) {
     String statusStr = " [@|${color.name()} ${status.toUpperCase()}|@]"
-    String padding = " ".padRight(console.width - new AnsiString(AnsiRenderer.render("${text}${statusStr}")).length(), ".")
+    String padding = " ".padRight(console.width - new AnsiString(AnsiRenderer.render("${text}${statusStr}")).length() - 1, ".")
     if (console.ansiSupported) {
       console.out.println "${padding}${statusStr}"
     } else {
