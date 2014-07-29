@@ -223,33 +223,33 @@ public class AddonInstallService {
     readmeFile.deleteOnExit()
     if (Conflict.FAIL == conflict) {
       List<String> conflictingFiles = new ArrayList<>()
-        ZipInputStream zipInputStream = new ZipInputStream(
-            new FileInputStream(ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon)))
-        zipInputStream.withStream {
-          ZipEntry entry
-          while (entry = zipInputStream.nextEntry) {
-            File destinationFile
-            LOG.debug("ZIP entry : ${entry.name}")
-            if (entry.isDirectory() || entry.name?.equalsIgnoreCase("README")) {
-              // Do nothing
-              continue
-            } else if (entry.name =~ '^.*jar$') {
-              // [AM_STRUCT_02] Add-ons libraries target directory
-              destinationFile = new File(env.platform.librariesDirectory, FileUtils.extractFilename(entry.name))
-            } else if (entry.name =~ '^.*war$') {
-              // [AM_STRUCT_03] Add-ons webapps target directory
-              destinationFile = new File(env.platform.webappsDirectory, FileUtils.extractFilename(entry.name))
-            } else {
-              // see [AM_STRUCT_04] non war/jar files locations
-              destinationFile = new File(env.platform.homeDirectory, entry.name)
-            }
-            LOG.debug("Destination : ${destinationFile}")
-            String plfHomeRelativePath = env.platform.homeDirectory.toURI().relativize(destinationFile.toURI()).getPath()
-            if (destinationFile.exists()) {
-              conflictingFiles << plfHomeRelativePath
-            }
+      ZipInputStream zipInputStream = new ZipInputStream(
+          new FileInputStream(ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon)))
+      zipInputStream.withStream {
+        ZipEntry entry
+        while (entry = zipInputStream.nextEntry) {
+          File destinationFile
+          LOG.debug("ZIP entry : ${entry.name}")
+          if (entry.isDirectory() || entry.name?.equalsIgnoreCase("README")) {
+            // Do nothing
+            continue
+          } else if (entry.name =~ '^.*jar$') {
+            // [AM_STRUCT_02] Add-ons libraries target directory
+            destinationFile = new File(env.platform.librariesDirectory, FileUtils.extractFilename(entry.name))
+          } else if (entry.name =~ '^.*war$') {
+            // [AM_STRUCT_03] Add-ons webapps target directory
+            destinationFile = new File(env.platform.webappsDirectory, FileUtils.extractFilename(entry.name))
+          } else {
+            // see [AM_STRUCT_04] non war/jar files locations
+            destinationFile = new File(env.platform.homeDirectory, entry.name)
+          }
+          LOG.debug("Destination : ${destinationFile}")
+          String plfHomeRelativePath = env.platform.homeDirectory.toURI().relativize(destinationFile.toURI()).getPath()
+          if (destinationFile.exists()) {
+            conflictingFiles << plfHomeRelativePath
           }
         }
+      }
       if (conflictingFiles) {
         LOG.withStatusKO("Checking add-on archive")
         conflictingFiles.each { LOG.error("File ${it} already exists.") }
@@ -337,8 +337,8 @@ public class AddonInstallService {
         ADDON_SERVICE.processFileInplace(applicationDescriptorFile) { text ->
           GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(text)
           addon.installedWebapps.each { file ->
-            String contextRoot = file.substring(file.lastIndexOf('/')+1, file.length() - 4)
-            String webUri = file.substring(file.lastIndexOf('/')+1, file.length())
+            String contextRoot = file.substring(file.lastIndexOf('/') + 1, file.length() - 4)
+            String webUri = file.substring(file.lastIndexOf('/') + 1, file.length())
             LOG.withStatus("Adding context declaration /${contextRoot} for ${webUri} in application.xml") {
               applicationXmlContent.depthFirst().findAll {
                 (it.name() == 'module') && (it.'web'.'web-uri'.text() == file)
