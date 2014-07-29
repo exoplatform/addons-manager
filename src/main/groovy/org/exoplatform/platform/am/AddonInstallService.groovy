@@ -127,6 +127,18 @@ public class AddonInstallService {
     } else {
       LOG.debug("Compatibility check deactivated")
     }
+    if (ADDON_SERVICE.isAddonInstalled(env.statusesDirectory, addon)) {
+      if (!force) {
+        Addon oldAddon = ADDON_SERVICE.createAddonFromJsonText(
+            ADDON_SERVICE.getAddonStatusFile(env.statusesDirectory, addon).text);
+        throw new AddonAlreadyInstalledException(oldAddon)
+      } else {
+        Addon oldAddon = ADDON_SERVICE.createAddonFromJsonText(
+            ADDON_SERVICE.getAddonStatusFile(env.statusesDirectory, addon).text);
+        LOG.info("--force option activated, let's remove the previous installation of the add-on")
+        AddonUninstallService.instance.uninstallAddon(env, oldAddon)
+      }
+    }
     if (addon.mustAcceptLicense && addon.licenseUrl) {
       // Local license file
       File licenseFile = ADDON_SERVICE.getAddonLicenseFile(env.statusesDirectory, addon)
@@ -167,17 +179,6 @@ public class AddonInstallService {
       LOG.warn("DISCLAIMER : You are about to install third-party software available on your eXo Platform instance.")
       LOG.warn(
           "This software is provided \"as is\" without warranty of any kind, either expressed or implied and such software is to be used at your own risk.")
-    }
-    if (ADDON_SERVICE.isAddonInstalled(env.statusesDirectory, addon)) {
-      if (!force) {
-        Addon oldAddon = ADDON_SERVICE.createAddonFromJsonText(
-            ADDON_SERVICE.getAddonStatusFile(env.statusesDirectory, addon).text);
-        throw new AddonAlreadyInstalledException(oldAddon)
-      } else {
-        Addon oldAddon = ADDON_SERVICE.createAddonFromJsonText(
-            ADDON_SERVICE.getAddonStatusFile(env.statusesDirectory, addon).text);
-        AddonUninstallService.instance.uninstallAddon(env, oldAddon)
-      }
     }
     if (noCache && ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon).exists()) {
       LOG.withStatus("Deleting ${addon.id}:${addon.version} archive") {
