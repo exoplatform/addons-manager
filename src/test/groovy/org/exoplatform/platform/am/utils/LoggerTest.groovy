@@ -53,7 +53,6 @@ class LoggerTest extends UnitTestsSpecification {
     outbaos.reset()
     errbaos.reset()
     inbais.reset()
-    console.reset()
   }
 
   def cleanup() {
@@ -83,6 +82,9 @@ class LoggerTest extends UnitTestsSpecification {
     then:
     assert AnsiRenderer.render("@|${Logger.Level.DEBUG.color} ${Logger.Level.DEBUG.prefix}This is a test|@\n").contentEquals(
         outbaos.toString())
+    cleanup:
+    // Let's deactivate debug logs
+    logger.disableDebug()
   }
 
   def "Debug activated without ANSI"() {
@@ -98,6 +100,9 @@ class LoggerTest extends UnitTestsSpecification {
     logger.debug("This @|blue is|@ a test")
     then:
     assert "${Logger.Level.DEBUG.prefix}This is a test\n".contentEquals(outbaos.toString())
+    cleanup:
+    // Let's deactivate debug logs
+    logger.disableDebug()
   }
 
   def "Info with ANSI"() {

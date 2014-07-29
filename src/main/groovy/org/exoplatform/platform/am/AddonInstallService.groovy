@@ -147,7 +147,7 @@ public class AddonInstallService {
             i++
             if (i == Console.get().height - 2) {
               LOG.info("@|yellow [Press any key to continue ...]|@")
-              Console.get().in.read()
+              Console.get().read()
               i = 0
             }
           }
@@ -404,7 +404,7 @@ public class AddonInstallService {
           i++
           if (i == Console.get().height - 2) {
             LOG.info("@|yellow [Press any key to continue ...]|@")
-            Console.get().in.read()
+            Console.get().read()
             i = 0
           }
         }

@@ -21,6 +21,7 @@
 package org.exoplatform.platform.am.utils
 
 import jline.TerminalFactory
+import jline.console.ConsoleReader
 import org.fusesource.jansi.AnsiRenderWriter
 
 /**
@@ -31,14 +32,14 @@ class Console {
 
   private final int MAX_CONSOLE_WIDTH_TO_USE = 120
 
-  /** Preferred input reader. */
-  private Reader _in
-
   /** Preferred output writer. */
   private PrintWriter _out
 
   /** Preferred error output writer. */
   private PrintWriter _err
+
+  /** JLine Console Reader */
+  private ConsoleReader _console
 
   /** Raw input stream. */
   private final InputStream _inputStream
@@ -61,14 +62,15 @@ class Console {
     this._outputStream = outputStream
     this._errorStream = errorStream
 
-    this._in = new InputStreamReader(TerminalFactory.get().wrapInIfNeeded(inputStream))
+    this._console = new ConsoleReader(this._inputStream, this._outputStream)
     if (TerminalFactory.get().ansiSupported) {
-      this._out = new AnsiRenderWriter(TerminalFactory.get().wrapOutIfNeeded(outputStream), true)
-      this._err = new AnsiRenderWriter(TerminalFactory.get().wrapOutIfNeeded(errorStream), true)
+      this._out = new AnsiRenderWriter(TerminalFactory.get().wrapOutIfNeeded(this._outputStream), true)
+      this._err = new AnsiRenderWriter(TerminalFactory.get().wrapOutIfNeeded(this._errorStream), true)
     } else {
-      this._out = new PrintWriter(TerminalFactory.get().wrapOutIfNeeded(outputStream), true)
-      this._err = new PrintWriter(TerminalFactory.get().wrapOutIfNeeded(errorStream), true)
+      this._out = new PrintWriter(TerminalFactory.get().wrapOutIfNeeded(this._outputStream), true)
+      this._err = new PrintWriter(TerminalFactory.get().wrapOutIfNeeded(this._errorStream), true)
     }
+
   }
 
   /**
@@ -78,16 +80,12 @@ class Console {
     this(System.in, System.out, System.err);
   }
 
-  Reader getIn() {
-    _in
-  }
-
   PrintWriter getOut() {
-    _out
+    this._out
   }
 
   PrintWriter getErr() {
-    _err
+    this._err
   }
 
   boolean isSupported() {
@@ -106,10 +104,12 @@ class Console {
 
   void reset() {
     TerminalFactory.get().restore()
-    this._in.close()
+    // Close current out/err
     this._out.close()
     this._err.close()
-    this._in = new InputStreamReader(TerminalFactory.get().wrapInIfNeeded(this._inputStream))
+    this._console.shutdown()
+    // Create new out/err (Terminal configuration may have changed - used in tests)
+    this._console = new ConsoleReader(this._inputStream, this._outputStream)
     if (TerminalFactory.get().ansiSupported) {
       this._out = new AnsiRenderWriter(TerminalFactory.get().wrapOutIfNeeded(this._outputStream), true)
       this._err = new AnsiRenderWriter(TerminalFactory.get().wrapOutIfNeeded(this._errorStream), true)
@@ -120,7 +120,11 @@ class Console {
   }
 
   String readLine() {
-    return getIn().readLine()
+    _console.readLine()
+  }
+
+  int read() {
+    _console.readCharacter()
   }
 
 // Factory
