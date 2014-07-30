@@ -87,6 +87,11 @@ class CommandLineParameters {
    */
   @Parameter(names = ["-h", "--help"], description = "Show usage information", help = true)
   private boolean _help
+  /**
+   * Run in non-interactive mode
+   */
+  @Parameter(names = ["-B", "--batch-mode"], description = "Run in non-interactive (batch) mode")
+  private boolean _batchMode
 
   /**
    * Verifies if is the verbose option is activated as main parameter or command parameter
@@ -102,6 +107,14 @@ class CommandLineParameters {
    */
   boolean isHelp() {
     return _help || commandList.help || commandDescribe.help || commandInstall.help || commandUninstall.help
+  }
+
+  /**
+   * Verifies if is the batch option is activated as main parameter or command parameter
+   * @return true if the batch option is activated as main parameter or command parameter
+   */
+  boolean isBatchMode() {
+    return _batchMode || commandList.batchMode || commandDescribe.batchMode || commandInstall.batchMode || commandUninstall.batchMode
   }
 
   /**
@@ -130,6 +143,8 @@ class CommandLineParameters {
     protected boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
     protected boolean help
+    @Parameter(names = ["-B", "--batch-mode"], description = "Run in non-interactive (batch) mode", hidden = true)
+    protected boolean batchMode
   }
 
   /**
@@ -150,6 +165,8 @@ class CommandLineParameters {
     protected boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
     protected boolean help
+    @Parameter(names = ["-B", "--batch-mode"], description = "Run in non-interactive (batch) mode", hidden = true)
+    protected boolean batchMode
     String addonId
     String addonVersion
   }
@@ -185,6 +202,8 @@ class CommandLineParameters {
     protected boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
     protected boolean help
+    @Parameter(names = ["-B", "--batch-mode"], description = "Run in non-interactive (batch) mode", hidden = true)
+    protected boolean batchMode
     String addonId
     String addonVersion
   }
@@ -200,6 +219,8 @@ class CommandLineParameters {
     protected boolean verbose
     @Parameter(names = ["-h", "--help"], help = true, hidden = true)
     protected boolean help
+    @Parameter(names = ["-B", "--batch-mode"], description = "Run in non-interactive (batch) mode", hidden = true)
+    protected boolean batchMode
     String addonId
   }
 

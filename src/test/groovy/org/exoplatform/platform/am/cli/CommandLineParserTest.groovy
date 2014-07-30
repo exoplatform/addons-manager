@@ -60,6 +60,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandList.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["list"],
@@ -80,6 +81,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandList.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["list", "--no-cache"],
@@ -100,6 +102,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandList.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["list", "--offline"],
@@ -120,6 +123,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandList.unstable
     !cliArgs.help
     cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["list", "-v"],
@@ -143,6 +147,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandList.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["list", "--snapshots"]
@@ -163,6 +168,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandList.unstable
     !cliArgs.help
     cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["list", "-v", "--snapshots"],
@@ -186,6 +192,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     cliArgs.commandList.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["list", "--unstable"]
@@ -206,6 +213,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     cliArgs.commandList.unstable
     !cliArgs.help
     cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["list", "-v", "--unstable"],
@@ -229,6 +237,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandList.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["list", "--catalog=${validCatalogUrl}"],
@@ -260,6 +269,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandList.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["list", "--installed"],
@@ -280,6 +290,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandList.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["list", "--outdated"],
@@ -298,6 +309,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandDescribe.offline
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["describe", "my-addon"],
@@ -316,6 +328,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandDescribe.offline
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["describe", "my-addon", "--no-cache"],
@@ -334,6 +347,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     cliArgs.commandDescribe.offline
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["describe", "my-addon", "--offline"],
@@ -351,6 +365,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandDescribe.offline
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["describe", "my-addon:42"],
@@ -368,6 +383,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandDescribe.offline
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["describe", "my-addon", "--catalog=${validCatalogUrl}"],
@@ -404,9 +420,37 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["install", "my-addon"],
+    ]
+  }
+
+  def "Test command line parameters to install the latest version of an add-on in non-interactive (batch) mode"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.INSTALL == cliArgs.command
+    "my-addon".equals(cliArgs.commandInstall.addonId)
+    !cliArgs.commandInstall.addonVersion
+    !cliArgs.commandInstall.catalog
+    cliArgs.commandInstall.conflict == Conflict.FAIL
+    !cliArgs.commandInstall.force
+    !cliArgs.commandInstall.noCache
+    !cliArgs.commandInstall.noCompat
+    !cliArgs.commandInstall.offline
+    !cliArgs.commandInstall.snapshots
+    !cliArgs.commandInstall.unstable
+    !cliArgs.help
+    !cliArgs.verbose
+    cliArgs.batchMode
+    where:
+    args << [
+        ["install", "my-addon", "-B"],
+        ["install", "my-addon", "--batch-mode"],
+        ["-B", "install", "my-addon"],
+        ["--batch-mode", "install", "my-addon"],
     ]
   }
 
@@ -427,6 +471,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["install", "my-addon", "--no-cache"],
@@ -450,6 +495,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["install", "my-addon", "--offline"],
@@ -472,6 +518,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["install", "my-addon:42"],
@@ -494,6 +541,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["install", "my-addon", "--force"],
@@ -517,6 +565,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["install", "my-addon", "--snapshots"],
@@ -540,6 +589,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["install", "my-addon", "--unstable"],
@@ -563,6 +613,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["install", "my-addon", "--no-compat"],
@@ -585,6 +636,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["install", "my-addon", "--conflict=overwrite"],
@@ -607,6 +659,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["install", "my-addon", "--conflict=skip"],
@@ -641,6 +694,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.commandInstall.unstable
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["install", "my-addon", "--catalog=${validCatalogUrl}"],
@@ -668,6 +722,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     "my-addon".equals(cliArgs.commandUninstall.addonId)
     !cliArgs.help
     !cliArgs.verbose
+    !cliArgs.batchMode
     where:
     args << [
         ["uninstall", "my-addon"],

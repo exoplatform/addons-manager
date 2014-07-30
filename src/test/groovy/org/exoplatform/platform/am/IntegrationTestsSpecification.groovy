@@ -170,6 +170,10 @@ abstract class IntegrationTestsSpecification extends Specification {
     if (verbose) {
       commandToExecute << "--verbose"
     }
+    // Launch in non-interactive mode if we don't have inputs
+    if (!inputs) {
+      commandToExecute << "--batch-mode"
+    }
     println "Command launched : ${commandToExecute.join(' ')}"
     ProcessResult result = new ProcessResult(commandToExecute.execute())
     if (inputs) {

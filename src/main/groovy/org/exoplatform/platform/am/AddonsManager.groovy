@@ -42,15 +42,19 @@ try {
   // Initialize environment settings
   env = new EnvironmentSettings()
 
-  // display header
-  log.displayHeader(env.manager.version)
-
   // Initialize Add-ons manager settings
   clp = new CommandLineParser(env.manager.scriptName, Console.get().width)
 
   // Parse command line parameters and fill settings with user inputs
   commandLineParameters = clp.parse(args)
 
+  if (!commandLineParameters.batchMode) {
+    // display header
+    log.displayHeader(env.manager.version)
+  } else {
+    log.info("eXo Add-ons Manager v@|yellow ${env.manager.version}|@")
+    log.infoHR()
+  }
   // Show usage text when -h or --help option is used and exit
   if (commandLineParameters.help) {
     clp.usage()
@@ -66,13 +70,15 @@ try {
       AddonDescribeService.instance.describeAddon(env, commandLineParameters.commandDescribe)
       break
     case CommandLineParameters.Command.INSTALL:
-      AddonInstallService.instance.installAddon(env, commandLineParameters.commandInstall)
+      AddonInstallService.instance.installAddon(env, commandLineParameters.commandInstall, commandLineParameters.batchMode)
       break
     case CommandLineParameters.Command.UNINSTALL:
       AddonUninstallService.instance.uninstallAddon(env, commandLineParameters.commandUninstall)
       break
   }
 } catch (CommandLineParsingException clpe) {
+  // display header
+  log.displayHeader(env.manager.version)
   log.error clpe.message
   clp.usage()
   returnCode = clpe.errorCode

@@ -82,7 +82,8 @@ public class AddonInstallService {
    */
   void installAddon(
       EnvironmentSettings env,
-      CommandLineParameters.InstallCommandParameters parameters) {
+      CommandLineParameters.InstallCommandParameters parameters,
+      Boolean batchMode) {
     List<Addon> availableAddons = ADDON_SERVICE.loadAddons(
         env,
         parameters.catalog,
@@ -96,18 +97,25 @@ public class AddonInstallService {
         parameters.addonVersion,
         parameters.snapshots,
         parameters.unstable)
-    installAddon(env, addon, parameters.force, parameters.noCache, parameters.offline, parameters.noCompat, parameters.conflict)
+    installAddon(env,
+                 addon,
+                 parameters.force,
+                 parameters.noCache,
+                 parameters.offline,
+                 parameters.noCompat,
+                 parameters.conflict,
+                 batchMode)
   }
 
   /**
-   * Install the @{code addon} into the current @{code env}
-   * @param env The execution environment
+   * Install the @{code addon} into the current @{code env}* @param env The execution environment
    * @param addon The add-on to install
    * @param force Enforce to install it even if it was already installed
    * @param noCache Don't use catalog's cache if exist ?
    * @param offline Don't download anything ?
    * @param noCompat Bypass compatibility checks
    * @param conflict Conflict resolution mode
+   * @param batchMode Non-interactive behavior
    */
   protected void installAddon(
       EnvironmentSettings env,
@@ -116,7 +124,8 @@ public class AddonInstallService {
       Boolean noCache,
       Boolean offline,
       Boolean noCompat,
-      Conflict conflict) {
+      Conflict conflict,
+      Boolean batchMode) {
     // Compatibility check
     if (!noCompat) {
       LOG.withStatus("Checking compatibility of your add-on with your eXo platform instance") {
@@ -148,7 +157,6 @@ public class AddonInstallService {
         LOG.withStatus("Downloading license ${addon.license} from ${addon.licenseUrl}") {
           licenseFile << new URL(addon.licenseUrl).text
         }
-        // [LICENSE_02] Split the license per page (click on a touch to advance)
         LOG.infoHR('=')
         LOG.info("License ${addon.license} :")
         LOG.infoHR('=')
@@ -157,7 +165,8 @@ public class AddonInstallService {
           LOG.wrapLine(it, Console.get().width - Logger.Level.INFO.prefix.length() - 1).each {
             LOG.info(it)
             i++
-            if (i == Console.get().height - 2) {
+            // [LICENSE_02] Split the license per page (click on a touch to advance)
+            if (!batchMode && i == Console.get().height - 2) {
               LOG.info("@|yellow [Press any key to continue ...]|@")
               Console.get().read()
               i = 0
@@ -165,13 +174,17 @@ public class AddonInstallService {
           }
         }
         LOG.infoHR()
-        // [LICENSE_03] [LICENSE_04] interactive validation of license
-        LOG.info("You must accept the license above to install this add-on. Type \"yes\" to accept : ")
-        String reply = Console.get().readLine()?.trim()?.toLowerCase()
-        LOG.debug("REPLY : ${reply}")
-        if (!"yes".equalsIgnoreCase(reply)) {
-          licenseFile.delete()
-          throw new LicenseValidationException("You didn't accept the license. Installation aborted.")
+        if (!batchMode) {
+          // [LICENSE_03] [LICENSE_04] interactive validation of license
+          LOG.info("You must accept the license above to install this add-on. Type \"yes\" to accept : ")
+          String reply = Console.get().readLine()?.trim()?.toLowerCase()
+          LOG.debug("REPLY : ${reply}")
+          if (!"yes".equalsIgnoreCase(reply)) {
+            licenseFile.delete()
+            throw new LicenseValidationException("You didn't accept the license. Installation aborted.")
+          }
+        } else {
+          LOG.warn("By installing this add-on, you are automatically accepting its license terms (${addon.licenseUrl})")
         }
       }
     } else {
@@ -403,7 +416,7 @@ public class AddonInstallService {
         LOG.wrapLine(it, Console.get().width - Logger.Level.INFO.prefix.length() - 1).each {
           LOG.info(it)
           i++
-          if (i == Console.get().height - 2) {
+          if (!batchMode && i == Console.get().height - 2) {
             LOG.info("@|yellow [Press any key to continue ...]|@")
             Console.get().read()
             i = 0
