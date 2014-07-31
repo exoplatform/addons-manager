@@ -89,23 +89,23 @@ class CommandLineParameters {
    * To activate verbose logs
    */
   @Parameter(names = [CommandLineParameters.VERBOSE_SHORT_OPT, CommandLineParameters.VERBOSE_LONG_OPT], description = "Show verbose logs")
-  private boolean _verbose
+  private Boolean _verbose
   /**
    * To display the help message
    */
   @Parameter(names = [CommandLineParameters.HELP_SHORT_OPT, CommandLineParameters.HELP_LONG_OPT], description = "Show usage information", help = true)
-  private boolean _help
+  private Boolean _help
   /**
    * Run in non-interactive mode
    */
   @Parameter(names = [CommandLineParameters.BATCH_SHORT_OPT, CommandLineParameters.BATCH_LONG_OPT], description = "Run in non-interactive (batch) mode")
-  private boolean _batchMode
+  private Boolean _batchMode
 
   /**
    * Verifies if is the verbose option is activated as main parameter or command parameter
    * @return true if the verbose option is activated as main parameter or command parameter
    */
-  boolean isVerbose() {
+  Boolean isVerbose() {
     return _verbose || commandList.verbose || commandDescribe.verbose || commandInstall.verbose || commandUninstall.verbose
   }
 
@@ -113,7 +113,7 @@ class CommandLineParameters {
    * Verifies if is the help option is activated as main parameter or command parameter
    * @return true if the help option is activated as main parameter or command parameter
    */
-  boolean isHelp() {
+  Boolean isHelp() {
     return _help || commandList.help || commandDescribe.help || commandInstall.help || commandUninstall.help
   }
 
@@ -121,7 +121,7 @@ class CommandLineParameters {
    * Verifies if is the batch option is activated as main parameter or command parameter
    * @return true if the batch option is activated as main parameter or command parameter
    */
-  boolean isBatchMode() {
+  Boolean isBatchMode() {
     return _batchMode || commandList.batchMode || commandDescribe.batchMode || commandInstall.batchMode || commandUninstall.batchMode
   }
 
@@ -130,51 +130,52 @@ class CommandLineParameters {
    */
   @Parameters(commandDescription = "List add-ons", commandNames = CommandLineParameters.LIST_CMD, separators = "=")
   class ListCommandParameters {
-    @Parameter(names = [CommandLineParameters.SNAPSHOTS_LONG_OPT], description = "List also add-ons SNAPSHOTs")
-    boolean snapshots
+    @Parameter(names = [CommandLineParameters.SNAPSHOTS_LONG_OPT], description = "List also development versions of add-ons")
+    Boolean snapshots
     @Parameter(names = [CommandLineParameters.UNSTABLE_LONG_OPT], description = "List also unstable add-ons")
-    boolean unstable
+    Boolean unstable
     @Parameter(names = [CommandLineParameters.INSTALLED_LONG_OPT], description = "List all add-ons installed locally")
-    boolean installed
+    Boolean installed
     @Parameter(names = [CommandLineParameters.OUTDATED_LONG_OPT], description = "List all add-ons installed locally for which a newer version is available")
-    boolean outdated
+    Boolean outdated
     @Parameter(names = [CommandLineParameters.NO_COMPAT_LONG_OPT], description = "Display also add-ons not marked as compatible with your platform instance")
-    boolean noCompat
-    @Parameter(names = [CommandLineParameters.CATALOG_LONG_OPT], description = "=<URL> - Central catalog URL", validateWith = URLValidator.class,
+    Boolean noCompat
+    @Parameter(names = [CommandLineParameters.CATALOG_LONG_OPT], description = "Central catalog URL",
+        validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog
     @Parameter(names = [CommandLineParameters.NO_CACHE_LONG_OPT], description = "Discard the remote catalog local cache")
-    boolean noCache
-    @Parameter(names = [CommandLineParameters.OFFLINE_LONG_OPT], description = "Do not download anything")
-    boolean offline
+    Boolean noCache
+    @Parameter(names = [CommandLineParameters.OFFLINE_LONG_OPT], description = "Disable download of catalog")
+    Boolean offline
     @Parameter(names = [CommandLineParameters.VERBOSE_SHORT_OPT, CommandLineParameters.VERBOSE_LONG_OPT], hidden = true)
-    protected boolean verbose
+    protected Boolean verbose
     @Parameter(names = [CommandLineParameters.HELP_SHORT_OPT, CommandLineParameters.HELP_LONG_OPT], help = true, hidden = true)
-    protected boolean help
+    protected Boolean help
     @Parameter(names = [CommandLineParameters.BATCH_SHORT_OPT, CommandLineParameters.BATCH_LONG_OPT], description = "Run in non-interactive (batch) mode", hidden = true)
-    protected boolean batchMode
+    protected Boolean batchMode
   }
 
   /**
-   * Specific parameters to print informations about an add-on
+   * Specific parameters to print information about an add-on
    */
   @Parameters(commandDescription = "Describe an add-on", commandNames = CommandLineParameters.DESCRIBE_CMD, separators = "=")
   class DescribeCommandParameters {
-    @Parameter(names = [CommandLineParameters.CATALOG_LONG_OPT], description = "=<URL> - Central catalog URL", validateWith = URLValidator.class,
+    @Parameter(names = [CommandLineParameters.CATALOG_LONG_OPT], description = "Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog
     @Parameter(names = [CommandLineParameters.NO_CACHE_LONG_OPT], description = "Discard the remote catalog local cache")
-    boolean noCache
-    @Parameter(names = [CommandLineParameters.OFFLINE_LONG_OPT], description = "Do not download anything")
-    boolean offline
-    @Parameter(description = "identifier[:version]", arity = 1, required = true)
+    Boolean noCache
+    @Parameter(names = [CommandLineParameters.OFFLINE_LONG_OPT], description = "Disable download of catalog")
+    Boolean offline
+    @Parameter(description = "addonIdentifier[:addonVersion]", arity = 1, required = true)
     protected List<String> addon;
     @Parameter(names = [CommandLineParameters.VERBOSE_SHORT_OPT, CommandLineParameters.VERBOSE_LONG_OPT], hidden = true)
-    protected boolean verbose
+    protected Boolean verbose
     @Parameter(names = [CommandLineParameters.HELP_SHORT_OPT, CommandLineParameters.HELP_LONG_OPT], help = true, hidden = true)
-    protected boolean help
+    protected Boolean help
     @Parameter(names = [CommandLineParameters.BATCH_SHORT_OPT, CommandLineParameters.BATCH_LONG_OPT], description = "Run in non-interactive (batch) mode", hidden = true)
-    protected boolean batchMode
+    protected Boolean batchMode
     String addonId
     String addonVersion
   }
@@ -185,33 +186,33 @@ class CommandLineParameters {
   @Parameters(commandDescription = "Install an add-on", commandNames = CommandLineParameters.INSTALL_CMD, separators = "=")
   class InstallCommandParameters {
     @Parameter(names = [CommandLineParameters.FORCE_LONG_OPT], description = "Enforce to download again and reinstall an add-on already deployed")
-    boolean force
-    @Parameter(names = [CommandLineParameters.SNAPSHOTS_LONG_OPT], description = "If no version specified, allows to find the latest one including development versions")
-    boolean snapshots
-    @Parameter(names = [CommandLineParameters.UNSTABLE_LONG_OPT], description = "If no version specified, allows to find the latest one including unstable versions")
-    boolean unstable
-    @Parameter(names = [CommandLineParameters.NO_COMPAT_LONG_OPT], description = "Disable compatibility check")
-    boolean noCompat
+    Boolean force
+    @Parameter(names = [CommandLineParameters.SNAPSHOTS_LONG_OPT], description = "If no addonVersion specified, allows to find the latest one including development versions")
+    Boolean snapshots
+    @Parameter(names = [CommandLineParameters.UNSTABLE_LONG_OPT], description = "If no addonVersion specified, allows to find the latest one including unstable versions")
+    Boolean unstable
+    @Parameter(names = [CommandLineParameters.NO_COMPAT_LONG_OPT], description = "Install the add-on even if not marked as compatible with your platform instance")
+    Boolean noCompat
     @Parameter(names = [CommandLineParameters.CONFLICT_LONG_OPT],
-        description = "=[skip|overwrite] - to control the behavior when installing a file already existing in your PLF instance. Failing by default",
+        description = "Behavior when installing a file already existing in your PLF instance",
         validateWith = ConflictValidator.class,
         converter = ConflictConverter.class)
     Conflict conflict = Conflict.FAIL
-    @Parameter(names = [CommandLineParameters.CATALOG_LONG_OPT], description = "=<URL> - Central catalog URL", validateWith = URLValidator.class,
+    @Parameter(names = [CommandLineParameters.CATALOG_LONG_OPT], description = "Central catalog URL", validateWith = URLValidator.class,
         converter = URLConverter.class)
     URL catalog
     @Parameter(names = [CommandLineParameters.NO_CACHE_LONG_OPT], description = "Discard the remote catalog local cache")
-    boolean noCache
-    @Parameter(names = [CommandLineParameters.OFFLINE_LONG_OPT], description = "Do not download anything")
-    boolean offline
-    @Parameter(description = "identifier[:version]", arity = 1, required = true)
+    Boolean noCache
+    @Parameter(names = [CommandLineParameters.OFFLINE_LONG_OPT], description = "Disable downloads of catalog and add-on archive")
+    Boolean offline
+    @Parameter(description = "addonIdentifier[:addonVersion]", arity = 1, required = true)
     protected List<String> addon;
     @Parameter(names = [CommandLineParameters.VERBOSE_SHORT_OPT, CommandLineParameters.VERBOSE_LONG_OPT], hidden = true)
-    protected boolean verbose
+    protected Boolean verbose
     @Parameter(names = [CommandLineParameters.HELP_SHORT_OPT, CommandLineParameters.HELP_LONG_OPT], help = true, hidden = true)
-    protected boolean help
+    protected Boolean help
     @Parameter(names = [CommandLineParameters.BATCH_SHORT_OPT, CommandLineParameters.BATCH_LONG_OPT], description = "Run in non-interactive (batch) mode", hidden = true)
-    protected boolean batchMode
+    protected Boolean batchMode
     String addonId
     String addonVersion
   }
@@ -221,14 +222,14 @@ class CommandLineParameters {
    */
   @Parameters(commandDescription = "Uninstall an add-on", commandNames = CommandLineParameters.UNINSTALL_CMD, separators = "=")
   class UninstallCommandParameters {
-    @Parameter(description = "identifier", arity = 1, required = true)
+    @Parameter(description = "addonIdentifier", arity = 1, required = true)
     protected List<String> addon;
     @Parameter(names = [CommandLineParameters.VERBOSE_SHORT_OPT, CommandLineParameters.VERBOSE_LONG_OPT], hidden = true)
-    protected boolean verbose
+    protected Boolean verbose
     @Parameter(names = [CommandLineParameters.HELP_SHORT_OPT, CommandLineParameters.HELP_LONG_OPT], help = true, hidden = true)
-    protected boolean help
+    protected Boolean help
     @Parameter(names = [CommandLineParameters.BATCH_SHORT_OPT, CommandLineParameters.BATCH_LONG_OPT], description = "Run in non-interactive (batch) mode", hidden = true)
-    protected boolean batchMode
+    protected Boolean batchMode
     String addonId
   }
 

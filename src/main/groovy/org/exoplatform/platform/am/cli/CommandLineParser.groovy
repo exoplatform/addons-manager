@@ -21,6 +21,7 @@
 package org.exoplatform.platform.am.cli
 
 import com.beust.jcommander.JCommander
+import com.beust.jcommander.ParameterDescription
 import com.beust.jcommander.ParameterException
 import org.exoplatform.platform.am.ex.CommandLineParsingException
 import org.exoplatform.platform.am.utils.Logger
@@ -46,6 +47,8 @@ class CommandLineParser {
    */
   private CommandLineParameters _cliArgs
 
+  private String _scriptName
+
   /**
    * Default Constructor
    * @param scriptName The name of the script (used to display usage message)
@@ -61,13 +64,73 @@ class CommandLineParser {
     _jCommander.addCommand(_cliArgs.commandUninstall)
     _jCommander.setColumnSize(columnSize)
     _jCommander.setProgramName(scriptName)
+    _scriptName = scriptName
   }
 
   /**
    * Display in the output the usage message to explain how to use the program and its parameters
    */
   void usage() {
-    _jCommander.usage();
+    LOG.info("@|underline Usage:|@")
+    LOG.info("")
+    LOG.info("  ${_scriptName} [options] @|yellow command|@ @|bold [command parameter(s)]|@ [command options]")
+    LOG.info("")
+    LOG.info("@|underline Options:|@")
+    LOG.info("")
+    _jCommander.parameters.findAll { !it.parameter.hidden() }.sort { it.names }.each { globalParam ->
+      LOG.info(
+          String.format("  @|yellow %-${_jCommander.parameters.collect { computeOptionSyntax(it) }*.size().max()}s|@ : %s %s",
+                        computeOptionSyntax(globalParam),
+                        globalParam.description,
+                        computeDefaultValue(globalParam) ? "(Default: ${computeDefaultValue(globalParam)})" : ""))
+    }
+    LOG.info("")
+    LOG.info("@|underline Commands:|@")
+    _jCommander.commands.each { command, commandDescription ->
+      LOG.info("")
+      List<String> commandHelp = new ArrayList<>()
+      commandHelp << _scriptName
+      commandHelp << "[options]"
+      commandHelp << "@|yellow ${command}|@"
+      if (commandDescription.mainParameter) {
+        commandHelp << "@|bold ${commandDescription.mainParameter?.description}|@"
+      }
+      if (_jCommander.commands[command].parameters.findAll { !it.parameter.hidden() }.size() > 0) {
+        commandHelp << "[${command} options]"
+      }
+      LOG.info("  ${commandHelp.join(" ")}")
+      commandDescription.parameters.findAll { !it.parameter.hidden() }.sort { it.names }.each { commandParam ->
+        LOG.info(
+            String.format(
+                "    @|yellow %-${commandDescription.parameters.findAll { !it.parameter.hidden() }.collect { computeOptionSyntax(it) }*.trim()*.size().max()}s|@ : %s %s",
+                computeOptionSyntax(commandParam),
+                commandParam.description,
+                computeDefaultValue(commandParam) ? "(Default: ${computeDefaultValue(commandParam)})" : ""))
+      }
+    }
+    LOG.info("")
+  }
+
+  private String computeOptionSyntax(ParameterDescription parameterDescription) {
+    parameterDescription.parameter.names().collect { paramName ->
+      if (parameterDescription.parameterized.type == Boolean) {
+        "${paramName}"
+      } else if (parameterDescription.parameterized.type == URL) {
+        "${paramName}=URL"
+      } else if (parameterDescription.parameterized.type.isEnum()) {
+        "${paramName}=[${parameterDescription.parameterized.type.enumConstants.collect { it.toString().toLowerCase() }.join("|")}]"
+      } else {
+        "${paramName}=X"
+      }
+    }.join(", ")
+  }
+
+  private String computeDefaultValue(ParameterDescription parameterDescription) {
+    if (parameterDescription.parameterized.type == Boolean && !parameterDescription.default) {
+      "false"
+    } else {
+      parameterDescription.default ? parameterDescription.default?.toString()?.toLowerCase() : ""
+    }
   }
 
   /**
@@ -138,11 +201,12 @@ class CommandLineParser {
       }
       if (_cliArgs.commandUninstall.addon[0].indexOf(':') > 0) {
         // A specific version is asked
-        _cliArgs.commandUninstall.addonId = _cliArgs.commandUninstall.addon[0].substring(0, _cliArgs.commandUninstall.addon[0].indexOf(':'))
+        _cliArgs.commandUninstall.addonId = _cliArgs.commandUninstall.addon[0].substring(0, _cliArgs.commandUninstall.addon
+        [0].indexOf(':'))
         // Version is useless. Let's warn
         String addonVersion = _cliArgs.commandUninstall.addon[0].substring(
-                    _cliArgs.commandUninstall.addon[0].indexOf(':') + 1,
-                    _cliArgs.commandUninstall.addon[0].length())
+            _cliArgs.commandUninstall.addon[0].indexOf(':') + 1,
+            _cliArgs.commandUninstall.addon[0].length())
         LOG.warn(
             "Command line parameter(s) : The add-on version (${addonVersion}) is useless for command ${CommandLineParameters.Command.UNINSTALL} and won't be used")
       } else {
