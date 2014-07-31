@@ -92,9 +92,9 @@ class CommandLineParser {
       return _cliArgs
     }
 
-    if (CommandLineParameters.LIST_COMMAND.equals(_jCommander.getParsedCommand())) {
+    if (CommandLineParameters.LIST_CMD.equals(_jCommander.getParsedCommand())) {
       _cliArgs.command = CommandLineParameters.Command.LIST
-    } else if (CommandLineParameters.DESCRIBE_COMMAND.equals(_jCommander.getParsedCommand())) {
+    } else if (CommandLineParameters.DESCRIBE_CMD.equals(_jCommander.getParsedCommand())) {
       _cliArgs.command = CommandLineParameters.Command.DESCRIBE
       if (_cliArgs?.commandDescribe?.addon?.size() != 1) {
         throw new CommandLineParsingException(
@@ -111,7 +111,7 @@ class CommandLineParser {
       } else {
         _cliArgs.commandDescribe.addonId = _cliArgs.commandDescribe.addon[0]
       }
-    } else if (CommandLineParameters.INSTALL_COMMAND.equals(_jCommander.getParsedCommand())) {
+    } else if (CommandLineParameters.INSTALL_CMD.equals(_jCommander.getParsedCommand())) {
       _cliArgs.command = CommandLineParameters.Command.INSTALL
       if (_cliArgs?.commandInstall?.addon?.size() != 1) {
         throw new CommandLineParsingException(
@@ -130,7 +130,7 @@ class CommandLineParser {
       if (_cliArgs.commandInstall.force) {
         LOG.debug("Force mode activated")
       }
-    } else if (CommandLineParameters.UNINSTALL_COMMAND.equals(_jCommander.getParsedCommand())) {
+    } else if (CommandLineParameters.UNINSTALL_CMD.equals(_jCommander.getParsedCommand())) {
       _cliArgs.command = CommandLineParameters.Command.UNINSTALL
       if (_cliArgs?.commandUninstall?.addon?.size() != 1) {
         throw new CommandLineParsingException(
