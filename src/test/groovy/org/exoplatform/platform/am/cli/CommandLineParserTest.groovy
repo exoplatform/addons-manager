@@ -24,6 +24,8 @@ import org.exoplatform.platform.am.UnitTestsSpecification
 import org.exoplatform.platform.am.ex.CommandLineParsingException
 import org.exoplatform.platform.am.utils.Console
 
+import static org.exoplatform.platform.am.cli.CommandLineParameters.*
+
 /**
  * Command line parameters parsing
  * @author Arnaud Héritier <aheritier@exoplatform.com>
@@ -41,8 +43,8 @@ class CommandLineParserTest extends UnitTestsSpecification {
     cliArgs.help
     where:
     args << [
-        ["-h"],
-        ["--help"],
+        [HELP_SHORT_OPT],
+        [HELP_LONG_OPT],
     ]
   }
 
@@ -63,7 +65,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["list"],
+        [LIST_CMD],
     ]
   }
 
@@ -84,7 +86,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["list", "--no-cache"],
+        [LIST_CMD, NO_CACHE_LONG_OPT],
     ]
   }
 
@@ -105,7 +107,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["list", "--offline"],
+        [LIST_CMD, OFFLINE_LONG_OPT],
     ]
   }
 
@@ -126,10 +128,10 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["list", "-v"],
-        ["list", "--verbose"],
-        ["-v", "list"],
-        ["--verbose", "list"],
+        [LIST_CMD, VERBOSE_SHORT_OPT],
+        [LIST_CMD, VERBOSE_LONG_OPT],
+        [VERBOSE_SHORT_OPT, LIST_CMD],
+        [VERBOSE_LONG_OPT, LIST_CMD],
     ]
   }
 
@@ -150,7 +152,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["list", "--snapshots"]
+        [LIST_CMD, SNAPSHOTS_LONG_OPT]
     ]
   }
 
@@ -171,10 +173,10 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["list", "-v", "--snapshots"],
-        ["list", "--verbose", "--snapshots"],
-        ["-v", "list", "--snapshots"],
-        ["--verbose", "list", "--snapshots"]
+        [LIST_CMD, VERBOSE_SHORT_OPT, SNAPSHOTS_LONG_OPT],
+        [LIST_CMD, VERBOSE_LONG_OPT, SNAPSHOTS_LONG_OPT],
+        [VERBOSE_SHORT_OPT, LIST_CMD, SNAPSHOTS_LONG_OPT],
+        [VERBOSE_LONG_OPT, LIST_CMD, SNAPSHOTS_LONG_OPT]
     ]
   }
 
@@ -195,7 +197,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["list", "--unstable"]
+        [LIST_CMD, UNSTABLE_LONG_OPT]
     ]
   }
 
@@ -216,10 +218,10 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["list", "-v", "--unstable"],
-        ["list", "--verbose", "--unstable"],
-        ["-v", "list", "--unstable"],
-        ["--verbose", "list", "--unstable"]
+        [LIST_CMD, VERBOSE_SHORT_OPT, UNSTABLE_LONG_OPT],
+        [LIST_CMD, VERBOSE_LONG_OPT, UNSTABLE_LONG_OPT],
+        [VERBOSE_SHORT_OPT, LIST_CMD, UNSTABLE_LONG_OPT],
+        [VERBOSE_LONG_OPT, LIST_CMD, UNSTABLE_LONG_OPT]
     ]
   }
 
@@ -240,7 +242,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["list", "--catalog=${validCatalogUrl}"],
+        [LIST_CMD, "${CATALOG_LONG_OPT}=${validCatalogUrl}"],
     ]
   }
 
@@ -251,7 +253,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     thrown(CommandLineParsingException)
     where:
     args << [
-        ["list", "--catalog=${invalidCatalogUrl}"],
+        [LIST_CMD, "${CATALOG_LONG_OPT}=${invalidCatalogUrl}"],
     ]
   }
 
@@ -272,7 +274,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["list", "--installed"],
+        [LIST_CMD, INSTALLED_LONG_OPT],
     ]
   }
 
@@ -293,7 +295,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["list", "--outdated"],
+        [LIST_CMD, OUTDATED_LONG_OPT],
     ]
   }
 
@@ -312,7 +314,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["describe", "my-addon"],
+        [DESCRIBE_CMD, "my-addon"],
     ]
   }
 
@@ -331,7 +333,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["describe", "my-addon", "--no-cache"],
+        [DESCRIBE_CMD, "my-addon", NO_CACHE_LONG_OPT],
     ]
   }
 
@@ -350,7 +352,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["describe", "my-addon", "--offline"],
+        [DESCRIBE_CMD, "my-addon", OFFLINE_LONG_OPT],
     ]
   }
 
@@ -368,7 +370,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["describe", "my-addon:42"],
+        [DESCRIBE_CMD, "my-addon:42"],
     ]
   }
 
@@ -386,8 +388,8 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["describe", "my-addon", "--catalog=${validCatalogUrl}"],
-        ["describe", "my-addon:42", "--catalog=${validCatalogUrl}"],
+        [DESCRIBE_CMD, "my-addon", "${CATALOG_LONG_OPT}=${validCatalogUrl}"],
+        [DESCRIBE_CMD, "my-addon:42", "${CATALOG_LONG_OPT}=${validCatalogUrl}"],
     ]
   }
 
@@ -398,8 +400,8 @@ class CommandLineParserTest extends UnitTestsSpecification {
     thrown(CommandLineParsingException)
     where:
     args << [
-        ["describe", "my-addon", "--catalog=${invalidCatalogUrl}"],
-        ["describe", "my-addon:42", "--catalog=${invalidCatalogUrl}"],
+        [DESCRIBE_CMD, "my-addon", "${CATALOG_LONG_OPT}=${invalidCatalogUrl}"],
+        [DESCRIBE_CMD, "my-addon:42", "${CATALOG_LONG_OPT}=${invalidCatalogUrl}"],
     ]
   }
 
@@ -423,7 +425,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["install", "my-addon"],
+        [INSTALL_CMD, "my-addon"],
     ]
   }
 
@@ -447,10 +449,10 @@ class CommandLineParserTest extends UnitTestsSpecification {
     cliArgs.batchMode
     where:
     args << [
-        ["install", "my-addon", "-B"],
-        ["install", "my-addon", "--batch-mode"],
-        ["-B", "install", "my-addon"],
-        ["--batch-mode", "install", "my-addon"],
+        [INSTALL_CMD, "my-addon", BATCH_SHORT_OPT],
+        [INSTALL_CMD, "my-addon", BATCH_LONG_OPT],
+        [BATCH_SHORT_OPT, INSTALL_CMD, "my-addon"],
+        [BATCH_LONG_OPT, INSTALL_CMD, "my-addon"],
     ]
   }
 
@@ -474,7 +476,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["install", "my-addon", "--no-cache"],
+        [INSTALL_CMD, "my-addon", "--no-cache"],
     ]
   }
 
@@ -498,7 +500,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["install", "my-addon", "--offline"],
+        [INSTALL_CMD, "my-addon", "--offline"],
     ]
   }
 
@@ -521,7 +523,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["install", "my-addon:42"],
+        [INSTALL_CMD, "my-addon:42"],
     ]
   }
 
@@ -544,8 +546,8 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["install", "my-addon", "--force"],
-        ["install", "my-addon:42", "--force"],
+        [INSTALL_CMD, "my-addon", FORCE_LONG_OPT],
+        [INSTALL_CMD, "my-addon:42", FORCE_LONG_OPT],
     ]
   }
 
@@ -568,8 +570,8 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["install", "my-addon", "--snapshots"],
-        ["install", "my-addon:42-SNAPSHOT", "--snapshots"],
+        [INSTALL_CMD, "my-addon", SNAPSHOTS_LONG_OPT],
+        [INSTALL_CMD, "my-addon:42-SNAPSHOT", SNAPSHOTS_LONG_OPT],
     ]
   }
 
@@ -592,8 +594,8 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["install", "my-addon", "--unstable"],
-        ["install", "my-addon:42-RC1", "--unstable"],
+        [INSTALL_CMD, "my-addon", UNSTABLE_LONG_OPT],
+        [INSTALL_CMD, "my-addon:42-RC1", UNSTABLE_LONG_OPT],
     ]
   }
 
@@ -616,7 +618,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["install", "my-addon", "--no-compat"],
+        [INSTALL_CMD, "my-addon", NO_COMPAT_LONG_OPT],
     ]
   }
 
@@ -639,7 +641,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["install", "my-addon", "--conflict=overwrite"],
+        [INSTALL_CMD, "my-addon", "${CONFLICT_LONG_OPT}=overwrite"],
     ]
   }
 
@@ -662,7 +664,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["install", "my-addon", "--conflict=skip"],
+        [INSTALL_CMD, "my-addon", "${CONFLICT_LONG_OPT}=skip"],
     ]
   }
 
@@ -674,7 +676,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     thrown(CommandLineParsingException)
     where:
     args << [
-        ["install", "my-addon", "--conflict=foo"],
+        [INSTALL_CMD, "my-addon", "${CONFLICT_LONG_OPT}=foo"],
     ]
   }
 
@@ -697,8 +699,8 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["install", "my-addon", "--catalog=${validCatalogUrl}"],
-        ["install", "my-addon:42", "--catalog=${validCatalogUrl}"],
+        [INSTALL_CMD, "my-addon", "${CATALOG_LONG_OPT}=${validCatalogUrl}"],
+        [INSTALL_CMD, "my-addon:42", "${CATALOG_LONG_OPT}=${validCatalogUrl}"],
     ]
   }
 
@@ -709,8 +711,8 @@ class CommandLineParserTest extends UnitTestsSpecification {
     thrown(CommandLineParsingException)
     where:
     args << [
-        ["install", "my-addon", "--catalog=${invalidCatalogUrl}"],
-        ["install", "my-addon:42", "--catalog=${invalidCatalogUrl}"],
+        [INSTALL_CMD, "my-addon", "${CATALOG_LONG_OPT}=${invalidCatalogUrl}"],
+        [INSTALL_CMD, "my-addon:42", "${CATALOG_LONG_OPT}=${invalidCatalogUrl}"],
     ]
   }
 
@@ -725,7 +727,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     !cliArgs.batchMode
     where:
     args << [
-        ["uninstall", "my-addon"],
+        [UNINSTALL_CMD, "my-addon"],
     ]
   }
 
@@ -737,12 +739,12 @@ class CommandLineParserTest extends UnitTestsSpecification {
     where:
     args << [
         // Missing params
-        ["install"],
-        ["uninstall"],
+        [INSTALL_CMD],
+        [UNINSTALL_CMD],
         // Too much params
-        ["install", "foo", "bar"],
-        ["install", "foo", "--catalog=http://firstURL.com", "--catalog=http://secondURL.com"],
-        ["uninstall", "foo", "bar"],
+        [INSTALL_CMD, "foo", "bar"],
+        [INSTALL_CMD, "foo", "${CATALOG_LONG_OPT}=http://firstURL.com", "${CATALOG_LONG_OPT}=http://secondURL.com"],
+        [UNINSTALL_CMD, "foo", "bar"],
     ]
   }
 
