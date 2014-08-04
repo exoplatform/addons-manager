@@ -281,8 +281,8 @@ class Logger {
     // Allow the msg to be a Throwable, and handle it properly if no cause is given
     if (cause == null) {
       if (msg instanceof Throwable) {
-        cause = (Throwable) msg
-        msg = "${cause.getClass()} : ${cause.getMessage()}"
+        cause = msg
+        msg = msg.message
       }
     }
 

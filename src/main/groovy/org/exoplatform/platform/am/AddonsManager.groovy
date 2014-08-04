@@ -79,14 +79,14 @@ try {
 } catch (CommandLineParsingException clpe) {
   // display header
   log.displayHeader(env.manager.version)
-  log.error clpe.message
+  log.error clpe
   clp.usage()
   returnCode = clpe.errorCode
 } catch (AddonsManagerException ame) {
-  log.error ame.message
+  log.error ame
   returnCode = ame.errorCode
 } catch (Throwable t) {
-  log.error t
+  log.error("${t.message} <${t.class}>",t)
   returnCode = AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR
 }
 // Display various details for debug purposes
