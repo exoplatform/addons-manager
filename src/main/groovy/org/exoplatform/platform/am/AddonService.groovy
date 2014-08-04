@@ -19,7 +19,6 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
-
 import groovy.json.JsonSlurper
 import groovy.time.TimeCategory
 import groovy.transform.Canonical
@@ -46,7 +45,6 @@ import static org.exoplatform.platform.am.AddonService.ParsingErrorType.INVALID_
 import static org.exoplatform.platform.am.AddonService.ParsingErrorType.MALFORMED_ENTRY
 import static org.exoplatform.platform.am.utils.FileUtils.copyFile
 import static org.exoplatform.platform.am.utils.FileUtils.downloadFile
-
 /**
  * All services related to add-ons
  * @author Arnaud Héritier <aheritier@exoplatform.com>
@@ -258,9 +256,22 @@ class AddonService {
    */
   protected List<Addon> getInstalledAddons(
       EnvironmentSettings env) {
-    return env.statusesDirectory.list(
-        { dir, file -> file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/ } as FilenameFilter
-    ).toList().collect { it -> createAddonFromJsonText(new File(env.statusesDirectory, it).text) }
+    List<Addon> result = new ArrayList<>();
+    env.statusesDirectory.list(
+        { dir, file ->
+          file ==~ /.*?\${AddonService.STATUS_FILE_EXT}/
+        } as FilenameFilter
+    ).toList().each { statusFile ->
+      try {
+        LOG.withStatus("Loading add-on details from ${statusFile}") {
+          result << createAddonFromJsonText(new File(env.statusesDirectory, statusFile).text)
+        }
+      } catch (InvalidJSONException ije) {
+        LOG.debug(ije)
+        LOG.warn("${statusFile} isn't readable")
+      }
+    }
+    return result
   }
 
   /**
