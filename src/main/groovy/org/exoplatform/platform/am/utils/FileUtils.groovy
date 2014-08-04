@@ -19,7 +19,12 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.utils
+
+import org.exoplatform.platform.am.ex.AddonsManagerException
+import org.exoplatform.platform.am.ex.UnknownErrorException
+
 import java.nio.channels.FileChannel
+
 /**
  * Miscellaneous utilities
  */
@@ -44,24 +49,39 @@ class FileUtils {
    * Downloads a file following redirects if required
    * @param url The URL from which to download
    * @param destFile The file to populate
-   * @throws IOException If there is an IO error
+   * @throws AddonsManagerException If there is an error while transferring the file
    */
-  static downloadFile(String url, File destFile) throws IOException {
-    while (url) {
-      new URL(url).openConnection().with { URLConnection conn ->
-        if (conn instanceof HttpURLConnection) {
-          conn.instanceFollowRedirects = true
-        }
-        url = conn.getHeaderField("Location")
-        if (!url) {
-          destFile.withOutputStream { out ->
-            conn.inputStream.with { inp ->
-              out << inp
-              inp.close()
+  static downloadFile(String url, File destFile) throws AddonsManagerException {
+    String urlToDownloadFrom = url
+    try {
+      while (url) {
+        new URL(url).openConnection().with { URLConnection conn ->
+          if (conn instanceof HttpURLConnection) {
+            conn.instanceFollowRedirects = true
+          }
+          url = conn.getHeaderField("Location")
+          if (!url) {
+            destFile.withOutputStream { out ->
+              conn.inputStream.with { inp ->
+                out << inp
+                inp.close()
+              }
             }
           }
         }
       }
+    } catch (FileNotFoundException fnfe) {
+      // AM-95 : Don't keep an empty/corrupted downloaded file
+      if (destFile.exists()) {
+        destFile.delete()
+      }
+      throw new UnknownErrorException("File not found at URL ${urlToDownloadFrom}", fnfe)
+    } catch (IOException ioe) {
+      // AM-95 : Don't keep an empty/corrupted downloaded file
+      if (destFile.exists()) {
+        destFile.delete()
+      }
+      throw new UnknownErrorException("I/O error while downloading ${urlToDownloadFrom}", ioe)
     }
   }
 
