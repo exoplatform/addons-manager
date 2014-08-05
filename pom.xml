@@ -69,8 +69,6 @@
     <integration.tests.platform.version>4.1-M2</integration.tests.platform.version>
     <integration.tests.dataDirPath>${project.build.directory}/test-data</integration.tests.dataDirPath>
     <integration.tests.workingDirPath>${project.build.directory}/integration-tests</integration.tests.workingDirPath>
-    <integration.tests.testedArtifactPath>${project.build.directory}/${project.build.finalName}.jar
-    </integration.tests.testedArtifactPath>
     <integration.tests.verbose>false</integration.tests.verbose>
   </properties>
   <dependencies>
@@ -357,8 +355,7 @@
                 <integration.tests.workingDirPath>${integration.tests.workingDirPath}</integration.tests.workingDirPath>
                 <integration.tests.jacocoAgent>${argLine}</integration.tests.jacocoAgent>
                 <integration.tests.platformVersion>${integration.tests.platform.version}</integration.tests.platformVersion>
-                <integration.tests.testedArtifactPath>${integration.tests.testedArtifactPath}
-                </integration.tests.testedArtifactPath>
+                <integration.tests.testedArtifactPath>${project.build.directory}/${project.build.finalName}.jar</integration.tests.testedArtifactPath>
                 <integration.tests.verbose>${integration.tests.verbose}</integration.tests.verbose>
                 <integration.tests.webServerHttpPort>${integration.tests.webServerHttpPort}</integration.tests.webServerHttpPort>
               </systemPropertyVariables>
