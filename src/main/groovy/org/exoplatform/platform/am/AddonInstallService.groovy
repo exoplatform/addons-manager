@@ -25,7 +25,6 @@ import groovy.util.slurpersupport.GPathResult
 import org.exoplatform.platform.am.cli.CommandLineParameters
 import org.exoplatform.platform.am.cli.Conflict
 import org.exoplatform.platform.am.ex.AddonAlreadyInstalledException
-import org.exoplatform.platform.am.ex.CompatibilityException
 import org.exoplatform.platform.am.ex.LicenseValidationException
 import org.exoplatform.platform.am.ex.UnknownErrorException
 import org.exoplatform.platform.am.settings.EnvironmentSettings
@@ -128,11 +127,7 @@ public class AddonInstallService {
       Boolean batchMode) {
     // Compatibility check
     if (!noCompat) {
-      LOG.withStatus("Checking compatibility of your add-on with your eXo platform instance") {
-        if (!ADDON_SERVICE.isCompatible(addon, env.platform)) {
-          throw new CompatibilityException(addon, env.platform)
-        }
-      }
+      ADDON_SERVICE.validateCompatibility(addon, env.platform)
     } else {
       LOG.debug("Compatibility check deactivated")
     }

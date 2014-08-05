@@ -19,11 +19,15 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
-
+import org.exoplatform.platform.am.ex.CompatibilityException
 import org.exoplatform.platform.am.ex.InvalidJSONException
 import org.exoplatform.platform.am.settings.PlatformSettings
 import spock.lang.Shared
 
+import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.JBOSS
+import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.TOMCAT
+import static org.exoplatform.platform.am.settings.PlatformSettings.DistributionType.COMMUNITY
+import static org.exoplatform.platform.am.settings.PlatformSettings.DistributionType.ENTERPRISE
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
@@ -31,6 +35,28 @@ class AddonServiceTest extends UnitTestsSpecification {
 
   @Shared
   AddonService addonService = AddonService.getInstance()
+
+  @Shared
+  PlatformSettings plfCommunityTomcat
+  @Shared
+  PlatformSettings plfEnterpriseTomcat
+  @Shared
+  PlatformSettings plfEnterpriseJboss
+
+  def setupSpec() {
+    plfCommunityTomcat = Mock()
+    plfCommunityTomcat.appServerType >> TOMCAT
+    plfCommunityTomcat.distributionType >> COMMUNITY
+    plfCommunityTomcat.version >> "4.1.0"
+    plfEnterpriseTomcat = Mock()
+    plfEnterpriseTomcat.appServerType >> TOMCAT
+    plfEnterpriseTomcat.distributionType >> ENTERPRISE
+    plfEnterpriseTomcat.version >> "4.1.0"
+    plfEnterpriseJboss = Mock()
+    plfEnterpriseJboss.appServerType >> JBOSS
+    plfEnterpriseJboss.distributionType >> ENTERPRISE
+    plfEnterpriseJboss.version >> "4.1.0"
+  }
 
   def "createAddonFromJsonText parse a valid JSON text"() {
     when:
@@ -55,8 +81,8 @@ class AddonServiceTest extends UnitTestsSpecification {
         downloadUrl: "http://path/to/archive.zip",
         vendor: "eXo platform",
         license: "LGPLv3",
-        supportedApplicationServers: [PlatformSettings.AppServerType.JBOSS, PlatformSettings.AppServerType.TOMCAT],
-        supportedDistributions: [PlatformSettings.DistributionType.COMMUNITY, PlatformSettings.DistributionType.ENTERPRISE])
+        supportedApplicationServers: [JBOSS, TOMCAT],
+        supportedDistributions: [COMMUNITY, ENTERPRISE])
   }
 
   def "createAddonFromJsonText parse an invalid valid JSON text"() {
@@ -175,8 +201,8 @@ class AddonServiceTest extends UnitTestsSpecification {
         downloadUrl: "http://path/to/archive.zip",
         vendor: "eXo platform",
         license: "LGPLv3",
-        supportedApplicationServers: [PlatformSettings.AppServerType.JBOSS, PlatformSettings.AppServerType.TOMCAT],
-        supportedDistributions: [PlatformSettings.DistributionType.COMMUNITY, PlatformSettings.DistributionType.ENTERPRISE])
+        supportedApplicationServers: [JBOSS, TOMCAT],
+        supportedDistributions: [COMMUNITY, ENTERPRISE])
   }
 
   /**
@@ -320,5 +346,59 @@ class AddonServiceTest extends UnitTestsSpecification {
     def filename2 = addonService.convertUrlToFilename(new URL("http://www.exoplatform.com"))
     then:
     filename1 == filename2
+  }
+
+  def "validateCompatibility is throwing an error"(PlatformSettings platformSettings, Addon addon) {
+    when:
+    addonService.validateCompatibility(addon, platformSettings)
+    then:
+    thrown CompatibilityException
+    where:
+    platformSettings    | addon
+    plfCommunityTomcat  | new Addon(supportedApplicationServers: [JBOSS],
+                                    supportedDistributions: [COMMUNITY],
+                                    compatibility: "[4.1,)")// Wrong application Server
+    plfEnterpriseTomcat | new Addon(supportedApplicationServers: [JBOSS],
+                                    supportedDistributions: [ENTERPRISE],
+                                    compatibility: "[4.1,)")// Wrong application Server
+    plfEnterpriseJboss  | new Addon(supportedApplicationServers: [TOMCAT],
+                                    supportedDistributions: [ENTERPRISE],
+                                    compatibility: "[4.1,)")// Wrong application Server
+    plfCommunityTomcat  | new Addon(supportedApplicationServers: [TOMCAT],
+                                    supportedDistributions: [ENTERPRISE],
+                                    compatibility: "[4.1,)")// Wrong distribution
+    plfEnterpriseTomcat | new Addon(supportedApplicationServers: [TOMCAT],
+                                    supportedDistributions: [COMMUNITY],
+                                    compatibility: "[4.1,)")// Wrong distribution
+    plfEnterpriseJboss  | new Addon(supportedApplicationServers: [JBOSS],
+                                    supportedDistributions: [COMMUNITY],
+                                    compatibility: "[4.1,)")// Wrong distribution
+    plfCommunityTomcat  | new Addon(supportedApplicationServers: [TOMCAT],
+                                    supportedDistributions: [COMMUNITY],
+                                    compatibility: "[4.2,)")// Wrong version
+    plfEnterpriseTomcat | new Addon(supportedApplicationServers: [TOMCAT],
+                                    supportedDistributions: [ENTERPRISE],
+                                    compatibility: "[4.2,)")// Wrong version
+    plfEnterpriseJboss  | new Addon(supportedApplicationServers: [JBOSS],
+                                    supportedDistributions: [ENTERPRISE],
+                                    compatibility: "[4.2,)")// Wrong version
+  }
+
+  def "validateCompatibility is ok"(PlatformSettings platformSettings, Addon addon) {
+    when:
+    addonService.validateCompatibility(addon, platformSettings)
+    then:
+    notThrown CompatibilityException
+    where:
+    platformSettings    | addon
+    plfCommunityTomcat  | new Addon(supportedApplicationServers: [TOMCAT],
+                                    supportedDistributions: [COMMUNITY],
+                                    compatibility: "[4.1,)")
+    plfEnterpriseTomcat | new Addon(supportedApplicationServers: [TOMCAT],
+                                    supportedDistributions: [ENTERPRISE],
+                                    compatibility: "[4.1,)")
+    plfEnterpriseJboss  | new Addon(supportedApplicationServers: [JBOSS],
+                                    supportedDistributions: [ENTERPRISE],
+                                    compatibility: "[4.1,)")
   }
 }

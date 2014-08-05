@@ -34,12 +34,20 @@ class CompatibilityException extends AddonsManagerException {
   CompatibilityException(Addon addon, PlatformSettings plfSettings) {
     super(
         "The add-on ${addon.id} is not compatible : " +
-            (!addon.supportedDistributions.contains(
-                plfSettings.distributionType) ? "Distribution ${plfSettings.distributionType} not supported. " : "") +
-            (!addon.supportedApplicationServers.contains(
-                plfSettings.appServerType) ? "Application server ${plfSettings.appServerType} not supported. " : "") +
+            (!addon.supportedDistributions.contains(plfSettings.distributionType) ?
+                addon.supportedDistributions.size() == 1 ?
+                    "Only distribution ${addon.supportedDistributions[0]} is supported. " :
+                    "Only distributions ${addon.supportedDistributions.join(", ")} are supported. " :
+                "") +
+            (!addon.supportedApplicationServers.contains(plfSettings.appServerType) ?
+                addon.supportedApplicationServers.size() == 1 ?
+                    "Only application server ${addon.supportedApplicationServers[0]} is supported. " :
+                    "Only application servers ${addon.supportedApplicationServers} are supported. " :
+                "") +
             (!AddonService.instance.testVersionCompatibility(
-                plfSettings.version, addon.compatibility) ? "eXo platform version ${plfSettings.version} not supported. " : "") +
+                plfSettings.version, addon.compatibility) ?
+                "Only eXo platform versions ${addon.compatibility} are supported. " :
+                "") +
             "Use --no-compat to bypass this compatibility check and install anyway"
     )
   }

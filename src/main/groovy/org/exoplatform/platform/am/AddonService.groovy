@@ -19,6 +19,7 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
+
 import groovy.json.JsonSlurper
 import groovy.time.TimeCategory
 import groovy.transform.Canonical
@@ -30,6 +31,7 @@ import org.eclipse.aether.version.Version
 import org.eclipse.aether.version.VersionConstraint
 import org.eclipse.aether.version.VersionScheme
 import org.exoplatform.platform.am.ex.AddonNotFoundException
+import org.exoplatform.platform.am.ex.CompatibilityException
 import org.exoplatform.platform.am.ex.InvalidJSONException
 import org.exoplatform.platform.am.ex.UnknownErrorException
 import org.exoplatform.platform.am.settings.EnvironmentSettings
@@ -45,6 +47,7 @@ import static org.exoplatform.platform.am.AddonService.ParsingErrorType.INVALID_
 import static org.exoplatform.platform.am.AddonService.ParsingErrorType.MALFORMED_ENTRY
 import static org.exoplatform.platform.am.utils.FileUtils.copyFile
 import static org.exoplatform.platform.am.utils.FileUtils.downloadFile
+
 /**
  * All services related to add-ons
  * @author Arnaud Héritier <aheritier@exoplatform.com>
@@ -424,6 +427,20 @@ class AddonService {
       PlatformSettings plfSettings) {
     return addons.findAll {
       isCompatible(it, plfSettings)
+    }
+  }
+
+  /**
+   * Verify if an add-on is compatible with the platform instance (distributionType, appServerType, version)
+   * @param addon The add-on to verify
+   * @param plfSettings The settings about the platform instance
+   * @throws CompatibilityException if the add-on isn't compatible
+   */
+  protected void validateCompatibility(Addon addon, PlatformSettings plfSettings) throws CompatibilityException {
+    LOG.withStatus("Checking compatibility of your add-on with your eXo platform instance") {
+      if (!isCompatible(addon, plfSettings)) {
+        throw new CompatibilityException(addon, plfSettings)
+      }
     }
   }
 
