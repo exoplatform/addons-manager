@@ -52,19 +52,21 @@ class FileUtils {
    * @throws AddonsManagerException If there is an error while transferring the file
    */
   static downloadFile(String url, File destFile) throws AddonsManagerException {
-    String urlToDownloadFrom = url
+    String originalUrl = url
     try {
+      // Let's do it for each redirection
       while (url) {
         new URL(url).openConnection().with { URLConnection conn ->
           if (conn instanceof HttpURLConnection) {
             conn.instanceFollowRedirects = true
           }
           url = conn.getHeaderField("Location")
+          // No more Location, let's download
           if (!url) {
             destFile.withOutputStream { out ->
               conn.inputStream.with { inp ->
                 out << inp
-                inp.close()
+                inp?.close()
               }
             }
           }
@@ -75,13 +77,13 @@ class FileUtils {
       if (destFile.exists()) {
         destFile.delete()
       }
-      throw new UnknownErrorException("File not found at URL ${urlToDownloadFrom}", fnfe)
+      throw new UnknownErrorException("File not found at URL ${originalUrl}", fnfe)
     } catch (IOException ioe) {
       // AM-95 : Don't keep an empty/corrupted downloaded file
       if (destFile.exists()) {
         destFile.delete()
       }
-      throw new UnknownErrorException("I/O error while downloading ${urlToDownloadFrom}", ioe)
+      throw new UnknownErrorException("I/O error while downloading ${originalUrl}", ioe)
     }
   }
 
