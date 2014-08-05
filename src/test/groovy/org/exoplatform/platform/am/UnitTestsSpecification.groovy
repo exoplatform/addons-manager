@@ -29,7 +29,7 @@ import spock.lang.Specification
  */
 abstract class UnitTestsSpecification extends Specification {
 
-  public static final String UT_SYSPROP_VERBOSE = "unit.tests.verbose"
+  public static final String UT_SYSPROP_VERBOSE = "ut.verbose"
 
   /**
    * @return true if verbose mode must be used while executing tests

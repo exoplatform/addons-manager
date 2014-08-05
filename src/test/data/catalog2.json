@@ -5,7 +5,7 @@
     "name": "Fake addon",
     "description": "A fake addon",
     "releaseDate": "2014-06-18T00:00:00.000Z",
-    "downloadUrl": "http://localhost:${integration.tests.webServerHttpPort}/foo-addon-42.zip",
+    "downloadUrl": "http://localhost:${it.webServerHttpPort}/foo-addon-42.zip",
     "vendor": "eXo",
     "license": "LGPLv3",
     "supportedDistributions": "community,enterprise",

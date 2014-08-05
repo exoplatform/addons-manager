@@ -63,13 +63,13 @@
     <!-- **************************************** -->
     <!-- Build/Tests settings -->
     <!-- **************************************** -->
-    <unit.tests.verbose>false</unit.tests.verbose>
-    <integration.tests.platform.groupId>org.exoplatform.platform.distributions</integration.tests.platform.groupId>
-    <integration.tests.platform.artifactId>plf-community-tomcat-standalone</integration.tests.platform.artifactId>
-    <integration.tests.platform.version>4.1-M2</integration.tests.platform.version>
-    <integration.tests.dataDirPath>${project.build.directory}/test-data</integration.tests.dataDirPath>
-    <integration.tests.workingDirPath>${project.build.directory}/integration-tests</integration.tests.workingDirPath>
-    <integration.tests.verbose>false</integration.tests.verbose>
+    <ut.verbose>false</ut.verbose>
+    <it.platform.groupId>org.exoplatform.platform.distributions</it.platform.groupId>
+    <it.platform.artifactId>plf-community-tomcat-standalone</it.platform.artifactId>
+    <it.platform.version>4.1-M2</it.platform.version>
+    <it.dataDirPath>${project.build.directory}/test-data</it.dataDirPath>
+    <it.workingDirPath>${project.build.directory}/integration-tests</it.workingDirPath>
+    <it.verbose>false</it.verbose>
   </properties>
   <dependencies>
     <dependency>
@@ -171,7 +171,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
             <systemPropertyVariables>
-              <unit.tests.verbose>${unit.tests.verbose}</unit.tests.verbose>
+              <ut.verbose>${ut.verbose}</ut.verbose>
             </systemPropertyVariables>
           </configuration>
         </plugin>
@@ -264,7 +264,7 @@
       <build>
         <testResources>
           <testResource>
-            <targetPath>${integration.tests.dataDirPath}</targetPath>
+            <targetPath>${it.dataDirPath}</targetPath>
             <filtering>true</filtering>
             <directory>${project.basedir}/src/test/data</directory>
             <includes>
@@ -272,7 +272,7 @@
             </includes>
           </testResource>
           <testResource>
-            <targetPath>${integration.tests.dataDirPath}</targetPath>
+            <targetPath>${it.dataDirPath}</targetPath>
             <filtering>false</filtering>
             <directory>${project.basedir}/src/test/data</directory>
             <excludes>
@@ -293,7 +293,7 @@
                 </goals>
                 <configuration>
                   <portNames>
-                    <portName>integration.tests.webServerHttpPort</portName>
+                    <portName>it.webServerHttpPort</portName>
                   </portNames>
                 </configuration>
               </execution>
@@ -312,7 +312,7 @@
                 <configuration>
                   <includeScope>test</includeScope>
                   <includeTypes>zip</includeTypes>
-                  <outputDirectory>${integration.tests.workingDirPath}</outputDirectory>
+                  <outputDirectory>${it.workingDirPath}</outputDirectory>
                 </configuration>
               </execution>
             </executions>
@@ -340,9 +340,9 @@
               </execution>
             </executions>
             <configuration>
-              <port>${integration.tests.webServerHttpPort}</port>
+              <port>${it.webServerHttpPort}</port>
               <path>/</path>
-              <warDirectory>${integration.tests.dataDirPath}</warDirectory>
+              <warDirectory>${it.dataDirPath}</warDirectory>
               <ignorePackaging>true</ignorePackaging>
             </configuration>
           </plugin>
@@ -351,13 +351,13 @@
             <artifactId>maven-failsafe-plugin</artifactId>
             <configuration>
               <systemPropertyVariables>
-                <integration.tests.dataDirPath>${integration.tests.dataDirPath}</integration.tests.dataDirPath>
-                <integration.tests.workingDirPath>${integration.tests.workingDirPath}</integration.tests.workingDirPath>
-                <integration.tests.jacocoAgent>${argLine}</integration.tests.jacocoAgent>
-                <integration.tests.platformVersion>${integration.tests.platform.version}</integration.tests.platformVersion>
-                <integration.tests.testedArtifactPath>${project.build.directory}/${project.build.finalName}.jar</integration.tests.testedArtifactPath>
-                <integration.tests.verbose>${integration.tests.verbose}</integration.tests.verbose>
-                <integration.tests.webServerHttpPort>${integration.tests.webServerHttpPort}</integration.tests.webServerHttpPort>
+                <it.dataDirPath>${it.dataDirPath}</it.dataDirPath>
+                <it.workingDirPath>${it.workingDirPath}</it.workingDirPath>
+                <it.jacocoAgent>${argLine}</it.jacocoAgent>
+                <it.platformVersion>${it.platform.version}</it.platformVersion>
+                <it.testedArtifactPath>${project.build.directory}/${project.build.finalName}.jar</it.testedArtifactPath>
+                <it.verbose>${it.verbose}</it.verbose>
+                <it.webServerHttpPort>${it.webServerHttpPort}</it.webServerHttpPort>
               </systemPropertyVariables>
             </configuration>
           </plugin>
@@ -365,9 +365,9 @@
       </build>
       <dependencies>
         <dependency>
-          <groupId>${integration.tests.platform.groupId}</groupId>
-          <artifactId>${integration.tests.platform.artifactId}</artifactId>
-          <version>${integration.tests.platform.version}</version>
+          <groupId>${it.platform.groupId}</groupId>
+          <artifactId>${it.platform.artifactId}</artifactId>
+          <version>${it.platform.version}</version>
           <type>zip</type>
           <scope>test</scope>
         </dependency>
@@ -382,8 +382,8 @@
         </property>
       </activation>
       <properties>
-        <integration.tests.platform.groupId>org.exoplatform.platform.distributions</integration.tests.platform.groupId>
-        <integration.tests.platform.artifactId>plf-community-tomcat-standalone</integration.tests.platform.artifactId>
+        <it.platform.groupId>org.exoplatform.platform.distributions</it.platform.groupId>
+        <it.platform.artifactId>plf-community-tomcat-standalone</it.platform.artifactId>
       </properties>
     </profile>
     <!-- You need to have access to eXo private repositories to download these packages -->
@@ -396,8 +396,8 @@
         </property>
       </activation>
       <properties>
-        <integration.tests.platform.groupId>com.exoplatform.platform.distributions</integration.tests.platform.groupId>
-        <integration.tests.platform.artifactId>plf-enterprise-tomcat-standalone</integration.tests.platform.artifactId>
+        <it.platform.groupId>com.exoplatform.platform.distributions</it.platform.groupId>
+        <it.platform.artifactId>plf-enterprise-tomcat-standalone</it.platform.artifactId>
       </properties>
     </profile>
     <profile>
@@ -409,8 +409,8 @@
         </property>
       </activation>
       <properties>
-        <integration.tests.platform.groupId>com.exoplatform.platform.distributions</integration.tests.platform.groupId>
-        <integration.tests.platform.artifactId>plf-enterprise-jbosseap-standalone</integration.tests.platform.artifactId>
+        <it.platform.groupId>com.exoplatform.platform.distributions</it.platform.groupId>
+        <it.platform.artifactId>plf-enterprise-jbosseap-standalone</it.platform.artifactId>
       </properties>
     </profile>
     <profile>
@@ -430,8 +430,8 @@
         </property>
       </activation>
       <properties>
-        <unit.tests.verbose>true</unit.tests.verbose>
-        <integration.tests.verbose>true</integration.tests.verbose>
+        <ut.verbose>true</ut.verbose>
+        <it.verbose>true</it.verbose>
       </properties>
     </profile>
   </profiles>

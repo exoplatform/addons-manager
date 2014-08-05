@@ -35,12 +35,12 @@ import static org.junit.Assert.assertTrue
  */
 abstract class IntegrationTestsSpecification extends Specification {
 
-  public static final String IT_SYSPROP_VERBOSE = "integration.tests.verbose"
-  public static final String IT_SYSPROP_WEB_SERVER_HTTP_PORT = "integration.tests.webServerHttpPort"
-  public static final String IT_SYSPROP_JACOCO_AGENT = 'integration.tests.jacocoAgent'
-  public static final String IT_SYSPROP_TESTS_WORKING_DIR_PATH = "integration.tests.workingDirPath"
-  public static final String IT_SYSPROP_TESTS_DATA_DIR_PATH = "integration.tests.dataDirPath"
-  public static final String IT_SYSPROP_TESTED_ARTIFACT_PATH = "integration.tests.testedArtifactPath"
+  public static final String IT_SYSPROP_VERBOSE = "it.verbose"
+  public static final String IT_SYSPROP_WEB_SERVER_HTTP_PORT = "it.webServerHttpPort"
+  public static final String IT_SYSPROP_JACOCO_AGENT = 'it.jacocoAgent'
+  public static final String IT_SYSPROP_TESTS_WORKING_DIR_PATH = "it.workingDirPath"
+  public static final String IT_SYSPROP_TESTS_DATA_DIR_PATH = "it.dataDirPath"
+  public static final String IT_SYSPROP_TESTED_ARTIFACT_PATH = "it.testedArtifactPath"
   public static final String JAVA_HOME = 'java.home'
   @Shared
   private File _testedArtifact
