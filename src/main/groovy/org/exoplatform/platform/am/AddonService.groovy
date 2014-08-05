@@ -347,11 +347,11 @@ class AddonService {
           if (!stableAddons.empty) {
             LOG.error "Stable version(s) available for add-on ${addonId} : ${stableAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
-          List<Addon> unstableAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, true, true, false)
+          List<Addon> unstableAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, false, true, false)
           if (!unstableAddons.empty) {
             LOG.error "Unstable version(s) available for add-on ${addonId} : ${unstableAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
-          List<Addon> snapshotAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, true, false, true)
+          List<Addon> snapshotAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, false, false, true)
           if (!snapshotAddons.empty) {
             LOG.error "Development version(s) available for add-on ${addonId} : ${snapshotAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
