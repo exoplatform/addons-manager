@@ -88,7 +88,7 @@ class AddonServiceTest extends UnitTestsSpecification {
         supportedDistributions: [COMMUNITY, ENTERPRISE])
   }
 
-  def "createAddonFromJsonText parse an invalid valid JSON text"() {
+  def "createAddonFromJsonText parse an invalid JSON text"() {
     when:
     addonService.createAddonFromJsonText("""
     {
