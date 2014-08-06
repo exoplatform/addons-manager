@@ -20,7 +20,6 @@
  */
 package org.exoplatform.platform.am.cli
 
-import com.beust.jcommander.ParameterException
 import com.beust.jcommander.converters.BaseConverter
 
 /**
@@ -38,10 +37,7 @@ class URLConverter extends BaseConverter<URL> {
  */
   @Override
   public URL convert(String value) {
-    try {
-      return new URL(value);
-    } catch (MalformedURLException ex) {
-      throw new ParameterException(getErrorString(value, "an url"));
-    }
+    // URLValidator ensures that the value passed here is valid
+    new URL(value);
   }
 }
