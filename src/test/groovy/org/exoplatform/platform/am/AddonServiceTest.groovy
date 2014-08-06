@@ -19,6 +19,7 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
+
 import org.exoplatform.platform.am.ex.CompatibilityException
 import org.exoplatform.platform.am.ex.InvalidJSONException
 import org.exoplatform.platform.am.settings.PlatformSettings
@@ -30,6 +31,7 @@ import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerTyp
 import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.TOMCAT
 import static org.exoplatform.platform.am.settings.PlatformSettings.DistributionType.COMMUNITY
 import static org.exoplatform.platform.am.settings.PlatformSettings.DistributionType.ENTERPRISE
+
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
@@ -40,25 +42,69 @@ class AddonServiceTest extends UnitTestsSpecification {
   AddonService addonService = AddonService.getInstance()
 
   @Shared
-  PlatformSettings plfCommunityTomcat
+  PlatformSettings plfCommunityTomcat41
   @Shared
-  PlatformSettings plfEnterpriseTomcat
+  PlatformSettings plfEnterpriseTomcat41
   @Shared
-  PlatformSettings plfEnterpriseJboss
+  PlatformSettings plfEnterpriseJboss41
+  @Shared
+  Addon addon1 = new Addon(id: "addon1", version: "42", supportedApplicationServers: [TOMCAT],
+                           supportedDistributions: [COMMUNITY],
+                           compatibility: "[4.1,)")
+  @Shared
+  Addon addon2 = new Addon(id: "addon2", version: "42", supportedApplicationServers: [TOMCAT],
+                           supportedDistributions: [ENTERPRISE],
+                           compatibility: "[4.1,)")
+  @Shared
+  Addon addon3 = new Addon(id: "addon3", version: "42", supportedApplicationServers: [JBOSS],
+                           supportedDistributions: [ENTERPRISE],
+                           compatibility: "[4.1,)")
+  @Shared
+  Addon addon4 = new Addon(id: "addon4", version: "42", supportedApplicationServers: [TOMCAT],
+                           supportedDistributions: [COMMUNITY],
+                           compatibility: "[4.2,)")
+  @Shared
+  Addon addon5 = new Addon(id: "addon5", version: "42", supportedApplicationServers: [TOMCAT],
+                           supportedDistributions: [ENTERPRISE],
+                           compatibility: "[4.2,)")
+  @Shared
+  Addon addon6 = new Addon(id: "addon6", version: "42", supportedApplicationServers: [JBOSS],
+                           supportedDistributions: [ENTERPRISE],
+                           compatibility: "[4.2,)")
+  @Shared
+  Addon addon_42_beta_01 = new Addon(id: "addon", version: "42-beta-01", unstable: true)
+  @Shared
+  Addon addon_42_SNAPSHOT = new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true)
+  @Shared
+  Addon addon_42_M1 = new Addon(id: "addon", version: "42-M1", unstable: true)
+  @Shared
+  Addon addon_42_SP = new Addon(id: "addon", version: "42-SP", unstable: true)
+  @Shared
+  Addon addon_43_alpha_01 = new Addon(id: "addon", version: "43-alpha-01", unstable: true)
+  @Shared
+  Addon addon_42_RC1 = new Addon(id: "addon", version: "42-RC1", unstable: true)
+  @Shared
+  Addon addon_42 = new Addon(id: "addon", version: "42")
+  @Shared
+  Addon addon_42_alpha_01 = new Addon(id: "addon", version: "42-alpha-01", unstable: true)
+  @Shared
+  Addon addon_41 = new Addon(id: "addon", version: "41")
+  @Shared
+  Addon addon_43_SNAPSHOT = new Addon(id: "addon", version: "43-SNAPSHOT", unstable: true)
 
   def setupSpec() {
-    plfCommunityTomcat = Mock()
-    plfCommunityTomcat.appServerType >> TOMCAT
-    plfCommunityTomcat.distributionType >> COMMUNITY
-    plfCommunityTomcat.version >> "4.1.0"
-    plfEnterpriseTomcat = Mock()
-    plfEnterpriseTomcat.appServerType >> TOMCAT
-    plfEnterpriseTomcat.distributionType >> ENTERPRISE
-    plfEnterpriseTomcat.version >> "4.1.0"
-    plfEnterpriseJboss = Mock()
-    plfEnterpriseJboss.appServerType >> JBOSS
-    plfEnterpriseJboss.distributionType >> ENTERPRISE
-    plfEnterpriseJboss.version >> "4.1.0"
+    plfCommunityTomcat41 = Mock()
+    plfCommunityTomcat41.appServerType >> TOMCAT
+    plfCommunityTomcat41.distributionType >> COMMUNITY
+    plfCommunityTomcat41.version >> "4.1.0"
+    plfEnterpriseTomcat41 = Mock()
+    plfEnterpriseTomcat41.appServerType >> TOMCAT
+    plfEnterpriseTomcat41.distributionType >> ENTERPRISE
+    plfEnterpriseTomcat41.version >> "4.1.0"
+    plfEnterpriseJboss41 = Mock()
+    plfEnterpriseJboss41.appServerType >> JBOSS
+    plfEnterpriseJboss41.distributionType >> ENTERPRISE
+    plfEnterpriseJboss41.version >> "4.1.0"
   }
 
   def "createAddonFromJsonText parse a valid JSON text"() {
@@ -67,7 +113,7 @@ class AddonServiceTest extends UnitTestsSpecification {
     {
         "id": "my-addon",
         "version": "1.0.0",
-        "name": "The super addon",
+        "name": "The super add-on",
         "downloadUrl": "http://path/to/archive.zip",
         "vendor": "eXo platform",
         "license": "LGPLv3",
@@ -79,13 +125,32 @@ class AddonServiceTest extends UnitTestsSpecification {
     // Mustn't be null nor throw an exception
     addon == new Addon(
         id: "my-addon",
-        version: "1.0.0",
-        name: "The super addon",
-        downloadUrl: "http://path/to/archive.zip",
-        vendor: "eXo platform",
-        license: "LGPLv3",
-        supportedApplicationServers: [JBOSS, TOMCAT],
-        supportedDistributions: [COMMUNITY, ENTERPRISE])
+        version: "1.0.0")
+  }
+
+  def "createAddonFromJsonText parse a valid JSON text with warnings"() {
+    when:
+    def addon = addonService.createAddonFromJsonText("""
+    {
+        "id": "my-addon",
+        "version": "1.0.0",
+        "name": "The super add-on",
+        "downloadUrl": "http://path/to/archive.zip",
+        "vendor": "eXo platform",
+        "license": "LGPLv3",
+        "supportedDistributions": "community,enterprise,foo",
+        "supportedApplicationServers": "tomcat,jboss,bar",
+        "sourceUrl":"foo",
+        "screenshotUrl":"foo",
+        "thumbnailUrl":"foo",
+        "documentationUrl":"foo"
+    }
+""")
+    then:
+    // Mustn't be null nor throw an exception
+    addon == new Addon(
+        id: "my-addon",
+        version: "1.0.0")
   }
 
   def "createAddonFromJsonText parse an invalid JSON text"() {
@@ -93,12 +158,12 @@ class AddonServiceTest extends UnitTestsSpecification {
     addonService.createAddonFromJsonText("""
     {
         "version": "1.0.0",
-        "name": "The super addon",
+        "name": "The super add-on",
         "downloadUrl": "http://path/to/archive.zip",
         "vendor": "eXo platform",
         "license": "LGPLv3",
-        "supportedDistributions": "community,enterprise",
-        "supportedApplicationServers": "tomcat,jboss"
+        "supportedDistributions": "foo",
+        "supportedApplicationServers": "bar"
     }
 """)
     then:
@@ -112,7 +177,7 @@ class AddonServiceTest extends UnitTestsSpecification {
     {
         "id": "my-addon",
         "version": "1.0.0",
-        "name": "The super addon",
+        "name": "The super add-on",
         "downloadUrl": "http://path/to/archive.zip",
         "vendor": "eXo platform",
         "license": "LGPLv3",
@@ -121,7 +186,7 @@ class AddonServiceTest extends UnitTestsSpecification {
     },
     {
         "version": "1.0.0",
-        "name": "The super addon",
+        "name": "The super add-on",
         "downloadUrl": "http://path/to/archive.zip",
         "vendor": "eXo platform",
         "license": "LGPLv3",
@@ -130,16 +195,7 @@ class AddonServiceTest extends UnitTestsSpecification {
     },
     {
         "id": "my-addon",
-        "name": "The super addon",
-        "downloadUrl": "http://path/to/archive.zip",
-        "vendor": "eXo platform",
-        "license": "LGPLv3",
-        "supportedDistributions": "community,enterprise",
-        "supportedApplicationServers": "tomcat,jboss"
-    },
-    {
-        "id": "my-addon",
-        "version": "1.0.0",
+        "name": "The super add-on",
         "downloadUrl": "http://path/to/archive.zip",
         "vendor": "eXo platform",
         "license": "LGPLv3",
@@ -149,7 +205,7 @@ class AddonServiceTest extends UnitTestsSpecification {
     {
         "id": "my-addon",
         "version": "1.0.0",
-        "name": "The super addon",
+        "downloadUrl": "http://path/to/archive.zip",
         "vendor": "eXo platform",
         "license": "LGPLv3",
         "supportedDistributions": "community,enterprise",
@@ -158,7 +214,16 @@ class AddonServiceTest extends UnitTestsSpecification {
     {
         "id": "my-addon",
         "version": "1.0.0",
-        "name": "The super addon",
+        "name": "The super add-on",
+        "vendor": "eXo platform",
+        "license": "LGPLv3",
+        "supportedDistributions": "community,enterprise",
+        "supportedApplicationServers": "tomcat,jboss"
+    },
+    {
+        "id": "my-addon",
+        "version": "1.0.0",
+        "name": "The super add-on",
         "downloadUrl": "http://path/to/archive.zip",
         "license": "LGPLv3",
         "supportedDistributions": "community,enterprise",
@@ -167,7 +232,7 @@ class AddonServiceTest extends UnitTestsSpecification {
     {
         "id": "my-addon",
         "version": "1.0.0",
-        "name": "The super addon",
+        "name": "The super add-on",
         "downloadUrl": "http://path/to/archive.zip",
         "vendor": "eXo platform",
         "supportedDistributions": "community,enterprise",
@@ -176,7 +241,7 @@ class AddonServiceTest extends UnitTestsSpecification {
     {
         "id": "my-addon",
         "version": "1.0.0",
-        "name": "The super addon",
+        "name": "The super add-on",
         "downloadUrl": "http://path/to/archive.zip",
         "vendor": "eXo platform",
         "license": "LGPLv3",
@@ -185,7 +250,7 @@ class AddonServiceTest extends UnitTestsSpecification {
     {
         "id": "my-addon",
         "version": "1.0.0",
-        "name": "The super addon",
+        "name": "The super add-on",
         "downloadUrl": "http://path/to/archive.zip",
         "vendor": "eXo platform",
         "license": "LGPLv3",
@@ -199,13 +264,7 @@ class AddonServiceTest extends UnitTestsSpecification {
     addons.size() == 1
     addons[0] == new Addon(
         id: "my-addon",
-        version: "1.0.0",
-        name: "The super addon",
-        downloadUrl: "http://path/to/archive.zip",
-        vendor: "eXo platform",
-        license: "LGPLv3",
-        supportedApplicationServers: [JBOSS, TOMCAT],
-        supportedDistributions: [COMMUNITY, ENTERPRISE])
+        version: "1.0.0")
   }
 
   /**
@@ -229,118 +288,85 @@ class AddonServiceTest extends UnitTestsSpecification {
   }
 
   def "filterAddonsByVersion must keep only stable versions"() {
-    when:
-    List<Addon> addons = [
-        new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true),
-        new Addon(id: "addon", version: "42-alpha1", unstable: true),
-        new Addon(id: "addon", version: "42", unstable: false)
-    ]
-    then:
-    addonService.filterAddonsByVersion(addons, true, false, false).sort() == [new Addon(id: "addon", version: "42",
-                                                                                        unstable: false)].sort()
+    expect:
+    addonService.filterAddonsByVersion(
+        [addon_42_SNAPSHOT, addon_42_alpha_01, addon_42], true, false, false) == [addon_42]
   }
 
   def "filterAddonsByVersion must keep stable and snapshot versions"() {
-    when:
-    List<Addon> addons = [
-        new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true),
-        new Addon(id: "addon", version: "42-alpha1", unstable: true),
-        new Addon(id: "addon", version: "42", unstable: false)
-    ]
-    then:
-    addonService.filterAddonsByVersion(addons, true, false, true).sort() == [
-        new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true),
-        new Addon(id: "addon", version: "42", unstable: false)].sort()
+    expect:
+    addonService.filterAddonsByVersion(
+        [addon_42_SNAPSHOT, addon_42_alpha_01, addon_42], true, false, true).sort() == [addon_42_SNAPSHOT, addon_42].sort()
   }
 
   def "filterAddonsByVersion must keep stable and unstable versions (but without snapshots)"() {
-    when:
-    List<Addon> addons = [
-        new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true),
-        new Addon(id: "addon", version: "42-alpha1", unstable: true),
-        new Addon(id: "addon", version: "42", unstable: false)
-    ]
-    then:
-    addonService.filterAddonsByVersion(addons, true, true, false).sort() == [
-        new Addon(id: "addon", version: "42-alpha1", unstable: true),
-        new Addon(id: "addon", version: "42", unstable: false)].sort()
+    expect:
+    addonService.filterAddonsByVersion(
+        [addon_42_SNAPSHOT, addon_42_alpha_01, addon_42], true, true, false).sort() == [addon_42_alpha_01, addon_42].sort()
   }
 
   def "filterAddonsByVersion must keep stable, unstable and snapshot versions"() {
-    when:
-    List<Addon> addons = [
-        new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true),
-        new Addon(id: "addon", version: "42-alpha1", unstable: true),
-        new Addon(id: "addon", version: "42", unstable: false)
-    ]
-    then:
-    addonService.filterAddonsByVersion(addons, true, true, true).sort() == [
-        new Addon(id: "addon", version: "42-SNAPSHOT", unstable: true),
-        new Addon(id: "addon", version: "42-alpha1", unstable: true),
-        new Addon(id: "addon", version: "42", unstable: false)].sort()
+    expect:
+    addonService.filterAddonsByVersion(
+        [addon_42_SNAPSHOT, addon_42_alpha_01, addon_42
+        ], true, true, true).sort() == [addon_42_SNAPSHOT, addon_42_alpha_01, addon_42].sort()
   }
 
   def "findAddonsNewerThan must use version numbers to order and extract newer add-ons"() {
-    when:
+    expect:
     // Unordered list of add-ons with the same id and different versions
-    List<Addon> addons = [
-        new Addon(id: "addon", version: "42-beta-01"),
-        new Addon(id: "addon", version: "42-SNAPSHOT"),
-        new Addon(id: "addon", version: "42-M1"),
-        new Addon(id: "addon", version: "42-SP"),
-        new Addon(id: "addon", version: "43-alpha-01"),
-        new Addon(id: "addon", version: "42-RC1"),
-        new Addon(id: "addon", version: "42"),
-        new Addon(id: "addon", version: "42-alpha-01"),
-        new Addon(id: "addon", version: "41"),
-        new Addon(id: "addon", version: "43-SNAPSHOT")
-    ]
-    then:
-    addonService.findAddonsNewerThan(new Addon(id: "addon", version: "42-M1"), addons).sort() == [
-        new Addon(id: "addon", version: "42-RC1"),
-        new Addon(id: "addon", version: "42-SNAPSHOT"),
-        new Addon(id: "addon", version: "42"),
-        new Addon(id: "addon", version: "42-SP"),
-        new Addon(id: "addon", version: "43-alpha-01"),
-        new Addon(id: "addon", version: "43-SNAPSHOT")].sort()
+    addonService.findAddonsNewerThan(addon_42_M1, [
+        addon_42_beta_01,
+        addon_42_SNAPSHOT,
+        addon_42_M1,
+        addon_42_SP,
+        addon_43_alpha_01,
+        addon_42_RC1,
+        addon_42,
+        addon_42_alpha_01,
+        addon_41,
+        addon_43_SNAPSHOT
+    ]).sort() == [
+        addon_42_RC1,
+        addon_42_SNAPSHOT,
+        addon_42,
+        addon_42_SP,
+        addon_43_alpha_01,
+        addon_43_SNAPSHOT].sort()
   }
 
   def "findNewestAddon must use version numbers to find the newest addon"() {
-    when:
+    expect:
     // Unordered list of add-ons with the same id and different versions
-    List<Addon> addons = [
-        new Addon(id: "addon", version: "42-beta-01"),
-        new Addon(id: "addon", version: "42-SNAPSHOT"),
-        new Addon(id: "addon", version: "42-M1"),
-        new Addon(id: "addon", version: "42-SP"),
-        new Addon(id: "addon", version: "43-alpha-01"),
-        new Addon(id: "addon", version: "42-RC1"),
-        new Addon(id: "addon", version: "42"),
-        new Addon(id: "addon", version: "42-alpha-01"),
-        new Addon(id: "addon", version: "41"),
-        new Addon(id: "addon", version: "43-SNAPSHOT")
-    ]
-    then:
-    addonService.findNewestAddon("addon", addons) == new Addon(id: "addon", version: "43-SNAPSHOT")
+    addonService.findNewestAddon("addon", [
+        addon_42_beta_01,
+        addon_42_SNAPSHOT,
+        addon_42_M1,
+        addon_42_SP,
+        addon_43_alpha_01,
+        addon_42_RC1,
+        addon_42,
+        addon_42_alpha_01,
+        addon_41,
+        addon_43_SNAPSHOT
+    ]) == addon_43_SNAPSHOT
   }
 
   def "findNewestAddon must return null if no addon with the given id is present in the list"() {
-    when:
+    expect:
     // Unordered list of add-ons with the same id and different versions
-    List<Addon> addons = [
-        new Addon(id: "addon", version: "42-beta-01"),
-        new Addon(id: "addon", version: "42-SNAPSHOT"),
-        new Addon(id: "addon", version: "42-M1"),
-        new Addon(id: "addon", version: "42-SP"),
-        new Addon(id: "addon", version: "43-alpha-01"),
-        new Addon(id: "addon", version: "42-RC1"),
-        new Addon(id: "addon", version: "42"),
-        new Addon(id: "addon", version: "42-alpha-01"),
-        new Addon(id: "addon", version: "41"),
-        new Addon(id: "addon", version: "43-SNAPSHOT")
-    ]
-    then:
-    addonService.findNewestAddon("addon2", addons) == null
+    addonService.findNewestAddon("addon2", [
+        addon_42_beta_01,
+        addon_42_SNAPSHOT,
+        addon_42_M1,
+        addon_42_SP,
+        addon_43_alpha_01,
+        addon_42_RC1,
+        addon_42,
+        addon_42_alpha_01,
+        addon_41,
+        addon_43_SNAPSHOT
+    ]) == null
   }
 
   def "convertUrlToFilename must always return the same value for a given URL"() {
@@ -358,34 +384,22 @@ class AddonServiceTest extends UnitTestsSpecification {
     then:
     thrown CompatibilityException
     where:
-    platformSettings    | addon
-    plfCommunityTomcat  | new Addon(supportedApplicationServers: [JBOSS],
-                                    supportedDistributions: [COMMUNITY],
-                                    compatibility: "[4.1,)")// Wrong application Server
-    plfEnterpriseTomcat | new Addon(supportedApplicationServers: [JBOSS],
-                                    supportedDistributions: [ENTERPRISE],
-                                    compatibility: "[4.1,)")// Wrong application Server
-    plfEnterpriseJboss  | new Addon(supportedApplicationServers: [TOMCAT],
-                                    supportedDistributions: [ENTERPRISE],
-                                    compatibility: "[4.1,)")// Wrong application Server
-    plfCommunityTomcat  | new Addon(supportedApplicationServers: [TOMCAT],
-                                    supportedDistributions: [ENTERPRISE],
-                                    compatibility: "[4.1,)")// Wrong distribution
-    plfEnterpriseTomcat | new Addon(supportedApplicationServers: [TOMCAT],
-                                    supportedDistributions: [COMMUNITY],
-                                    compatibility: "[4.1,)")// Wrong distribution
-    plfEnterpriseJboss  | new Addon(supportedApplicationServers: [JBOSS],
-                                    supportedDistributions: [COMMUNITY],
-                                    compatibility: "[4.1,)")// Wrong distribution
-    plfCommunityTomcat  | new Addon(supportedApplicationServers: [TOMCAT],
-                                    supportedDistributions: [COMMUNITY],
-                                    compatibility: "[4.2,)")// Wrong version
-    plfEnterpriseTomcat | new Addon(supportedApplicationServers: [TOMCAT],
-                                    supportedDistributions: [ENTERPRISE],
-                                    compatibility: "[4.2,)")// Wrong version
-    plfEnterpriseJboss  | new Addon(supportedApplicationServers: [JBOSS],
-                                    supportedDistributions: [ENTERPRISE],
-                                    compatibility: "[4.2,)")// Wrong version
+    platformSettings      | addon
+    plfCommunityTomcat41  | addon2
+    plfCommunityTomcat41  | addon3
+    plfCommunityTomcat41  | addon4
+    plfCommunityTomcat41  | addon5
+    plfCommunityTomcat41  | addon6
+    plfEnterpriseTomcat41 | addon1
+    plfEnterpriseTomcat41 | addon3
+    plfEnterpriseTomcat41 | addon4
+    plfEnterpriseTomcat41 | addon5
+    plfEnterpriseTomcat41 | addon6
+    plfEnterpriseJboss41  | addon1
+    plfEnterpriseJboss41  | addon2
+    plfEnterpriseJboss41  | addon4
+    plfEnterpriseJboss41  | addon5
+    plfEnterpriseJboss41  | addon6
   }
 
   @Unroll
@@ -395,15 +409,24 @@ class AddonServiceTest extends UnitTestsSpecification {
     then:
     notThrown CompatibilityException
     where:
-    platformSettings    | addon
-    plfCommunityTomcat  | new Addon(supportedApplicationServers: [TOMCAT],
-                                    supportedDistributions: [COMMUNITY],
-                                    compatibility: "[4.1,)")
-    plfEnterpriseTomcat | new Addon(supportedApplicationServers: [TOMCAT],
-                                    supportedDistributions: [ENTERPRISE],
-                                    compatibility: "[4.1,)")
-    plfEnterpriseJboss  | new Addon(supportedApplicationServers: [JBOSS],
-                                    supportedDistributions: [ENTERPRISE],
-                                    compatibility: "[4.1,)")
+    platformSettings      | addon
+    plfCommunityTomcat41  | addon1
+    plfEnterpriseTomcat41 | addon2
+    plfEnterpriseJboss41  | addon3
+  }
+
+  def "filterCompatibleAddons for PLF Community Tomcat"() {
+    expect:
+    addonService.filterCompatibleAddons([addon1, addon2, addon3, addon4, addon5, addon6], plfCommunityTomcat41) == [addon1]
+  }
+
+  def "filterCompatibleAddons for PLF Enterprise Tomcat"() {
+    expect:
+    addonService.filterCompatibleAddons([addon1, addon2, addon3, addon4, addon5, addon6], plfEnterpriseTomcat41) == [addon2]
+  }
+
+  def "filterCompatibleAddons for PLF Enterprise Jboss"() {
+    expect:
+    addonService.filterCompatibleAddons([addon1, addon2, addon3, addon4, addon5, addon6], plfEnterpriseJboss41) == [addon3]
   }
 }
