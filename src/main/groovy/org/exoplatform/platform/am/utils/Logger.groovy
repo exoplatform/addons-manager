@@ -104,18 +104,20 @@ class Logger {
   }
 
   void debug(final String title, final Map map, final List<String> excludes) {
-    List<String> fieldsToExcludes = excludes ? excludes : []
-    debugHR("=")
-    debug("${title.toUpperCase()}:")
-    debugHR()
-    if (map) {
-      map.keySet().findAll { !fieldsToExcludes.contains(it) }.each {
-        debug String.format("%-${map.keySet()*.size().max()}s : %s", it, map.get(it))
+    if (isDebugEnabled()) {
+      List<String> fieldsToExcludes = excludes ? excludes : []
+      debugHR("=")
+      debug("${title.toUpperCase()}:")
+      debugHR()
+      if (map) {
+        map.keySet().findAll { !fieldsToExcludes.contains(it) }.each {
+          debug String.format("%-${map.keySet()*.size().max()}s : %s", it, map.get(it))
+        }
+      } else {
+        debug "Null"
       }
-    } else {
-      debug "Null"
+      debugHR("=")
     }
-    debugHR("=")
   }
 
   void debugHR(final String padding) {
