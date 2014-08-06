@@ -27,8 +27,6 @@ import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
 import org.eclipse.aether.util.version.GenericVersionScheme
-import org.eclipse.aether.version.Version
-import org.eclipse.aether.version.VersionConstraint
 import org.eclipse.aether.version.VersionScheme
 import org.exoplatform.platform.am.ex.AddonNotFoundException
 import org.exoplatform.platform.am.ex.CompatibilityException
@@ -66,6 +64,11 @@ class AddonService {
   private static final STATUS_FILE_EXT = ".status"
 
   /**
+   * Version Scheme to compare/sort versions
+   */
+  private static final VersionScheme VERSION_SCHEME = new GenericVersionScheme()
+
+  /**
    * Singleton
    */
   private static final AddonService singleton = new AddonService()
@@ -77,8 +80,6 @@ class AddonService {
   static AddonService getInstance() {
     return singleton
   }
-
-  private VersionScheme versionScheme = new GenericVersionScheme()
 
   /**
    * You should use the singleton
@@ -806,15 +807,7 @@ class AddonService {
       String constraint
   ) {
     assert version
-    Boolean result
-    if (constraint) {
-      Version plfVersion = versionScheme.parseVersion(version)
-      VersionConstraint addonConstraint = versionScheme.parseVersionConstraint(constraint)
-      result = addonConstraint.containsVersion(plfVersion)
-    } else {
-      result = true
-    }
-    return result
+    !constraint || VERSION_SCHEME.parseVersionConstraint(constraint).containsVersion(VERSION_SCHEME.parseVersion(version))
   }
 
   private enum ParsingErrorType {

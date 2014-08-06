@@ -27,7 +27,7 @@ import org.exoplatform.platform.am.settings.PlatformSettings
 @Canonical(includes = ['id', 'version'])
 class Addon implements Comparable<Addon> {
 
-  static private final GenericVersionScheme VERSION_SCHEME = new GenericVersionScheme()
+  private static final GenericVersionScheme VERSION_SCHEME = new GenericVersionScheme()
 
   String id
   String version
