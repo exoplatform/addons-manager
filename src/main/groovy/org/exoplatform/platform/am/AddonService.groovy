@@ -494,12 +494,16 @@ class AddonService {
    * Parse a JSON String representing an Add-on to build an {@link Addon} object
    * @param text the JSON text to parse
    * @return an Addon object
+   * @throws InvalidJSONException if there is at least one error while reading an add-on
    */
-  protected Addon createAddonFromJsonText(
-      String text) {
+  protected Addon createAddonFromJsonText(String text) throws InvalidJSONException {
+    Addon result
     ParsingErrors errors = new ParsingErrors();
-    Addon result = createAddonFromJsonObject(new JsonSlurper().parseText(text), errors)
-    printMessages(errors)
+    try {
+      result = createAddonFromJsonObject(new JsonSlurper().parseText(text), errors)
+    } finally {
+      printMessages(errors)
+    }
     return result
   }
 
@@ -535,10 +539,11 @@ class AddonService {
    * @param anAddon An Object built from JsonSlurper
    * @param errors Error messages to populate while reading
    * @return an Addon or null if there are some errors
+   * @throws InvalidJSONException if there is at least one error while reading an add-on
    */
   protected Addon createAddonFromJsonObject(
       Object anAddon,
-      ParsingErrors errors) {
+      ParsingErrors errors) throws InvalidJSONException {
     Addon addonObj = new Addon(
         id: anAddon.id,
         version: anAddon.version);
@@ -678,7 +683,11 @@ class AddonService {
       errors.addInvalid("${addonObj.id}:${addonObj.version}", "No supportedDistributions")
     }
     // Reject it only it is marked as invalid
-    if (errors.get("${addonObj.id}:${addonObj.version}")?.size()) {
+    if (errors?.findAll { String key, List<ParsingError> value ->
+      key == "${addonObj?.id}:${addonObj?.version}" && value?.findAll { ParsingError pe ->
+        pe?.type == INVALID_ENTRY
+      }?.size()
+    }?.size()) {
       throw new InvalidJSONException(anAddon)
     }
     return addonObj
