@@ -37,14 +37,7 @@ class ConflictConverter extends BaseConverter<Conflict> {
  */
   @Override
   public Conflict convert(String value) {
-    try {
-      if (value) {
-        Conflict.valueOf(value.toUpperCase().trim())
-      } else {
-        Conflict.FAIL
-      }
-    } catch (IllegalArgumentException iea) {
-      Conflict.FAIL
-    }
+    // ConflictValidator ensures that the value passed here is valid
+    Conflict.valueOf(value.toUpperCase().trim())
   }
 }
