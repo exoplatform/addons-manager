@@ -62,15 +62,7 @@ class Console {
     this._outputStream = outputStream
     this._errorStream = errorStream
 
-    this._console = new ConsoleReader(this._inputStream, this._outputStream)
-    if (TerminalFactory.get().ansiSupported) {
-      this._out = new AnsiRenderWriter(TerminalFactory.get().wrapOutIfNeeded(this._outputStream), true)
-      this._err = new AnsiRenderWriter(TerminalFactory.get().wrapOutIfNeeded(this._errorStream), true)
-    } else {
-      this._out = new PrintWriter(TerminalFactory.get().wrapOutIfNeeded(this._outputStream), true)
-      this._err = new PrintWriter(TerminalFactory.get().wrapOutIfNeeded(this._errorStream), true)
-    }
-
+    reset()
   }
 
   /**
@@ -105,9 +97,9 @@ class Console {
   void reset() {
     TerminalFactory.get().restore()
     // Close current out/err
-    this._out.close()
-    this._err.close()
-    this._console.shutdown()
+    this._out?.close()
+    this._err?.close()
+    this._console?.shutdown()
     // Create new out/err (Terminal configuration may have changed - used in tests)
     this._console = new ConsoleReader(this._inputStream, this._outputStream)
     if (TerminalFactory.get().ansiSupported) {
