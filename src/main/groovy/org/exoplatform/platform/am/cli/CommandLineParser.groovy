@@ -120,7 +120,7 @@ class CommandLineParser {
       } else if (parameterDescription.parameterized.type.isEnum()) {
         "${paramName}=[${parameterDescription.parameterized.type.enumConstants.collect { it.toString().toLowerCase() }.join("|")}]"
       } else {
-        "${paramName}=X"
+        "${paramName}=value"
       }
     }.join(", ")
   }

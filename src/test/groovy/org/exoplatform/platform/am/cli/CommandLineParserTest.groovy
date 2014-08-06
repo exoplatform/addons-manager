@@ -38,7 +38,14 @@ class CommandLineParserTest extends UnitTestsSpecification {
   private static final String invalidCatalogUrl = "thisIsNotAnUrl"
 
   @Subject
-  CommandLineParser clp = new CommandLineParser("FAKE.sh", Console.get().width)
+  CommandLineParser clp = new CommandLineParser("FAKE", Console.get().width)
+
+  def "Test usage"() {
+    when:
+    clp.usage()
+    then:
+    notThrown Throwable
+  }
 
   def "Test command line parameters to display help with arguments : #args"(String[] args) {
     when:
@@ -49,6 +56,14 @@ class CommandLineParserTest extends UnitTestsSpecification {
     args << [
         [HELP_SHORT_OPT],
         [HELP_LONG_OPT],
+        [LIST_CMD, HELP_SHORT_OPT],
+        [LIST_CMD, HELP_LONG_OPT],
+        [DESCRIBE_CMD, HELP_SHORT_OPT],
+        [DESCRIBE_CMD, HELP_LONG_OPT],
+        [INSTALL_CMD, HELP_SHORT_OPT],
+        [INSTALL_CMD, HELP_LONG_OPT],
+        [UNINSTALL_CMD, HELP_SHORT_OPT],
+        [UNINSTALL_CMD, HELP_LONG_OPT],
     ]
   }
 
@@ -319,6 +334,17 @@ class CommandLineParserTest extends UnitTestsSpecification {
     where:
     args << [
         [DESCRIBE_CMD, "my-addon"],
+    ]
+  }
+
+  def "Test command line parameters to describe with too much params with arguments : #args"(String[] args) {
+    when:
+    clp.parse(args)
+    then:
+    thrown CommandLineParsingException
+    where:
+    args << [
+        [DESCRIBE_CMD, "foo", "bar"],
     ]
   }
 
@@ -735,6 +761,21 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
+  def "Test command line parameters to uninstall an add-on with a version with arguments : #args"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.UNINSTALL == cliArgs.command
+    "my-addon".equals(cliArgs.commandUninstall.addonId)
+    !cliArgs.help
+    !cliArgs.verbose
+    !cliArgs.batchMode
+    where:
+    args << [
+        [UNINSTALL_CMD, "my-addon:42"],
+    ]
+  }
+
   def "Test invalid command line parameters with arguments : #args"(String[] args) {
     when:
     clp.parse(args)
@@ -742,6 +783,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     thrown(CommandLineParsingException)
     where:
     args << [
+        []
         // Missing params
         [INSTALL_CMD],
         [UNINSTALL_CMD],
