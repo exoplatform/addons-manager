@@ -21,7 +21,6 @@
 package org.exoplatform.platform.am.settings
 
 import org.exoplatform.platform.am.UnitTestsSpecification
-import org.exoplatform.platform.am.utils.Logger
 import spock.lang.Subject
 
 /**
@@ -33,7 +32,6 @@ class AddonsManagerSettingsTest extends UnitTestsSpecification {
   def "default properties are defined"() {
     setup:
     def managerSettings = new AddonsManagerSettings()
-    Logger.getInstance().debug("Manager Settings", managerSettings, ["class"])
     expect:
     managerSettings.addonsDirectoryPath
     managerSettings.archivesDirectoryName
@@ -63,7 +61,6 @@ class AddonsManagerSettingsTest extends UnitTestsSpecification {
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.versionsDirectoryName", "foo")
     System.setProperty("${AddonsManagerSettings.PROPERTY_PREFIX}.version", "foo")
     def managerSettings = new AddonsManagerSettings()
-    Logger.getInstance().debug("Manager Settings", managerSettings, ["class"])
     expect:
     "foo".equals(managerSettings.addonsDirectoryPath)
     "foo".equals(managerSettings.archivesDirectoryName)
