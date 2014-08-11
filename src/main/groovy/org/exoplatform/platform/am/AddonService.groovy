@@ -321,8 +321,7 @@ class AddonService {
                                filterAddonsByVersion(addons, true, allowUnstable, allowSnapshots))
       if (result == null) {
         if (!addons.find { it.id == addonId }) {
-          throw new AddonNotFoundException(
-              "No add-on with identifier ${addonId} found in local or remote catalogs, check your add-on identifier")
+          throw new AddonNotFoundException(addonId)
         } else {
           // Let's try to find an unstable version of the addon
           if (!allowUnstable && findNewestAddon(addonId,
@@ -336,15 +335,14 @@ class AddonService {
             LOG.error(
                 "This add-on exists but doesn't have a stable released version yet! add --snapshots option to use a development version")
           }
-          throw new AddonNotFoundException("No add-on with identifier ${addonId} found in local or remote catalogs")
+          throw new AddonNotFoundException(addonId)
         }
       }
     } else {
       result = addons.find { it.id == addonId && it.version == addonVersion }
       if (result == null) {
         if (!addons.find { it.id == addonId }) {
-          throw new AddonNotFoundException(
-              "No add-on with identifier ${addonId} found in local or remote catalogs, check your add-on identifier")
+          throw new AddonNotFoundException(addonId)
         } else {
           List<Addon> stableAddons = filterAddonsByVersion(addons.findAll { it.id == addonId }, true, false, false)
           if (!stableAddons.empty) {
@@ -358,8 +356,7 @@ class AddonService {
           if (!snapshotAddons.empty) {
             LOG.error "Development version(s) available for add-on ${addonId} : ${snapshotAddons.sort().reverse().collect { it.version }.join(', ')}"
           }
-          throw new AddonNotFoundException(
-              "The add-on ${addonId} doesn't have a version ${addonVersion}. Check the version number.")
+          throw new AddonNotFoundException(addonId, addonVersion)
         }
       }
     }

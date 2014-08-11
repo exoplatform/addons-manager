@@ -19,16 +19,22 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.ex
-
 import groovy.transform.InheritConstructors
 
 import static org.exoplatform.platform.am.AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND
-
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
 @InheritConstructors
 class AddonNotFoundException extends AddonsManagerException {
+  AddonNotFoundException(String addonId) {
+    super("No add-on with identifier ${addonId} found in local or remote catalogs, check your add-on identifier.")
+  }
+
+  AddonNotFoundException(String addonId, String addonVersion) {
+    super("The add-on ${addonId} doesn't have a version ${addonVersion}. Check the version number.")
+  }
+
   @Override
   int getErrorCode() {
     return RETURN_CODE_ADDON_NOT_FOUND
