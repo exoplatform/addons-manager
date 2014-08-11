@@ -172,12 +172,13 @@ class AddonService {
     String catalogContent
     File catalogCacheFile = new File(catalogCacheDir, "${convertUrlToFilename(catalogUrl)}.json");
     LOG.debug("Catalog cache file for ${catalogUrl} : ${catalogCacheFile}")
+    if (noCache && catalogCacheFile.exists()) {
+      // AM-102 : Let's drop the catalog cache with --no-cache
+      catalogCacheFile.delete()
+    }
     // If there is no local cache of the remote catalog or if it is older than 1h
     use([TimeCategory]) {
-      if ((noCache || !catalogCacheFile.exists() ||
-          new Date(catalogCacheFile.lastModified()) < 1.hours.ago)
-          && !offline
-      ) {
+      if ((!catalogCacheFile.exists() || new Date(catalogCacheFile.lastModified()) < 1.hours.ago) && !offline) {
         // Load the remote list
         File tempFile
         LOG.withStatus("Downloading catalog ${catalogUrl}") {
