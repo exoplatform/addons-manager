@@ -36,13 +36,17 @@ class AddonsManagerIT extends IntegrationTestsSpecification {
   }
 
   def "Without any param the program must return an error"() {
+    setup:
+    ProcessResult process = launchAddonsManager([""])
     expect:
-    AddonsManagerConstants.RETURN_CODE_INVALID_COMMAND_LINE_PARAMS == launchAddonsManager([""]).exitValue()
+    AddonsManagerConstants.RETURN_CODE_INVALID_COMMAND_LINE_PARAMS == process.exitValue()
   }
 
   def "[AM_CLI_02] With --help param the program must display the help"() {
+    setup:
+    ProcessResult process = launchAddonsManager([HELP_LONG_OPT])
     expect:
-    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager([HELP_LONG_OPT]).exitValue()
+    AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
   }
 
 }

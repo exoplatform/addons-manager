@@ -20,6 +20,7 @@
  */
 package org.exoplatform.platform.am
 
+import spock.lang.Issue
 import spock.lang.Subject
 
 import static org.exoplatform.platform.am.cli.CommandLineParameters.*
@@ -35,41 +36,50 @@ class AddonsManagerUninstallIT extends IntegrationTestsSpecification {
   }
 
   /**
-   * if foo-addon not already installed : must raise an error saying "The add-on foo-addon was not installed [KO]"
+   * if foo-addon is not already installed : must raise an error saying The add-on foo-addon was not installed
    */
+  @Issue("https://jira.exoplatform.org/browse/AM-49")
   def "[AM_UNINST_01] addon(.bat) uninstall foo-addon - not already installed"() {
+    setup:
+    ProcessResult process = launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
     expect:
     // Verify return code
-    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED == launchAddonsManager(
-        [UNINSTALL_CMD, "foo-addon"]).exitValue()
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED == process.exitValue()
+    // Verify error message
+    process.stdoutText =~ "The add-on foo-addon was not installed"
   }
 
   /**
    * if foo-addon is already installed : must uninstall the add-on whatever the installed version is stable or development
    */
+  @Issue("https://jira.exoplatform.org/browse/AM-49")
   def "[AM_UNINST_01] addon(.bat) uninstall foo-addon - already installed"() {
     setup:
     launchAddonsManager([INSTALL_CMD, "foo-addon:42"])
+    ProcessResult process = launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
     expect:
     // Verify return code
-    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager([UNINSTALL_CMD, "foo-addon"]).exitValue()
+    AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
     // Verify that the add-on is not installed
     verifyAddonContentNotPresent(FOO_ADDON_42_CONTENT)
   }
 
   /**
-   * At uninstall, files that were already existing are not removed unless they were overwritten with (--conflict=overwrite in
-   * which case, the previous version of the file is restored and the following warning message is logged : File XYZ has been
-   * restored
+   * At uninstall, files that were overwritten with --conflict=overwrite are restored and the following warning message is logged : File XYZ has been restored (where $FILE is
+   * the name of the overwritten file that is being restored.)
    */
+  @Issue("https://jira.exoplatform.org/browse/AM-48")
   def "[AM_UNINST_02] Removal of add-ons installed with --conflict=overwrite"() {
     setup:
     // Let's create a file existing in the addon
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar") << "TEST"
     launchAddonsManager([INSTALL_CMD, "foo-addon:42", "${CONFLICT_LONG_OPT}=overwrite"])
+    ProcessResult process = launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
     expect:
     // Verify return code
-    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager([UNINSTALL_CMD, "foo-addon"]).exitValue()
+    AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
+    // Verify warning message
+    process.stdoutText =~ "File .* has been restored"
     // Verify that the add-on is remove installed
     !new File(getPlatformSettings().webappsDirectory, "foo-addon-42.war").exists()
     // But the replaced file should be restored

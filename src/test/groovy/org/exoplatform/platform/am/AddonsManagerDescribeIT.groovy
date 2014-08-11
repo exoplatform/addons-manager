@@ -20,10 +20,10 @@
  */
 package org.exoplatform.platform.am
 
+import spock.lang.Issue
 import spock.lang.Subject
 
-import static org.exoplatform.platform.am.cli.CommandLineParameters.getDESCRIBE_CMD
-
+import static org.exoplatform.platform.am.cli.CommandLineParameters.*
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
@@ -36,25 +36,144 @@ class AddonsManagerDescribeIT extends IntegrationTestsSpecification {
   }
 
   /**
-   * if the foo-addon exists and has at least 1 released version : list all the informations about the most recent released version of foo-addon
-   * if the foo-addon exists and has no released version (only snapshots) : must raise an error saying "The add-on foo-addon doesn't doesn't have a released version yet ! add snapshot option to use the snapshot version [KO]"
-   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the catalog, check your add-on name [KO]"
+   * [AM_INF_00] The describe command displays catalog information for a given add-on. All fields are displayed.
+   * [AM_INF_00a] In addition to the specified add-on, describe displays information about other versions available in the catalog like this :
+   * [AM_INF_00a]  Stable versions : 1.2.0, 1.2.1, 1.3.0
+   * [AM_INF_00a]  Unstable versions : 1.1-RC1, 1.2-M1
+   * [AM_INF_00a]  Development versions : 1.2.x-SNAPSHOT, 1.3.x-SNAPSHOT
+   * [AM_INF_00a] The version of the add-on being described is being highlighted (using bold, underline, or a different color) among the list.
+   * [AM_INF_01] If the foo-addon exists, describes most recent stable, unstable or development version of foo-addon
+   * [AM_INF_01] If foo-addon doesn't exists in the catalog : must raise an error saying "No add-on with identifier foo-addon found in local or remote catalogs, check your add-on identifier"
    */
+  @Issue("https://jira.exoplatform.org/browse/AM-50")
   def "[AM_INF_01] addon(.bat) describe foo-addon"() {
+    setup:
+    ProcessResult process = launchAddonsManager([DESCRIBE_CMD, "foo-addon"])
     expect:
     // Verify return code
-    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager([DESCRIBE_CMD, "foo-addon"]).exitValue()
+    AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
   }
 
   /**
-   * if the foo-addon exists and has released version 42 : list all the informations the version42 of foo-addon
-   * if the foo-addon exists and has no released version 42 : must raise an error saying "The add-on foo-addon doesn't have a released version 42 yet ! check the version you specify [KO]"
-   * if foo-addon doesn't exists in the catalog : must raise an error saying "The add-on foo-addon doesn't exists in the catalog, check your add-on name [KO]"
+   * [AM_INF_00] The describe command displays catalog information for a given add-on. All fields are displayed.
+   * [AM_INF_00a] In addition to the specified add-on, describe displays information about other versions available in the catalog like this :
+   * [AM_INF_00a]  Stable versions : 1.2.0, 1.2.1, 1.3.0
+   * [AM_INF_00a]  Unstable versions : 1.1-RC1, 1.2-M1
+   * [AM_INF_00a]  Development versions : 1.2.x-SNAPSHOT, 1.3.x-SNAPSHOT
+   * [AM_INF_00a] The version of the add-on being described is being highlighted (using bold, underline, or a different color) among the list.
+   * [AM_INF_01] If the foo-addon exists, describes most recent stable, unstable or development version of foo-addon
+   * [AM_INF_01] If foo-addon doesn't exists in the catalog : must raise an error saying "No add-on with identifier foo-addon found in local or remote catalogs, check your add-on identifier"
    */
-  def "[AM_INF_02] addon(.bat) describe foo-addon:42"() {
+  @Issue("https://jira.exoplatform.org/browse/AM-50")
+  def "[AM_INF_01] addon(.bat) describe foo-addon - not found"() {
+    setup:
+    ProcessResult process = launchAddonsManager([DESCRIBE_CMD, "unknown-foo-addon"])
     expect:
     // Verify return code
-    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager([DESCRIBE_CMD, "foo-addon:42"]).exitValue()
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == process.exitValue()
+    // Verify error message
+    process.stdoutText =~ "No add-on with identifier unknown-foo-addon found in local or remote catalogs, check your add-on identifier."
   }
 
+  /**
+   * [AM_INF_02] if the foo-addon exists and has released version 42 : describes the version 42  of foo-addon
+   * [AM_INF_02] if the foo-addon exists and has no released version 42 : must raise an error saying The add-on foo-addon doesn't have a version 42. Check the version number
+   * [AM_INF_02] if foo-addon doesn't exist in the catalog : must raise an error saying "No add-on with identifier foo-addon found in local or remote catalogs, check your add-on identifier"
+   */
+  @Issue("https://jira.exoplatform.org/browse/AM-51")
+  def "[AM_INF_02] addon(.bat) describe foo-addon:42"() {
+    setup:
+    ProcessResult process = launchAddonsManager([DESCRIBE_CMD, "foo-addon:42"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
+  }
+
+  /**
+   * [AM_INF_02] if the foo-addon exists and has released version 42 : describes the version 42  of foo-addon
+   * [AM_INF_02] if the foo-addon exists and has no released version 42 : must raise an error saying The add-on foo-addon doesn't have a version 42. Check the version number
+   * [AM_INF_02] if foo-addon doesn't exist in the catalog : must raise an error saying "No add-on with identifier foo-addon found in local or remote catalogs, check your add-on identifier"
+   */
+  @Issue("https://jira.exoplatform.org/browse/AM-51")
+  def "[AM_INF_02] addon(.bat) describe foo-addon:42 - wrong version"() {
+    setup:
+    ProcessResult process = launchAddonsManager([DESCRIBE_CMD, "foo-addon:1976"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == process.exitValue()
+    // Verify error message
+    process.stdoutText =~ "The add-on foo-addon doesn't have a version 1976. Check the version number."
+  }
+
+  /**
+   * [AM_INF_02] if the foo-addon exists and has released version 42 : describes the version 42  of foo-addon
+   * [AM_INF_02] if the foo-addon exists and has no released version 42 : must raise an error saying The add-on foo-addon doesn't have a version 42. Check the version number
+   * [AM_INF_02] if foo-addon doesn't exist in the catalog : must raise an error saying "No add-on with identifier foo-addon found in local or remote catalogs, check your add-on identifier"
+   */
+  @Issue("https://jira.exoplatform.org/browse/AM-51")
+  def "[AM_INF_02] addon(.bat) describe foo-addon:42 - not found"() {
+    setup:
+    ProcessResult process = launchAddonsManager([DESCRIBE_CMD, "unknown-foo-addon:42"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == process.exitValue()
+    // Verify error message
+    process.stdoutText =~ "No add-on with identifier unknown-foo-addon found in local or remote catalogs, check your add-on identifier."
+  }
+
+  /**
+   * Describe an add-on by sourcing the remote catalog at http://example.org/remote.json (see AM_CAT_02)
+   * [AM_INF_03] --offline, --catalog and --no-cache can be used with describe command. They control how the catalog is loaded. They work in the same way as the list command.
+   */
+  @Issue("https://jira.exoplatform.org/browse/AM-50")
+  def "[AM_INF_03] add-on.(sh|bat) describe foo-addon --catalog=http://example.org/remote.json"() {
+    setup:
+    ProcessResult process = launchAddonsManager([DESCRIBE_CMD, "foo-addon", "${CATALOG_LONG_OPT}=${getWebServerRootUrl()}/catalog2.json"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
+  }
+
+  /**
+   * Describe an add-on by re-downloading the remote catalog
+   * [AM_INF_03] --offline, --catalog and --no-cache can be used with describe command. They control how the catalog is loaded. They work in the same way as the list command.
+   */
+  @Issue("https://jira.exoplatform.org/browse/AM-50")
+  def "[AM_INF_03] add-on.(sh|bat) describe foo-addon --no-cache"() {
+    setup:
+    ProcessResult process = launchAddonsManager([DESCRIBE_CMD, "foo-addon", NO_CACHE_LONG_OPT])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
+  }
+
+  /**
+   * Describe an add-on without downloading the remote catalog (using only the cached and local catalogs)
+   * [AM_INF_03] --offline, --catalog and --no-cache can be used with describe command. They control how the catalog is loaded. They work in the same way as the list command.
+   */
+  @Issue("https://jira.exoplatform.org/browse/AM-50")
+  def "[AM_INF_03] addon(.bat) describe foo-addon --offline"() {
+    setup:
+    // Let's put the remote catalog in cache
+    launchAddonsManager([DESCRIBE_CMD, "foo-addon"])
+    ProcessResult process = launchAddonsManager([DESCRIBE_CMD, "foo-addon", OFFLINE_LONG_OPT])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
+  }
+
+  /**
+   * Describe an add-on without redownloading the remote catalog and the without using the cached catalog (using only the local catalog)
+   * [AM_INF_03] --offline, --catalog and --no-cache can be used with describe command. They control how the catalog is loaded. They work in the same way as the list command.
+   */
+  @Issue(["https://jira.exoplatform.org/browse/AM-50","https://jira.exoplatform.org/browse/AM-102"])
+  def "[AM_INF_03] add-on.(sh|bat) describe foo-addon --offline --no-cache"() {
+    setup:
+    // Let's put the remote catalog in cache
+    launchAddonsManager([DESCRIBE_CMD, "foo-addon"])
+    ProcessResult process = launchAddonsManager([DESCRIBE_CMD, "foo-addon", NO_CACHE_LONG_OPT, OFFLINE_LONG_OPT])
+    expect:
+    // Verify return code (The local catalog is empty and we cannot use the remote cache)
+    AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == process.exitValue()
+  }
 }
