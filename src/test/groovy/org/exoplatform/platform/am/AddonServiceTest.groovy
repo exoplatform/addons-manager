@@ -23,6 +23,7 @@ import org.exoplatform.platform.am.ex.CompatibilityException
 import org.exoplatform.platform.am.ex.InvalidJSONException
 import org.exoplatform.platform.am.settings.PlatformSettings
 import spock.lang.Shared
+import spock.lang.Unroll
 
 import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.JBOSS
 import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.TOMCAT
@@ -348,7 +349,8 @@ class AddonServiceTest extends UnitTestsSpecification {
     filename1 == filename2
   }
 
-  def "validateCompatibility is throwing an error"(PlatformSettings platformSettings, Addon addon) {
+  @Unroll
+  def "validateCompatibility must throw an error for the addon #addon.supportedApplicationServers,#addon.supportedDistributions,#addon.compatibility on PLF #platformSettings"(PlatformSettings platformSettings, Addon addon) {
     when:
     addonService.validateCompatibility(addon, platformSettings)
     then:
@@ -384,7 +386,8 @@ class AddonServiceTest extends UnitTestsSpecification {
                                     compatibility: "[4.2,)")// Wrong version
   }
 
-  def "validateCompatibility is ok"(PlatformSettings platformSettings, Addon addon) {
+  @Unroll
+  def "validateCompatibility must be ok for the addon #addon.supportedApplicationServers,#addon.supportedDistributions,#addon.compatibility on PLF #platformSettings"(PlatformSettings platformSettings, Addon addon) {
     when:
     addonService.validateCompatibility(addon, platformSettings)
     then:

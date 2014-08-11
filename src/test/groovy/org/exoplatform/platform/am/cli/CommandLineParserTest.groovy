@@ -23,6 +23,7 @@ package org.exoplatform.platform.am.cli
 import org.exoplatform.platform.am.UnitTestsSpecification
 import org.exoplatform.platform.am.ex.CommandLineParsingException
 import org.exoplatform.platform.am.utils.Console
+import spock.lang.Unroll
 
 import static org.exoplatform.platform.am.cli.CommandLineParameters.*
 
@@ -30,13 +31,14 @@ import static org.exoplatform.platform.am.cli.CommandLineParameters.*
  * Command line parameters parsing
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
+@Unroll
 class CommandLineParserTest extends UnitTestsSpecification {
   private static final String validCatalogUrl = "http://somewhere.com/catalog"
   private static final String invalidCatalogUrl = "thisIsNotAnUrl"
 
   CommandLineParser clp = new CommandLineParser("FAKE.sh", Console.get().width)
 
-  def "Test command line parameters to display help"(String[] args) {
+  def "Test command line parameters to display help with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -48,7 +50,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to list all add-ons"(String[] args) {
+  def "Test command line parameters to list all add-ons with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -69,7 +71,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to list all add-ons without using cache"(String[] args) {
+  def "Test command line parameters to list all add-ons without using cache with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -90,7 +92,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to list all add-ons while being offline"(String[] args) {
+  def "Test command line parameters to list all add-ons while being offline with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -111,7 +113,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to list all add-ons with verbose logs"(String[] args) {
+  def "Test command line parameters to list all add-ons with verbose logs with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -135,7 +137,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to list all add-ons including snapshots"(String[] args) {
+  def "Test command line parameters to list all add-ons including snapshots with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -156,7 +158,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to list all add-ons including snapshots with verbose logs"(String[] args) {
+  def "Test command line parameters to list all add-ons including snapshots with verbose logs with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -180,7 +182,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to list all add-ons including unstable"(String[] args) {
+  def "Test command line parameters to list all add-ons including unstable with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -201,7 +203,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to list all add-ons including unstables with verbose logs"(String[] args) {
+  def "Test command line parameters to list all add-ons including unstables with verbose logs with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -225,7 +227,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to list add-ons with a valid catalog parameter"(String[] args) {
+  def "Test command line parameters to list add-ons with a valid catalog parameter with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -246,7 +248,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to list add-ons with a invalid catalog parameter"(String[] args) {
+  def "Test command line parameters to list add-ons with a invalid catalog parameter with arguments : #args"(String[] args) {
     when:
     clp.parse(args)
     then:
@@ -257,7 +259,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to list installed add-ons"(String[] args) {
+  def "Test command line parameters to list installed add-ons with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -278,7 +280,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to list installed add-ons with newest version(s) available"(String[] args) {
+  def "Test command line parameters to list installed add-ons with newest version(s) available with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -299,7 +301,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to describe the latest version of an add-on"(String[] args) {
+  def "Test command line parameters to describe the latest version of an add-on with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -318,7 +320,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to describe the latest version of an add-on without using cache"(String[] args) {
+  def "Test command line parameters to describe the latest version of an add-on without using cache with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -337,7 +339,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to describe the latest version of an add-on while being offline"(String[] args) {
+  def "Test command line parameters to describe the latest version of an add-on while being offline with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -356,7 +358,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to describe a given version of an add-on"(String[] args) {
+  def "Test command line parameters to describe a given version of an add-on with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -374,7 +376,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to describe an add-on with a valid catalog parameter"(String[] args) {
+  def "Test command line parameters to describe an add-on with a valid catalog parameter with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -393,7 +395,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to describe an add-on with a invalid catalog parameter"(String[] args) {
+  def "Test command line parameters to describe an add-on with a invalid catalog parameter with arguments : #args"(String[] args) {
     when:
     clp.parse(args)
     then:
@@ -405,7 +407,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to install the latest version of an add-on"(String[] args) {
+  def "Test command line parameters to install the latest version of an add-on with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -429,7 +431,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to install the latest version of an add-on in non-interactive (batch) mode"(String[] args) {
+  def "Test command line parameters to install the latest version of an add-on in non-interactive (batch) mode with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -456,7 +458,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to install the latest version of an add-on without using cache"(String[] args) {
+  def "Test command line parameters to install the latest version of an add-on without using cache with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -480,7 +482,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to install the latest version of an add-on while being offline"(String[] args) {
+  def "Test command line parameters to install the latest version of an add-on while being offline with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -504,7 +506,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to install a given version of an add-on"(String[] args) {
+  def "Test command line parameters to install a given version of an add-on with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -527,7 +529,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to force to install an add-on"(String[] args) {
+  def "Test command line parameters to force to install an add-on with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -551,7 +553,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to install a SNAPSHOT version of an add-on"(String[] args) {
+  def "Test command line parameters to install a SNAPSHOT version of an add-on with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -575,7 +577,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to install an unstable version of an add-on"(String[] args) {
+  def "Test command line parameters to install an unstable version of an add-on with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -599,7 +601,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to install an add-on without compatibility checks"(String[] args) {
+  def "Test command line parameters to install an add-on without compatibility checks with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -622,7 +624,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to install an add-on overriding any existing file "(String[] args) {
+  def "Test command line parameters to install an add-on overriding any existing file with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -645,7 +647,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to install an add-on skipping any existing file "(String[] args) {
+  def "Test command line parameters to install an add-on skipping any existing file with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -669,7 +671,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
   }
 
 
-  def "Test command line parameters to install an add-on with invalid conflict parameter"(String[] args) {
+  def "Test command line parameters to install an add-on with invalid conflict parameter with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -680,7 +682,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to install an add-on with a valid catalog parameter"(String[] args) {
+  def "Test command line parameters to install an add-on with a valid catalog parameter with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -704,7 +706,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to install an add-on with a invalid catalog parameter"(String[] args) {
+  def "Test command line parameters to install an add-on with a invalid catalog parameter with arguments : #args"(String[] args) {
     when:
     clp.parse(args)
     then:
@@ -716,7 +718,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test command line parameters to uninstall an add-on"(String[] args) {
+  def "Test command line parameters to uninstall an add-on with arguments : #args"(String[] args) {
     when:
     CommandLineParameters cliArgs = clp.parse(args)
     then:
@@ -731,7 +733,7 @@ class CommandLineParserTest extends UnitTestsSpecification {
     ]
   }
 
-  def "Test invalid command line parameters"(String[] args) {
+  def "Test invalid command line parameters with arguments : #args"(String[] args) {
     when:
     clp.parse(args)
     then:
