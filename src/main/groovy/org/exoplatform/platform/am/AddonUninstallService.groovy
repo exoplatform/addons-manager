@@ -163,6 +163,7 @@ public class AddonUninstallService {
         LOG.withStatus("Deleting backup file of ${fileToRecover}") {
           backupFile.delete()
         }
+        LOG.warn("File ${fileToRecover} has been restored")
     }
 
     LOG.withStatus("Deleting installation details ${ADDON_SERVICE.getAddonStatusFile(env.statusesDirectory, addon).name}") {
