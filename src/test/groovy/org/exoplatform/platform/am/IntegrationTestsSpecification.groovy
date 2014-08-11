@@ -282,7 +282,7 @@ abstract class IntegrationTestsSpecification extends Specification {
     // Obtain status and output
     println "return code: ${result.exitValue()}"
     println "stderr: ${result.stderrText}"
-    println "stdout: ${result.stdoutText}" // *out* from the external program is *in* for groovy
+    println "stdout: ${result.stdoutText}"
     return result
   }
 
