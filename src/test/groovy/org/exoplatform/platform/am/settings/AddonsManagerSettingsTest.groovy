@@ -22,10 +22,12 @@ package org.exoplatform.platform.am.settings
 
 import org.exoplatform.platform.am.UnitTestsSpecification
 import org.exoplatform.platform.am.utils.Logger
+import spock.lang.Subject
 
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
+@Subject(AddonsManagerSettings)
 class AddonsManagerSettingsTest extends UnitTestsSpecification {
 
   def "default properties are defined"() {

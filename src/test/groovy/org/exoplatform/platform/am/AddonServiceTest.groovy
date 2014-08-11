@@ -23,6 +23,7 @@ import org.exoplatform.platform.am.ex.CompatibilityException
 import org.exoplatform.platform.am.ex.InvalidJSONException
 import org.exoplatform.platform.am.settings.PlatformSettings
 import spock.lang.Shared
+import spock.lang.Subject
 import spock.lang.Unroll
 
 import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.JBOSS
@@ -35,6 +36,7 @@ import static org.exoplatform.platform.am.settings.PlatformSettings.Distribution
 class AddonServiceTest extends UnitTestsSpecification {
 
   @Shared
+  @Subject
   AddonService addonService = AddonService.getInstance()
 
   @Shared

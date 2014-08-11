@@ -19,12 +19,12 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.utils
-
 import org.exoplatform.platform.am.IntegrationTestsSpecification
-
+import spock.lang.Subject
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
+@Subject(FileUtils)
 class FileUtilsIT extends IntegrationTestsSpecification {
 
   def "[AM_CAT_01] The download mechanism must follow permanent redirects"() {

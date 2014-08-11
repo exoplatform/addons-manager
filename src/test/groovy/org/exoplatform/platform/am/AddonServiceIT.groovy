@@ -21,6 +21,8 @@
 package org.exoplatform.platform.am
 import groovy.json.JsonException
 import spock.lang.Shared
+import spock.lang.Subject
+
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
@@ -32,6 +34,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
   private static final int NB_ADDONS_CATALOG_JSON = 10
 
   @Shared
+  @Subject
   AddonService addonService = AddonService.getInstance()
 
   def "One call of loadAddonsFromUrl online with cache"() {

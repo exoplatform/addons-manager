@@ -20,10 +20,13 @@
  */
 package org.exoplatform.platform.am
 
+import spock.lang.Subject
+
 import static org.exoplatform.platform.am.cli.CommandLineParameters.*
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
+@Subject(AddonsManager)
 class AddonsManagerUninstallIT extends IntegrationTestsSpecification {
 
   def cleanup() {

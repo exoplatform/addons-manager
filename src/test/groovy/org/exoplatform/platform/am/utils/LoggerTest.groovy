@@ -19,11 +19,11 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am.utils
-
 import jline.TerminalFactory
 import org.exoplatform.platform.am.UnitTestsSpecification
 import org.fusesource.jansi.AnsiRenderer
 import spock.lang.Shared
+import spock.lang.Subject
 
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
@@ -39,6 +39,7 @@ class LoggerTest extends UnitTestsSpecification {
   @Shared
   Console console
   @Shared
+  @Subject
   Logger logger
 
   def setupSpec() {

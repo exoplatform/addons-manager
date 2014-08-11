@@ -20,11 +20,14 @@
  */
 package org.exoplatform.platform.am
 
+import spock.lang.Subject
+
 import static org.exoplatform.platform.am.cli.CommandLineParameters.getHELP_LONG_OPT
 
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
+@Subject(AddonsManager)
 class AddonsManagerIT extends IntegrationTestsSpecification {
 
   def cleanup() {

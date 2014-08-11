@@ -22,10 +22,12 @@ package org.exoplatform.platform.am.settings
 
 import org.exoplatform.platform.am.UnitTestsSpecification
 import org.exoplatform.platform.am.ex.ErroneousSetupException
+import spock.lang.Subject
 
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
+@Subject(PlatformSettings)
 class PlatformSettingsTest extends UnitTestsSpecification {
 
   def "No plf.home property defined"() {

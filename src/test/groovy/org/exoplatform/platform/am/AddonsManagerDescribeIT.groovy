@@ -20,11 +20,14 @@
  */
 package org.exoplatform.platform.am
 
+import spock.lang.Subject
+
 import static org.exoplatform.platform.am.cli.CommandLineParameters.getDESCRIBE_CMD
 
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
+@Subject(AddonsManager)
 class AddonsManagerDescribeIT extends IntegrationTestsSpecification {
 
   def cleanup() {

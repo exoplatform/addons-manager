@@ -21,7 +21,9 @@
 package org.exoplatform.platform.am.settings
 
 import org.exoplatform.platform.am.IntegrationTestsSpecification
+import spock.lang.Subject
 
+@Subject(PlatformSettings)
 class PlatformSettingsIT extends IntegrationTestsSpecification {
 
   def "validate Settings"() {
