@@ -20,6 +20,7 @@
  */
 package org.exoplatform.platform.am
 
+import groovy.util.slurpersupport.GPathResult
 import org.exoplatform.platform.am.settings.AddonsManagerSettings
 import org.exoplatform.platform.am.settings.EnvironmentSettings
 import org.exoplatform.platform.am.settings.PlatformSettings
@@ -42,6 +43,33 @@ abstract class IntegrationTestsSpecification extends Specification {
   public static final String IT_SYSPROP_TESTS_DATA_DIR_PATH = "it.dataDirPath"
   public static final String IT_SYSPROP_TESTED_ARTIFACT_PATH = "it.testedArtifactPath"
   public static final String JAVA_HOME = 'java.home'
+
+  final static Map<String, String[]> FOO_ADDON_42_CONTENT = [
+      libraries: ["foo-addon-42.jar"],
+      webapps  : ["foo-addon-42.war"]
+  ]
+
+  final static Map<String, String[]> OTHER_FILES_ADDON_42_CONTENT = [
+      libraries  : ["other-files-addon-42.jar"],
+      webapps    : ["other-files-addon-42.war"],
+      othersFiles: ["conf/other-files-addon/configuration1.properties", "conf/other-files-addon/configuration2.properties"]
+  ]
+
+  final static Map<String, String[]> README_ADDON_42_CONTENT = [
+      libraries: ["readme-addon-42.jar"],
+      webapps  : ["readme-addon-42.war"]
+  ]
+
+  final static Map<String, String[]> FOO_ADDON_43_RC1_CONTENT = [
+      libraries: ["foo-addon-43-RC1.jar"],
+      webapps  : ["foo-addon-43-RC1.war"]
+  ]
+
+  final static Map<String, String[]> FOO_ADDON_43_SNAPSHOT_CONTENT = [
+      libraries: ["foo-addon-43-SNAPSHOT.jar"],
+      webapps  : ["foo-addon-43-SNAPSHOT.war"]
+  ]
+
   @Shared
   private File _testedArtifact
 
@@ -140,6 +168,75 @@ abstract class IntegrationTestsSpecification extends Specification {
    */
   boolean isVerbose() {
     Boolean.getBoolean(IT_SYSPROP_VERBOSE)
+  }
+
+  /**
+   * Helper method to check that an add-on is correctly installed
+   * @param addonContent a Map describing the add-on content. It may have 3 keys and for each a list of paths in the archive.
+   * @{code libraries} gives le list of libraries (*.jar) in the archive. @{code webapps} gives le list of webapps (*.war)
+   * in the archive. @{code othersFiles} gives le list of others files.
+   */
+  void verifyAddonContentPresent(Map<String, String[]> addonContent) {
+    if (addonContent.libraries) {
+      addonContent.libraries.each { library ->
+        assert new File(getPlatformSettings().librariesDirectory, library).exists()
+      }
+    }
+    if (addonContent.webapps) {
+      addonContent.webapps.each { webapp ->
+        assert new File(getPlatformSettings().webappsDirectory, webapp).exists()
+        if (PlatformSettings.AppServerType.JBOSS == getPlatformSettings().appServerType) {
+          // Verify the application.xml
+          GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(
+              new File(getPlatformSettings().webappsDirectory, "META-INF/application.xml").text)
+          assert applicationXmlContent.depthFirst().findAll {
+            (it.name() == 'module') &&
+                (it.'web'.'context-root'.text() == webapp.substring(0, webapp.size() - 4)) &&
+                (it.'web'.'web-uri'.text() == webapp)
+          }.size() == 1
+        }
+      }
+    }
+    if (addonContent.othersFiles) {
+      addonContent.othersFiles.each { otherFile ->
+        assert new File(getPlatformSettings().homeDirectory, otherFile).exists()
+      }
+    }
+  }
+
+  /**
+   * Helper method to check that an add-on is not installed
+   * @param addonContent a Map describing the add-on content. It may have 3 keys and for each a list of paths in the archive.
+   * @{code libraries} gives le list of libraries (*.jar) in the archive. @{code webapps} gives le list of webapps (*.war)
+   * in the archive. @{code othersFiles} gives le list of others files.
+   */
+  void verifyAddonContentNotPresent(Map<String, String[]> addonContent) {
+    if (addonContent.libraries) {
+      addonContent.libraries.each { library ->
+        assert !new File(getPlatformSettings().librariesDirectory, library).exists()
+      }
+    }
+    if (addonContent.webapps) {
+      addonContent.webapps.each { webapp ->
+        assert !new File(getPlatformSettings().webappsDirectory, webapp).exists()
+        if (PlatformSettings.AppServerType.JBOSS == getPlatformSettings().appServerType) {
+          // Verify the application.xml
+          GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(
+              new File(getPlatformSettings().webappsDirectory, "META-INF/application.xml").text)
+          assert applicationXmlContent.depthFirst().findAll {
+            (it.name() == 'module') &&
+                ((it.'web'.'context-root'.text() == webapp.substring(0, webapp.size() - 4)) ||
+                    (it.'web'.'web-uri'.text() == webapp))
+          }.size() == 0
+        }
+
+      }
+    }
+    if (addonContent.othersFiles) {
+      addonContent.othersFiles.each { otherFile ->
+        assert !new File(getPlatformSettings().homeDirectory, otherFile).exists()
+      }
+    }
   }
 
   /**
