@@ -47,7 +47,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -56,14 +56,14 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "[AM_INST_01] addon(.bat) install foo-addon - already installed"() {
     setup:
     // Install it first
-    launchAddonsManager([INSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon"])
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon"])
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED == process.exitValue()
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -92,7 +92,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_43_SNAPSHOT_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -102,14 +102,14 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "[AM_INST_02] addon(.bat) install foo-addon --snapshots - already installed"() {
     setup:
     // Install it first
-    launchAddonsManager([INSTALL_CMD, "foo-addon", SNAPSHOTS_LONG_OPT])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon", SNAPSHOTS_LONG_OPT])
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon", SNAPSHOTS_LONG_OPT])
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED == process.exitValue()
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -138,7 +138,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_43_RC1_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -147,14 +147,14 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "[AM_INST_14] addon(.bat) install foo-addon --unstable - already installed"() {
     setup:
     // Install it first
-    launchAddonsManager([INSTALL_CMD, "foo-addon", UNSTABLE_LONG_OPT])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon", UNSTABLE_LONG_OPT])
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon", UNSTABLE_LONG_OPT])
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED == process.exitValue()
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -183,7 +183,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -192,7 +192,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "[AM_INST_03] addon(.bat) install foo-addon --force - already installed"() {
     setup:
     // Install it first
-    launchAddonsManager([INSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon"])
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon", FORCE_LONG_OPT])
     expect:
     // Verify return code
@@ -201,7 +201,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -230,7 +230,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_43_SNAPSHOT_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -240,7 +240,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "[AM_INST_04] addon(.bat) install foo-addon --snapshots --force - already installed"() {
     setup:
     // Install it first
-    launchAddonsManager([INSTALL_CMD, "foo-addon", SNAPSHOTS_LONG_OPT])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon", SNAPSHOTS_LONG_OPT])
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon", SNAPSHOTS_LONG_OPT, FORCE_LONG_OPT])
     expect:
     // Verify return code
@@ -249,7 +249,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_43_SNAPSHOT_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -278,7 +278,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_43_RC1_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -289,7 +289,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "addon(.bat) install foo-addon --unstable --force - already installed"() {
     setup:
     // Install it first
-    launchAddonsManager([INSTALL_CMD, "foo-addon", UNSTABLE_LONG_OPT])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon", UNSTABLE_LONG_OPT])
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon", UNSTABLE_LONG_OPT, FORCE_LONG_OPT])
     expect:
     // Verify return code
@@ -298,7 +298,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_43_RC1_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -327,7 +327,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -336,14 +336,14 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "[AM_INST_05] addon(.bat) install foo-addon:42 - already installed"() {
     setup:
     // Install it first
-    launchAddonsManager([INSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon"])
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon:42"])
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED == process.exitValue()
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -385,7 +385,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_43_SNAPSHOT_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -394,14 +394,14 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "addon(.bat) install foo-addon:43-SNAPSHOT --snapshots - already installed"() {
     setup:
     // Install it first
-    launchAddonsManager([INSTALL_CMD, "foo-addon:43-SNAPSHOT", SNAPSHOTS_LONG_OPT])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon:43-SNAPSHOT", SNAPSHOTS_LONG_OPT])
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon", SNAPSHOTS_LONG_OPT])
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED == process.exitValue()
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -445,7 +445,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_43_RC1_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -454,14 +454,14 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "addon(.bat) install foo-addon:43-RC1 --unstable - already installed"() {
     setup:
     // Install it first
-    launchAddonsManager([INSTALL_CMD, "foo-addon:43-RC1", UNSTABLE_LONG_OPT])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon:43-RC1", UNSTABLE_LONG_OPT])
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon", UNSTABLE_LONG_OPT])
     expect:
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_ALREADY_INSTALLED == process.exitValue()
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -503,7 +503,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -512,7 +512,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "[AM_INST_07] addon(.bat) install foo-addon:42 --force - already installed"() {
     setup:
     // Install it first
-    launchAddonsManager([INSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon"])
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon:42", FORCE_LONG_OPT])
     expect:
     // Verify return code
@@ -521,7 +521,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -563,7 +563,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_43_SNAPSHOT_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -573,7 +573,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "[AM_INST_08] addon(.bat) install foo-addon:43-SNAPSHOT --snapshots --force - already installed"() {
     setup:
     // Install it first
-    launchAddonsManager([INSTALL_CMD, "foo-addon", SNAPSHOTS_LONG_OPT])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon", SNAPSHOTS_LONG_OPT])
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon:43-SNAPSHOT", SNAPSHOTS_LONG_OPT, FORCE_LONG_OPT])
     expect:
     // Verify return code
@@ -582,7 +582,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_43_SNAPSHOT_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -611,7 +611,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_43_RC1_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -620,7 +620,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "addon(.bat) install foo-addon:43-RC1 --unstable --force - already installed"() {
     setup:
     // Install it first
-    launchAddonsManager([INSTALL_CMD, "foo-addon", UNSTABLE_LONG_OPT])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon", UNSTABLE_LONG_OPT])
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon:43-RC1", UNSTABLE_LONG_OPT, FORCE_LONG_OPT])
     expect:
     // Verify return code
@@ -629,7 +629,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_43_RC1_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -671,7 +671,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "incompatible-foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "incompatible-foo-addon"])
   }
 
   /**
@@ -724,7 +724,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").text == "TEST"
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
     // Manually remove or additional file
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").delete()
   }
@@ -752,7 +752,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").text != "TEST"
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
     // Manually remove or additional file
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").delete()
   }
@@ -772,7 +772,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(README_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "readme-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "readme-addon"])
   }
 
   /**
@@ -784,9 +784,9 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "[AM_INST_13] addon(.bat) install foo-addon:42 --offline - already present"() {
     setup:
     // Install it a first time
-    launchAddonsManager([INSTALL_CMD, "foo-addon:42"])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon:42"])
     // remove it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
     // Let's install it a second time
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon:42", "--offline"])
     expect:
@@ -798,7 +798,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "foo-addon"])
   }
 
   /**
@@ -810,7 +810,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "[AM_INST_13] addon(.bat) install foo-addon:42 --offline - not present"() {
     setup:
     // Let's load the catalog
-    launchAddonsManager([LIST_CMD])
+    launchAddonsManagerSilently([LIST_CMD])
     // Let's install it a second time
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon:42","--offline"])
     expect:
@@ -871,7 +871,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "license-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "license-addon"])
   }
 
   /**
@@ -880,9 +880,9 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   def "[LICENSE_05] Don't prompt to validate a license already accepted."() {
     setup:
     // Install it a first time
-    launchAddonsManager([INSTALL_CMD, "license-addon:42"], ['yes\n'])
+    launchAddonsManagerSilently([INSTALL_CMD, "license-addon:42"], ['yes\n'])
     // Remove it
-    launchAddonsManager([UNINSTALL_CMD, "license-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "license-addon"])
     ProcessResult process = launchAddonsManager([INSTALL_CMD, "license-addon:42"])
     expect:
     // Reinstall it and verify return code
@@ -893,7 +893,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
     cleanup:
     // Uninstall it
-    launchAddonsManager([UNINSTALL_CMD, "license-addon"])
+    launchAddonsManagerSilently([UNINSTALL_CMD, "license-addon"])
   }
 
 }

@@ -55,7 +55,7 @@ class AddonsManagerUninstallIT extends IntegrationTestsSpecification {
   @Issue("https://jira.exoplatform.org/browse/AM-49")
   def "[AM_UNINST_01] addon(.bat) uninstall foo-addon - already installed"() {
     setup:
-    launchAddonsManager([INSTALL_CMD, "foo-addon:42"])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon:42"])
     ProcessResult process = launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
     expect:
     // Verify return code
@@ -73,7 +73,7 @@ class AddonsManagerUninstallIT extends IntegrationTestsSpecification {
     setup:
     // Let's create a file existing in the addon
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar") << "TEST"
-    launchAddonsManager([INSTALL_CMD, "foo-addon:42", "${CONFLICT_LONG_OPT}=overwrite"])
+    launchAddonsManagerSilently([INSTALL_CMD, "foo-addon:42", "${CONFLICT_LONG_OPT}=overwrite"])
     ProcessResult process = launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
     expect:
     // Verify return code

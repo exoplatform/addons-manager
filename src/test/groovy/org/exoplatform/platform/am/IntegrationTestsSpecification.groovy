@@ -245,7 +245,15 @@ abstract class IntegrationTestsSpecification extends Specification {
    * @return The process result
    */
   ProcessResult launchAddonsManager(List<String> params) {
-    launchAddonsManager(params, null)
+    launchAddonsManager(params, null, false)
+  }
+
+  /**
+   * Helper method used to execute the add-ons manager without any output (and no result to use)
+   * @param params Command line parameters to pass to the add-ons manager
+   */
+  void launchAddonsManagerSilently(List<String> params) {
+    launchAddonsManager(params, null, true)
   }
 
   /**
@@ -255,6 +263,26 @@ abstract class IntegrationTestsSpecification extends Specification {
    * @return The process result
    */
   ProcessResult launchAddonsManager(List<String> params, List<String> inputs) {
+    launchAddonsManager(params, inputs, false)
+  }
+
+  /**
+   * Helper method used to execute the add-ons manager without any output (and no result to use)
+   * @param params Command line parameters to pass to the add-ons manager
+   * @param inputs inputs to pass to the process
+   */
+  void launchAddonsManagerSilently(List<String> params, List<String> inputs) {
+    launchAddonsManager(params, inputs, true)
+  }
+
+  /**
+   * Helper method used to execute the add-ons manager
+   * @param params Command line parameters to pass to the add-ons manager
+   * @param inputs inputs to pass to the process
+   * @param silently should we display the command line launched and the outputs ?
+   * @return The process result
+   */
+  ProcessResult launchAddonsManager(List<String> params, List<String> inputs, boolean silently) {
     List<String> commandToExecute = ["${System.getProperty(JAVA_HOME)}/bin/java"]
     // If Jacoco Agent is used, let's pass it to the forked VM
     if (System.getProperty(IT_SYSPROP_JACOCO_AGENT) != null) {
@@ -271,7 +299,9 @@ abstract class IntegrationTestsSpecification extends Specification {
     if (!inputs) {
       commandToExecute << "--batch-mode"
     }
-    println "Command launched : ${commandToExecute.join(' ')}"
+    if (!silently) {
+      println "Command launched : ${commandToExecute.join(' ')}"
+    }
     ProcessResult result = new ProcessResult(commandToExecute.execute())
     if (inputs) {
       result.process.withWriter { writer ->
@@ -279,10 +309,12 @@ abstract class IntegrationTestsSpecification extends Specification {
       }
     }
     result.waitFor() // Wait for the command to finish
-    // Obtain status and output
-    println "return code: ${result.exitValue()}"
-    println "stderr: ${result.stderrText}"
-    println "stdout: ${result.stdoutText}"
+    if (!silently) {
+      // Obtain status and output
+      println "return code: ${result.exitValue()}"
+      println "stderr: ${result.stderrText}"
+      println "stdout: ${result.stdoutText}"
+    }
     return result
   }
 
