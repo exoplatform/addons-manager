@@ -66,12 +66,12 @@ class FileUtils {
         if (!url) {
           if (destFile.exists()) {
             LOG.debug("remoteFile lastModified : ${conn.lastModified}")
-            LOG.debug("remoteFile size : ${conn.contentLengthLong}")
+            LOG.debug("remoteFile size : ${conn.contentLength}")
             LOG.debug("destFile lastModified : ${destFile.lastModified()}")
             LOG.debug("destFile size : ${destFile.size()}")
           }
           // Same size and date more recent locally, don't touch it.
-          if (destFile.exists() && conn.contentLengthLong == destFile.size() && conn.lastModified <= destFile.lastModified()) {
+          if (destFile.exists() && conn.contentLength == destFile.size() && conn.lastModified <= destFile.lastModified()) {
             LOG.withStatusOK("File ${destFile.name} already up-to-date. Skipping download.")
             return
           }
