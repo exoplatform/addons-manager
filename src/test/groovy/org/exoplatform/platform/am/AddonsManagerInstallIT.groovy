@@ -776,6 +776,51 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   }
 
   /**
+   * if the add-on exists in the local archives, attempts to install it from archives without downloading the add-on. An informational message indicates it : Using foo-addon
+   * archive from local archives directory
+   * if the add-on does not exists in the local archives, fails with an error message : Failed to install : foo-addon:1.2 not found in local archives. Remove offline to download
+   * it
+   */
+  def "[AM_INST_13] addon(.bat) install foo-addon:42 --offline - already present"() {
+    setup:
+    // Install it a first time
+    launchAddonsManager([INSTALL_CMD, "foo-addon:42"])
+    // remove it
+    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+    // Let's install it a second time
+    ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon:42", "--offline"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
+    // Verify the output
+    process.stdoutText =~ "Using foo-addon:42 archive from local archives directory"
+    // Verify that the add-on is correctly installed
+    verifyAddonContentPresent(FOO_ADDON_42_CONTENT)
+    cleanup:
+    // Uninstall it
+    launchAddonsManager([UNINSTALL_CMD, "foo-addon"])
+  }
+
+  /**
+   * if the add-on exists in the local archives, attempts to install it from archives without downloading the add-on. An informational message indicates it : Using foo-addon
+   * archive from local archives directory
+   * if the add-on does not exists in the local archives, fails with an error message : Failed to install : foo-addon:1.2 not found in local archives. Remove offline to download
+   * it
+   */
+  def "[AM_INST_13] addon(.bat) install foo-addon:42 --offline - not present"() {
+    setup:
+    // Let's load the catalog
+    launchAddonsManager([LIST_CMD])
+    // Let's install it a second time
+    ProcessResult process = launchAddonsManager([INSTALL_CMD, "foo-addon:42","--offline"])
+    expect:
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_UNKNOWN_ERROR == process.exitValue()
+    // Verify the output
+    process.stdoutText =~ "foo-addon:42 not found in local archives. Remove --offline to download it"
+  }
+
+  /**
    * Other files and folders located at the root of the add-on archive are copied as-is under $PLATFORM_HOME
    */
   def "[AM_STRUCT_04] addon(.bat) install other-files-addon"() {

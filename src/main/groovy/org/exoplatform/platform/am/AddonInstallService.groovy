@@ -189,11 +189,15 @@ public class AddonInstallService {
     // Let's download it
     if (addon.downloadUrl.startsWith("http")) {
       if (offline) {
-        LOG.withStatusKO("Using ${addon.id}:${addon.version} archive from local archives directory")
-        throw new UnknownErrorException(
-            "Failed to install : ${addon.id}:${addon.version} not found in local archives. Remove --offline to download it.")
+        if (ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon).exists()) {
+          LOG.withStatusOK("Using ${addon.id}:${addon.version} archive from local archives directory")
+        } else {
+          LOG.withStatusKO("Using ${addon.id}:${addon.version} archive from local archives directory")
+          throw new UnknownErrorException("Failed to install : ${addon.id}:${addon.version} not found in local archives. Remove --offline to download it.")
+        }
+      } else {
+        downloadFile("Downloading add-on ${addon.id}:${addon.version} archive", addon.downloadUrl, ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon))
       }
-      downloadFile("Downloading add-on ${addon.id}:${addon.version} archive", addon.downloadUrl, ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon))
     } else if (addon.downloadUrl.startsWith("file://")) {
       // Let's see if it is a relative path
       File originFile = new File(env.addonsDirectory, addon.downloadUrl.replaceAll("file://", ""))
