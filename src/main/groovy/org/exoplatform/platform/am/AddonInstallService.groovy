@@ -99,7 +99,6 @@ public class AddonInstallService {
     installAddon(env,
                  addon,
                  parameters.force,
-                 parameters.noCache,
                  parameters.offline,
                  parameters.noCompat,
                  parameters.conflict,
@@ -110,7 +109,6 @@ public class AddonInstallService {
    * Install the @{code addon} into the current @{code env}* @param env The execution environment
    * @param addon The add-on to install
    * @param force Enforce to install it even if it was already installed
-   * @param noCache Don't use catalog's cache if exist ?
    * @param offline Don't download anything ?
    * @param noCompat Bypass compatibility checks
    * @param conflict Conflict resolution mode
@@ -120,7 +118,6 @@ public class AddonInstallService {
       EnvironmentSettings env,
       Addon addon,
       Boolean force,
-      Boolean noCache,
       Boolean offline,
       Boolean noCompat,
       Conflict conflict,
@@ -188,41 +185,28 @@ public class AddonInstallService {
       LOG.warn(
           "This software is provided \"as is\" without warranty of any kind, either expressed or implied and such software is to be used at your own risk.")
     }
-    if (noCache && ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon).exists()) {
-      LOG.withStatus("Deleting ${addon.id}:${addon.version} archive") {
-        ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon).delete()
-      }
-    }
     LOG.info("Installing @|yellow ${addon.id}:${addon.version}|@")
-    if (!ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon).exists()) {
-      // Let's download it
-      if (addon.downloadUrl.startsWith("http")) {
-        if (offline) {
-          LOG.withStatusKO("Using ${addon.id}:${addon.version} archive from local archives directory")
-          throw new UnknownErrorException(
-              "Failed to install : ${addon.id}:${addon.version} not found in local archives. Remove --offline to download it.")
-        }
-        LOG.withStatus("Downloading add-on ${addon.id}:${addon.version} archive") {
-          downloadFile(addon.downloadUrl, ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon))
-        }
-      } else if (addon.downloadUrl.startsWith("file://")) {
-        // Let's see if it is a relative path
-        File originFile = new File(env.addonsDirectory, addon.downloadUrl.replaceAll("file://", ""))
-        if (!originFile.exists()) {
-          //Let's test if it is an absolute path
-          originFile = new File(addon.downloadUrl.replaceAll("file://", ""))
-        }
-        if (!originFile.exists()) {
-          throw new UnknownErrorException("Failed to install : File not found ${addon.downloadUrl}")
-        }
-        LOG.withStatus("Copying add-on ${addon.id}:${addon.version} archive") {
-          copyFile(originFile, ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon))
-        }
-      } else {
-        throw new UnknownErrorException("Failed to install : Invalid or not supported download URL ${addon.downloadUrl}")
+    // Let's download it
+    if (addon.downloadUrl.startsWith("http")) {
+      if (offline) {
+        LOG.withStatusKO("Using ${addon.id}:${addon.version} archive from local archives directory")
+        throw new UnknownErrorException(
+            "Failed to install : ${addon.id}:${addon.version} not found in local archives. Remove --offline to download it.")
       }
+      downloadFile("Downloading add-on ${addon.id}:${addon.version} archive", addon.downloadUrl, ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon))
+    } else if (addon.downloadUrl.startsWith("file://")) {
+      // Let's see if it is a relative path
+      File originFile = new File(env.addonsDirectory, addon.downloadUrl.replaceAll("file://", ""))
+      if (!originFile.exists()) {
+        //Let's test if it is an absolute path
+        originFile = new File(addon.downloadUrl.replaceAll("file://", ""))
+      }
+      if (!originFile.exists()) {
+        throw new UnknownErrorException("Failed to install : File not found ${addon.downloadUrl}")
+      }
+      copyFile("Copying add-on ${addon.id}:${addon.version} archive", originFile, ADDON_SERVICE.getAddonLocalArchive(env.archivesDirectory, addon))
     } else {
-      LOG.withStatusOK("Using ${addon.id}:${addon.version} archive from local archives directory")
+      throw new UnknownErrorException("Failed to install : Invalid or not supported download URL ${addon.downloadUrl}")
     }
     addon.installedLibraries = new ArrayList<String>()
     addon.installedWebapps = new ArrayList<String>()
@@ -319,7 +303,7 @@ public class AddonInstallService {
                 if (!backupFile.parentFile.exists()) {
                   FileUtils.mkdirs(backupFile.parentFile)
                 }
-                copyFile(destinationFile, backupFile)
+                copyFile("Archiving existing file ${destinationFile.name}", destinationFile, backupFile)
                 addon.overwrittenFiles.add(plfHomeRelativePath)
                 break
               case Conflict.SKIP:

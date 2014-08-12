@@ -32,7 +32,7 @@ class FileUtilsIT extends IntegrationTestsSpecification {
     def originalFile = new File(getTestDataDir(), "catalog.json")
     def downloadedFile = File.createTempFile("test", ".json")
     when:
-    FileUtils.downloadFile("${getWebServerRootUrl()}/catalog-redirect-301.jsp", downloadedFile)
+    FileUtils.downloadFile("Testing a download with permanent redirection (301)","${getWebServerRootUrl()}/catalog-redirect-301.jsp", downloadedFile)
     then:
     originalFile.text.equals(downloadedFile.text)
     cleanup:
@@ -44,7 +44,7 @@ class FileUtilsIT extends IntegrationTestsSpecification {
     def originalFile = new File(getTestDataDir(), "catalog.json")
     def downloadedFile = File.createTempFile("test", ".json")
     when:
-    FileUtils.downloadFile("${getWebServerRootUrl()}/catalog-redirect-302.jsp", downloadedFile)
+    FileUtils.downloadFile("Testing a download with a temporary redirection (302)","${getWebServerRootUrl()}/catalog-redirect-302.jsp", downloadedFile)
     then:
     originalFile.text.equals(downloadedFile.text)
     cleanup:

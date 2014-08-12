@@ -285,6 +285,7 @@
             <directory>${project.basedir}/src/test/data</directory>
             <includes>
               <include>**/*.json</include>
+              <include>**/*.xml</include>
             </includes>
           </testResource>
           <testResource>
@@ -356,10 +357,9 @@
               </execution>
             </executions>
             <configuration>
-              <port>${it.webServerHttpPort}</port>
-              <path>/</path>
-              <warDirectory>${it.dataDirPath}</warDirectory>
               <ignorePackaging>true</ignorePackaging>
+              <!-- Using a server.xml is the only way to be able to set cachingAllowed="false" on the context -->
+              <serverXml>${it.dataDirPath}/server.xml</serverXml>
             </configuration>
           </plugin>
           <plugin>

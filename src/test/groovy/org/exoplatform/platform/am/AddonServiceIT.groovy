@@ -19,6 +19,7 @@
  * 02110-1301 USA, or see <http://www.gnu.org/licenses/>.
  */
 package org.exoplatform.platform.am
+
 import groovy.json.JsonException
 import spock.lang.Shared
 import spock.lang.Subject
@@ -75,51 +76,55 @@ class AddonServiceIT extends IntegrationTestsSpecification {
   def "Two successive calls of loadAddonsFromUrl online with cache"() {
     setup:
     File tmpDir = File.createTempDir()
-    URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
+    File testCatalog = new File(getTestDataDir(), "tmp-catalog-with-cache.json")
+    testCatalog << new File(getTestDataDir(), "catalog.json").text
+    URL catalogUrl = new URL("${getWebServerRootUrl()}/${testCatalog.name}")
     File catalogCache = new File(tmpDir, "${addonService.convertUrlToFilename(catalogUrl)}.json")
     // We call it a first time
     addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
-    long firstCallCatalogCacheDate = catalogCache.lastModified()
-    // Let's wait 1 sec before the second call to be sure we can detect the update
-    sleep(1000)
+    // We change the remote content
+    testCatalog.withWriter { w ->
+      w << new File(getTestDataDir(), "catalog.json").text
+    }
     when:
     List<Addon> addons = addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
     then:
     // We correctly received the add-ons list
     addons != null
-    addons.size() == NB_ADDONS_CATALOG_JSON
+    addons.size() == NB_ADDONS_CATALOG_JSON // The number of entries in catalog.json, we don't see the change in the remote catalog
     // And the catalog cache is filled
     catalogCache.exists()
     catalogCache.text == new File(getTestDataDir(), "catalog.json").text
-    // And the catalog cache mustn't have been updated by the second call
-    firstCallCatalogCacheDate == catalogCache.lastModified()
     cleanup:
     tmpDir.deleteDir()
+    testCatalog.delete()
   }
 
   def "Two successive calls of loadAddonsFromUrl online without cache"() {
     setup:
     File tmpDir = File.createTempDir()
-    URL catalogUrl = new URL(getWebServerRootUrl() + "/catalog.json")
+    File testCatalog = new File(getTestDataDir(), "tmp-catalog-without-cache.json")
+    testCatalog << new File(getTestDataDir(), "catalog.json").text
+    URL catalogUrl = new URL("${getWebServerRootUrl()}/${testCatalog.name}")
     File catalogCache = new File(tmpDir, "${addonService.convertUrlToFilename(catalogUrl)}.json")
     // We call it a first time
     addonService.loadAddonsFromUrl(catalogUrl, false, false, tmpDir)
-    long firstCallCatalogCacheDate = catalogCache.lastModified()
-    // Let's wait 1 sec before the second call to be sure we can detect the update
-    sleep(1000)
+    // We change the remote content
+    testCatalog.withWriter { w ->
+      w << new File(getTestDataDir(), "catalog2.json").text
+    }
     when:
     List<Addon> addons = addonService.loadAddonsFromUrl(catalogUrl, true, false, tmpDir)
     then:
     // We correctly received the add-ons list
     addons != null
-    addons.size() == NB_ADDONS_CATALOG_JSON
+    addons.size() == 1 // The number of entries in catalog2.json
     // And the catalog cache is filled
     catalogCache.exists()
-    catalogCache.text == new File(getTestDataDir(), "catalog.json").text
-    // And the catalog cache must have been updated by the second call
-    firstCallCatalogCacheDate != catalogCache.lastModified()
+    catalogCache.text == new File(getTestDataDir(), "catalog2.json").text
     cleanup:
     tmpDir.deleteDir()
+    testCatalog.delete()
   }
 
   def "createAddonsFromJsonText can read a valid catalog"() {

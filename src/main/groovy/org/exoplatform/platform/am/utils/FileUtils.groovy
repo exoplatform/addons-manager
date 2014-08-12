@@ -37,96 +37,129 @@ class FileUtils {
 
   /**
    * Downloads a file following redirects if required
+   * @param message the logging message to display
    * @param url The URL from which to download
    * @param destFile The file to populate
    * @throws IOException If there is an IO error
    */
-  static downloadFile(URL url, File destFile) throws IOException {
-    downloadFile(url.toString(), destFile)
+  static downloadFile(String message, URL url, File destFile) throws IOException {
+    downloadFile(message, url.toString(), destFile)
   }
 
   /**
    * Downloads a file following redirects if required
+   * @param message the logging message to display
    * @param url The URL from which to download
    * @param destFile The file to populate
    * @throws AddonsManagerException If there is an error while transferring the file
    */
-  static downloadFile(String url, File destFile) throws AddonsManagerException {
+  static downloadFile(String message, String url, File destFile) throws AddonsManagerException {
     String originalUrl = url
-    try {
-      // Let's do it for each redirection
-      while (url) {
-        new URL(url).openConnection().with { URLConnection conn ->
-          if (conn instanceof HttpURLConnection) {
-            conn.instanceFollowRedirects = true
+    // Let's do it for each redirection
+    while (url) {
+      new URL(url).openConnection().with { URLConnection conn ->
+        if (conn instanceof HttpURLConnection) {
+          conn.instanceFollowRedirects = true
+        }
+        url = conn.getHeaderField("Location")
+        // No more Location, let's download
+        if (!url) {
+          if (destFile.exists()) {
+            LOG.debug("remoteFile lastModified : ${conn.lastModified}")
+            LOG.debug("remoteFile size : ${conn.contentLengthLong}")
+            LOG.debug("destFile lastModified : ${destFile.lastModified()}")
+            LOG.debug("destFile size : ${destFile.size()}")
           }
-          url = conn.getHeaderField("Location")
-          // No more Location, let's download
-          if (!url) {
-            destFile.withOutputStream { out ->
-              conn.inputStream.with { inp ->
-                out << inp
-                inp?.close()
+          // Same size and date more recent locally, don't touch it.
+          if (destFile.exists() && conn.contentLengthLong == destFile.size() && conn.lastModified <= destFile.lastModified()) {
+            LOG.withStatusOK("File ${destFile.name} already up-to-date. Skipping download.")
+            return
+          }
+          if (!message) {
+            message = "Downloading ${originalUrl} to ${destFile}"
+          }
+          LOG.withStatus(message) {
+            try {
+              destFile.withOutputStream { out ->
+                conn.inputStream.with { inp ->
+                  out << inp
+                  inp?.close()
+                }
               }
+            } catch (FileNotFoundException fnfe) {
+              // AM-95 : Don't keep an empty/corrupted downloaded file
+              if (destFile.exists()) {
+                destFile.delete()
+              }
+              throw new UnknownErrorException("File not found at URL ${originalUrl}", fnfe)
+            } catch (IOException ioe) {
+              // AM-95 : Don't keep an empty/corrupted downloaded file
+              if (destFile.exists()) {
+                destFile.delete()
+              }
+              throw new UnknownErrorException("I/O error while downloading ${originalUrl}", ioe)
             }
           }
         }
       }
-    } catch (FileNotFoundException fnfe) {
-      // AM-95 : Don't keep an empty/corrupted downloaded file
-      if (destFile.exists()) {
-        destFile.delete()
-      }
-      throw new UnknownErrorException("File not found at URL ${originalUrl}", fnfe)
-    } catch (IOException ioe) {
-      // AM-95 : Don't keep an empty/corrupted downloaded file
-      if (destFile.exists()) {
-        destFile.delete()
-      }
-      throw new UnknownErrorException("I/O error while downloading ${originalUrl}", ioe)
     }
   }
 
   /**
    * Copy a local file to another location using NIO
+   * @param message the logging message to display
    * @param sourceFile the source file to copy
    * @param destFile where the file should be copied
    * @throws IOException If there is an IO error
    */
-  static void copyFile(File sourceFile, File destFile) throws IOException {
-    copyFile(sourceFile, destFile, true)
+  static void copyFile(String message, File sourceFile, File destFile) throws IOException {
+    copyFile(message, sourceFile, destFile, true)
   }
 
   /**
    * Copy a local file to another location using NIO
+   * @param message the logging message to display
    * @param sourceFile the source file to copy
    * @param destFile where the file should be copied
    * @param warnIfOverride Display a warning if destFile already exists
    * @throws IOException If there is an IO error
    */
-  static void copyFile(File sourceFile, File destFile, boolean warnIfOverride) throws IOException {
+  static void copyFile(String message, File sourceFile, File destFile, boolean warnIfOverride) throws IOException {
     if (!destFile.exists()) {
       destFile.createNewFile();
     } else {
+      LOG.debug("sourceFile lastModified : ${sourceFile.lastModified()}")
+      LOG.debug("sourceFile size : ${sourceFile.size()}")
+      LOG.debug("destFile lastModified : ${destFile.lastModified()}")
+      LOG.debug("destFile size : ${destFile.size()}")
+      // Same size and destFile date more recent, don't touch it.
+      if (sourceFile.size() == destFile.size() && sourceFile.lastModified() <= destFile.lastModified()) {
+        LOG.withStatusOK("Skipping copy of ${sourceFile.name}. File ${destFile.name} already up-to-date.")
+        return
+      }
       if (warnIfOverride) {
-        LOG.warn("${destFile.name} already exists. Replacing it.")
+        LOG.warn("Filr ${destFile.name} already exists. Replacing it.")
       }
     }
-
-    FileChannel source = null;
-    FileChannel destination = null;
-
-    try {
-      source = new FileInputStream(sourceFile).getChannel();
-      destination = new FileOutputStream(destFile).getChannel();
-      destination.transferFrom(source, 0, source.size());
+    if (!message) {
+      message = "Copying ${sourceFile} to ${destFile}"
     }
-    finally {
-      if (source != null) {
-        source.close();
+    LOG.withStatus(message) {
+      FileChannel source = null;
+      FileChannel destination = null;
+
+      try {
+        source = new FileInputStream(sourceFile).getChannel();
+        destination = new FileOutputStream(destFile).getChannel();
+        destination.transferFrom(source, 0, source.size());
       }
-      if (destination != null) {
-        destination.close();
+      finally {
+        if (source != null) {
+          source.close();
+        }
+        if (destination != null) {
+          destination.close();
+        }
       }
     }
   }

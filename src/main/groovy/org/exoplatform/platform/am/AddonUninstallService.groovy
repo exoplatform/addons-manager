@@ -157,9 +157,7 @@ public class AddonUninstallService {
       fileToRecover ->
         File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${fileToRecover}")
         File originalFile = new File(env.platform.homeDirectory, fileToRecover)
-        LOG.withStatus("Reinstalling original file ${fileToRecover}") {
-          copyFile(backupFile, originalFile)
-        }
+        copyFile("Reinstalling original file ${fileToRecover}", backupFile, originalFile)
         LOG.withStatus("Deleting backup file of ${fileToRecover}") {
           backupFile.delete()
         }

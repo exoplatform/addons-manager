@@ -121,15 +121,10 @@ class AddonService {
       if (!backupDirectory.exists()) {
         FileUtils.mkdirs(backupDirectory)
       }
-      LOG.withStatus("Backing up current add-ons manager library") {
-        FileUtils.copyFile(new File(env.addonsDirectory, "addons-manager.jar"), new File(backupDirectory, "addons-manager.jar"),
-                           false)
-      }
+      copyFile("Backing up current add-ons manager library", new File(env.addonsDirectory, "addons-manager.jar"), new File(backupDirectory, "addons-manager.jar"), false)
       // Let's download the new one
       File newAddonsManagerArchive = new File(env.archivesDirectory, "${newerAddonManager.id}-${newerAddonManager.version}.zip")
-      LOG.withStatus("Downloading Add-ons Manager version @|yellow,bold ${newerAddonManager.version}|@") {
-        FileUtils.downloadFile(newerAddonManager.downloadUrl, newAddonsManagerArchive)
-      }
+      FileUtils.downloadFile("Downloading Add-ons Manager version @|yellow,bold ${newerAddonManager.version}|@", newerAddonManager.downloadUrl, newAddonsManagerArchive)
       LOG.withStatus("Extracting Add-ons Manager version @|yellow,bold ${newerAddonManager.version}|@") {
         ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(newAddonsManagerArchive))
         zipInputStream.withStream {
@@ -182,26 +177,22 @@ class AddonService {
       if ((!catalogCacheFile.exists() || new Date(catalogCacheFile.lastModified()) < 1.hours.ago) && !offline) {
         // Load the remote list
         File tempFile
-        LOG.withStatus("Downloading catalog ${catalogUrl}") {
-          try {
-            // Create a temporary file in which we will download the remote catalog
-            tempFile = File.createTempFile("addons-manager-remote-catalog", ".json", catalogCacheDir)
-            // Don't forget to always delete it even in case of error
-            tempFile.deleteOnExit()
-            // Download the remote catalog
-            downloadFile(catalogUrl, tempFile)
-            // Read the catalog content
-            catalogContent = tempFile.text
-          } catch (FileNotFoundException fne) {
-            throw new UnknownErrorException("Catalog ${catalogUrl} not found", fne)
-          }
+        try {
+          // Create a temporary file in which we will download the remote catalog
+          tempFile = File.createTempFile("addons-manager-remote-catalog", ".json", catalogCacheDir)
+          // Don't forget to always delete it even in case of error
+          tempFile.deleteOnExit()
+          // Download the remote catalog
+          downloadFile("Downloading catalog ${catalogUrl}", catalogUrl, tempFile)
+          // Read the catalog content
+          catalogContent = tempFile.text
+        } catch (FileNotFoundException fne) {
+          throw new UnknownErrorException("Catalog ${catalogUrl} not found", fne)
         }
         try {
           addons.addAll(createAddonsFromJsonText(catalogContent))
           // Everything was ok, let's store the cache
-          LOG.withStatus("Updating cache for catalog ${catalogUrl}") {
-            copyFile(tempFile, catalogCacheFile, false)
-          }
+          copyFile("Updating cache for catalog ${catalogUrl}", tempFile, catalogCacheFile, false)
         } catch (groovy.json.JsonException je) {
           throw new InvalidJSONException("Invalid JSON content from URL : ${catalogUrl}", je)
         } finally {
