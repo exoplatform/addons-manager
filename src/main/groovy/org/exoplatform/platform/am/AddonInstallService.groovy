@@ -230,10 +230,10 @@ public class AddonInstallService {
           if (entry.isDirectory() || entry.name?.equalsIgnoreCase("README")) {
             // Do nothing
             continue
-          } else if (entry.name =~ '^.*jar$') {
+          } else if (entry.name ==~ /^.*jar$/) {
             // [AM_STRUCT_02] Add-ons libraries target directory
             destinationFile = new File(env.platform.librariesDirectory, FileUtils.extractFilename(entry.name))
-          } else if (entry.name =~ '^.*war$') {
+          } else if (entry.name ==~ /^.*war$/) {
             // [AM_STRUCT_03] Add-ons webapps target directory
             destinationFile = new File(env.platform.webappsDirectory, FileUtils.extractFilename(entry.name))
           } else {
@@ -280,11 +280,11 @@ public class AddonInstallService {
               }
             }
             continue
-          } else if (entry.name =~ '^.*jar$') {
+          } else if (entry.name ==~ /^.*jar$/) {
             // [AM_STRUCT_02] Add-ons libraries target directory
             destinationFile = new File(env.platform.librariesDirectory, FileUtils.extractFilename(entry.name))
             installationList = addon.installedLibraries
-          } else if (entry.name =~ '^.*war$') {
+          } else if (entry.name ==~ /^.*war$/) {
             // [AM_STRUCT_03] Add-ons webapps target directory
             destinationFile = new File(env.platform.webappsDirectory, FileUtils.extractFilename(entry.name))
             installationList = addon.installedWebapps

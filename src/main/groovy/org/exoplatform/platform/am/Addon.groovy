@@ -55,7 +55,7 @@ class Addon implements Comparable<Addon> {
   List<String> overwrittenFiles
 
   boolean isSnapshot() {
-    return version =~ '.*SNAPSHOT$'
+    return version ==~ /.*SNAPSHOT$/
   }
 
   /**
