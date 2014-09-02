@@ -153,7 +153,7 @@ public class AddonInstallService {
         LOG.info("License ${addon.license} :")
         LOG.infoHR('=')
         int i = 0
-        licenseFile?.text?.split('\n').collect().each {
+        licenseFile?.text?.readLines().each {
           LOG.wrapLine(it, Console.get().width - Logger.Level.INFO.prefix.length() - 1).each {
             LOG.info(it)
             i++
@@ -395,7 +395,7 @@ public class AddonInstallService {
       LOG.info("README :")
       LOG.infoHR()
       int i = 0
-      readmeFile.text.split('\n').collect().each {
+      readmeFile.text.readLines().each {
         LOG.wrapLine(it, Console.get().width - Logger.Level.INFO.prefix.length() - 1).each {
           LOG.info(it)
           i++
