@@ -72,7 +72,9 @@ class AddonsManagerDescribeIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == process.exitValue()
     // Verify error message
-    process.stdoutText =~ "No add-on with identifier unknown-foo-addon found in local or remote catalogs, check your add-on identifier."
+    process.stdoutText.contains(
+        "No add-on with identifier unknown-foo-addon found in local or remote catalogs, check your add-on identifier."
+    )
   }
 
   /**
@@ -102,7 +104,9 @@ class AddonsManagerDescribeIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == process.exitValue()
     // Verify error message
-    process.stdoutText =~ "The add-on foo-addon doesn't have a version 1976. Check the version number."
+    process.stdoutText.contains(
+        "The add-on foo-addon doesn't have a version 1976. Check the version number."
+    )
   }
 
   /**
@@ -118,7 +122,9 @@ class AddonsManagerDescribeIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_FOUND == process.exitValue()
     // Verify error message
-    process.stdoutText =~ "No add-on with identifier unknown-foo-addon found in local or remote catalogs, check your add-on identifier."
+    process.stdoutText.contains(
+        "No add-on with identifier unknown-foo-addon found in local or remote catalogs, check your add-on identifier."
+    )
   }
 
   /**

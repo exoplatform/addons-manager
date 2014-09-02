@@ -50,10 +50,10 @@ class AddonsManagerListIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
     // For each add-on, display *only the last* stable version
-    process.stdoutText =~ "Latest stable version"
+    process.stdoutText.contains("Latest stable version")
     // Never display the development and unstable versions
-    !(process.stdoutText =~ "Latest development version")
-    !(process.stdoutText =~ "Latest unstable version")
+    !process.stdoutText.contains("Latest development version")
+    !process.stdoutText.contains("Latest unstable version")
   }
 
   /**
@@ -68,10 +68,10 @@ class AddonsManagerListIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
     // For each add-on, display the last stable and the last development version
-    process.stdoutText =~ "Latest stable version"
-    process.stdoutText =~ "Latest development version"
+    process.stdoutText.contains("Latest stable version")
+    process.stdoutText.contains("Latest development version")
     // Don't display unstable versions
-    !(process.stdoutText =~ "Latest unstable version")
+    !process.stdoutText.contains("Latest unstable version")
   }
 
   /**
@@ -86,10 +86,10 @@ class AddonsManagerListIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
     // For each add-on, display the last stable and the last unstable version
-    process.stdoutText =~ "Latest stable version"
-    process.stdoutText =~ "Latest unstable version"
+    process.stdoutText.contains("Latest stable version")
+    process.stdoutText.contains("Latest unstable version")
     // Don't display development versions
-    !(process.stdoutText =~ "Latest development version")
+    !process.stdoutText.contains("Latest development version")
   }
 
   /**
@@ -224,7 +224,7 @@ class AddonsManagerListIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
     // Verify the output
-    process.stdoutText =~ "incompatible-foo-addon"
+    process.stdoutText.contains("incompatible-foo-addon")
   }
 
 }

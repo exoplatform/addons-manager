@@ -46,7 +46,7 @@ class AddonsManagerUninstallIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_ADDON_NOT_INSTALLED == process.exitValue()
     // Verify error message
-    process.stdoutText =~ "The add-on foo-addon was not installed"
+    process.stdoutText.contains("The add-on foo-addon was not installed")
   }
 
   /**
