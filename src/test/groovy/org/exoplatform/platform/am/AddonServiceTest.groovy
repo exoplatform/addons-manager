@@ -23,10 +23,13 @@ package org.exoplatform.platform.am
 import org.exoplatform.platform.am.ex.CompatibilityException
 import org.exoplatform.platform.am.ex.InvalidJSONException
 import org.exoplatform.platform.am.settings.PlatformSettings
+import spock.lang.Issue
 import spock.lang.Shared
 import spock.lang.Subject
 import spock.lang.Unroll
 
+import static java.lang.Boolean.FALSE
+import static java.lang.Boolean.TRUE
 import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.JBOSS
 import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.TOMCAT
 import static org.exoplatform.platform.am.settings.PlatformSettings.DistributionType.COMMUNITY
@@ -428,5 +431,26 @@ class AddonServiceTest extends UnitTestsSpecification {
   def "filterCompatibleAddons for PLF Enterprise Jboss"() {
     expect:
     addonService.filterCompatibleAddons([addon1, addon2, addon3, addon4, addon5, addon6], plfEnterpriseJboss41) == [addon3]
+  }
+
+  @Unroll
+  @Issue("https://jira.exoplatform.org/browse/AM-105")
+  def "testVersionCompatibility"(String version, String constraint, Boolean expectedResult) {
+    expect:
+    addonService.testVersionCompatibility(version, constraint) == expectedResult
+    where:
+    version          | constraint          | expectedResult
+    "4.0.7"          | "[4.1.x,)"          | FALSE // 4.0 < 4.1
+    "4.1-M2"         | "[4.1.x,)"          | FALSE // 4.1.x > 4.1 because .x is a String. 4.1 > 4.1-M2 (Milestone)
+    "4.0.7"          | "(4.0.999,)"        | FALSE // We exclude everything under 4.0.999
+    "4.1-M2"         | "(4.0.999,)"        | TRUE  // We exclude everything under 4.0.999 and thus include 4.1 betas, milestones..
+    "4.1.x-SNAPSHOT" | "[4.1.x,)"          | FALSE // A SNAPSHOT is < than its release
+    "4.1.x-SNAPSHOT" | "[4.1,)"            | TRUE  // 4.1.x > 4.1 thus its SNAPSHOT too
+    "4.0.7"          | "[4.0.0,)"          | TRUE  // 4.0.7 is in [4.0.0,)
+    "4.0.7"          | "[4.0.0,),[4.1-M2]" | TRUE  // 4.0.7 is in [4.0.0,)
+    "4.1-M2"         | "[4.0.0,)"          | TRUE  // 4.1-M2 is in [4.0.0,)
+    "4.1-M2"         | "[4.0.0,),[4.1-M2]" | TRUE  // 4.1-M2 is in [4.0.0,) and [4.1-M2]
+    "4.1.x-SNAPSHOT" | "[4.0.0,)"          | TRUE  // 4.1.x-SNAPSHOT is in [4.0.0,)
+    "4.1.x-SNAPSHOT" | "[4.0.0,),[4.1-M2]" | TRUE  // 4.1.x-SNAPSHOT is in [4.0.0,)
   }
 }
