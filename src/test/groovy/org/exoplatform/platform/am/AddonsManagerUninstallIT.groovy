@@ -90,4 +90,24 @@ class AddonsManagerUninstallIT extends IntegrationTestsSpecification {
     new File(getPlatformSettings().librariesDirectory, "foo-addon-42.jar").delete()
   }
 
+  /**
+   * Other files and empty folders are removed
+   */
+  @Issue("https://jira.exoplatform.org/browse/AM-105")
+  def "[AM_STRUCT_04] addon(.bat) uninstall other-files-addon"() {
+    setup:
+    launchAddonsManagerSilently([INSTALL_CMD, "other-files-addon"])
+    ProcessResult process = launchAddonsManager([UNINSTALL_CMD, "other-files-addon"])
+    expect:
+    // Install it
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
+    // Verify that the add-on is correctly installed
+    verifyAddonContentNotPresent(OTHER_FILES_ADDON_42_CONTENT)
+    // Verify that the empty directory was removed
+    !new File(getPlatformSettings().homeDirectory, "conf/other-files-addon/").exists()
+    // But not its parent
+    new File(getPlatformSettings().homeDirectory, "conf/").exists()
+  }
+
 }

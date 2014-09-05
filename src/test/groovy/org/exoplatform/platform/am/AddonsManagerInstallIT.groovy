@@ -863,11 +863,9 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
     // Verify that the add-on is correctly installed
     verifyAddonContentPresent(OTHER_FILES_ADDON_42_CONTENT)
+    cleanup:
     // Uninstall it
-    // Verify return code
     AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager([UNINSTALL_CMD, "other-files-addon"]).exitValue()
-    // Verify that the add-on is correctly installed
-    verifyAddonContentNotPresent(OTHER_FILES_ADDON_42_CONTENT)
   }
 
   /**
