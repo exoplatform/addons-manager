@@ -24,6 +24,7 @@ import spock.lang.Issue
 import spock.lang.Subject
 
 import static org.exoplatform.platform.am.cli.CommandLineParameters.*
+import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.TOMCAT
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
@@ -105,9 +106,14 @@ class AddonsManagerUninstallIT extends IntegrationTestsSpecification {
     // Verify that the add-on is correctly installed
     verifyAddonContentNotPresent(OTHER_FILES_ADDON_42_CONTENT)
     // Verify that the empty directory was removed
-    !new File(getPlatformSettings().homeDirectory, "conf/other-files-addon/").exists()
-    // But not its parent
-    new File(getPlatformSettings().homeDirectory, "conf/").exists()
+    !new File(getPlatformSettings().homeDirectory, "conf/other-files-addon").exists()
+    if (getPlatformSettings().appServerType == TOMCAT) {
+      // /conf/ mustn't be deleted on tomcat, it has others files
+      assert new File(getPlatformSettings().homeDirectory, "conf").exists()
+    } else {
+      // /conf/ doesn't exist on Jboss thus it must be removed
+      assert !new File(getPlatformSettings().homeDirectory, "conf").exists()
+    }
   }
 
 }
