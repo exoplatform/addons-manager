@@ -65,6 +65,9 @@
     <!-- **************************************** -->
     <!-- Build/Tests settings -->
     <!-- **************************************** -->
+    <!-- The add-ons manager must be compliant with PLF 4.0.x running on Java 6 -->
+    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.6</maven.compiler.source>
     <ut.verbose>false</ut.verbose>
     <it.platform.groupId>org.exoplatform.platform.distributions</it.platform.groupId>
     <it.platform.artifactId>plf-community-tomcat-standalone</it.platform.artifactId>
