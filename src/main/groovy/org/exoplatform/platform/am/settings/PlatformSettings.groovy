@@ -41,6 +41,7 @@ class PlatformSettings {
   enum AppServerType {
     TOMCAT("lib", "webapps"),
     JBOSS("standalone/deployments/platform.ear/lib", "standalone/deployments/platform.ear"),
+    BITNAMI("lib", "../../apache-tomcat/webapps"),
     UNKNOWN("", "")
     final String librariesPath
     final String webappsPath
@@ -99,11 +100,13 @@ class PlatformSettings {
       this.appServerType = AppServerType.TOMCAT
     } else if (new File(homeDirectory, "bin/standalone.sh").exists()) {
       this.appServerType = AppServerType.JBOSS
+    } else if (new File(homeDirectory, "../../apache-tomcat/bin/catalina.sh").exists()) {
+      this.appServerType = AppServerType.BITNAMI
     } else {
       this.appServerType = AppServerType.UNKNOWN
     }
     if (AppServerType.UNKNOWN.equals(this.appServerType)) {
-      throw new ErroneousSetupException("Erroneous setup, cannot computes the application server type.")
+      throw new ErroneousSetupException("Erroneous setup, cannot compute the application server type.")
     }
 
     if (new File(homeDirectory, "eXo_Subscription_Agreement_US.pdf").exists()) {
@@ -112,7 +115,7 @@ class PlatformSettings {
       this.distributionType = DistributionType.COMMUNITY
     }
     if (DistributionType.UNKNOWN.equals(this.distributionType)) {
-      throw new ErroneousSetupException("Erroneous setup, cannot computes the distribution type.")
+      throw new ErroneousSetupException("Erroneous setup, cannot compute the distribution type.")
     }
 
     this.librariesDirectory = new File(homeDirectory, this.appServerType.librariesPath)
