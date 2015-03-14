@@ -41,6 +41,7 @@ class PlatformSettings {
   enum AppServerType {
     TOMCAT("lib", "webapps"),
     JBOSS("standalone/deployments/platform.ear/lib", "standalone/deployments/platform.ear"),
+    BITNAMI("lib", "../../apache-tomcat/webapps"),
     UNKNOWN("", "")
     final String librariesPath
     final String webappsPath
@@ -99,6 +100,8 @@ class PlatformSettings {
       this.appServerType = AppServerType.TOMCAT
     } else if (new File(homeDirectory, "bin/standalone.sh").exists()) {
       this.appServerType = AppServerType.JBOSS
+    } else if (new File(homeDirectory, "../../apache-tomcat/bin/catalina.sh").exists()) {
+      this.appServerType = AppServerType.BITNAMI
     } else {
       this.appServerType = AppServerType.UNKNOWN
     }
