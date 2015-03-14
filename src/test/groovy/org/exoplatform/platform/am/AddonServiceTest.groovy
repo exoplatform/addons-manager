@@ -32,6 +32,7 @@ import static java.lang.Boolean.FALSE
 import static java.lang.Boolean.TRUE
 import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.JBOSS
 import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.TOMCAT
+import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.BITNAMI
 import static org.exoplatform.platform.am.settings.PlatformSettings.DistributionType.COMMUNITY
 import static org.exoplatform.platform.am.settings.PlatformSettings.DistributionType.ENTERPRISE
 
@@ -50,6 +51,10 @@ class AddonServiceTest extends UnitTestsSpecification {
   PlatformSettings plfEnterpriseTomcat41
   @Shared
   PlatformSettings plfEnterpriseJboss41
+  @Shared
+  PlatformSettings plfCommunityBitnami41
+  @Shared
+  PlatformSettings plfEnterpriseBitnami41
   @Shared
   Addon addon1 = new Addon(id: "addon1", version: "42", supportedApplicationServers: [TOMCAT],
                            supportedDistributions: [COMMUNITY],
@@ -74,6 +79,10 @@ class AddonServiceTest extends UnitTestsSpecification {
   Addon addon6 = new Addon(id: "addon6", version: "42", supportedApplicationServers: [JBOSS],
                            supportedDistributions: [ENTERPRISE],
                            compatibility: "[4.2,)")
+  @Shared
+  Addon addon7 = new Addon(id: "addon7", version: "42", supportedApplicationServers: [TOMCAT, JBOSS],
+                           supportedDistributions: [ENTERPRISE, COMMUNITY],
+                           compatibility: "[4.1,)")
   @Shared
   Addon addon_42_beta_01 = new Addon(id: "addon", version: "42-beta-01", unstable: true)
   @Shared
@@ -108,6 +117,15 @@ class AddonServiceTest extends UnitTestsSpecification {
     plfEnterpriseJboss41.appServerType >> JBOSS
     plfEnterpriseJboss41.distributionType >> ENTERPRISE
     plfEnterpriseJboss41.version >> "4.1.0"
+    
+    plfCommunityBitnami41 = Mock()
+    plfCommunityBitnami41.appServerType >> BITNAMI
+    plfCommunityBitnami41.distributionType >> COMMUNITY
+    plfCommunityBitnami41.version >> "4.1.0"
+    plfEnterpriseBitnami41 = Mock()
+    plfEnterpriseBitnami41.appServerType >> BITNAMI
+    plfEnterpriseBitnami41.distributionType >> ENTERPRISE
+    plfEnterpriseBitnami41.version >> "4.1.0"    
   }
 
   def "createAddonFromJsonText parse a valid JSON text"() {
@@ -381,7 +399,7 @@ class AddonServiceTest extends UnitTestsSpecification {
   }
 
   @Unroll
-  def "validateCompatibility must throw an error for the addon #addon.supportedApplicationServers,#addon.supportedDistributions,#addon.compatibility on PLF #platformSettings"(PlatformSettings platformSettings, Addon addon) {
+  def "validateCompatibility must throw an error for the addon #addon.id, #addon.supportedApplicationServers,#addon.supportedDistributions,#addon.compatibility on PLF #platformSettings"(PlatformSettings platformSettings, Addon addon) {
     when:
     addonService.validateCompatibility(addon, platformSettings)
     then:
@@ -403,10 +421,20 @@ class AddonServiceTest extends UnitTestsSpecification {
     plfEnterpriseJboss41  | addon4
     plfEnterpriseJboss41  | addon5
     plfEnterpriseJboss41  | addon6
+    plfCommunityBitnami41 | addon2
+    plfCommunityBitnami41 | addon3
+    plfCommunityBitnami41 | addon4
+    plfCommunityBitnami41 | addon5
+    plfCommunityBitnami41 | addon6
+    plfEnterpriseBitnami41 | addon1
+    plfEnterpriseBitnami41 | addon3
+    plfEnterpriseBitnami41 | addon4
+    plfEnterpriseBitnami41 | addon5
+    plfEnterpriseBitnami41 | addon6
   }
 
   @Unroll
-  def "validateCompatibility must be ok for the addon #addon.supportedApplicationServers,#addon.supportedDistributions,#addon.compatibility on PLF #platformSettings"(PlatformSettings platformSettings, Addon addon) {
+  def "validateCompatibility must be ok for the addon #addon.id, #addon.supportedApplicationServers,#addon.supportedDistributions,#addon.compatibility on PLF #platformSettings"(PlatformSettings platformSettings, Addon addon) {
     when:
     addonService.validateCompatibility(addon, platformSettings)
     then:
@@ -416,6 +444,13 @@ class AddonServiceTest extends UnitTestsSpecification {
     plfCommunityTomcat41  | addon1
     plfEnterpriseTomcat41 | addon2
     plfEnterpriseJboss41  | addon3
+    plfCommunityBitnami41 | addon1
+    plfEnterpriseBitnami41 | addon2
+    plfCommunityTomcat41  | addon7
+    plfEnterpriseTomcat41 | addon7
+    plfEnterpriseJboss41  | addon7
+    plfCommunityBitnami41 | addon7
+    plfEnterpriseBitnami41 | addon7
   }
 
   def "filterCompatibleAddons for PLF Community Tomcat"() {
@@ -431,6 +466,41 @@ class AddonServiceTest extends UnitTestsSpecification {
   def "filterCompatibleAddons for PLF Enterprise Jboss"() {
     expect:
     addonService.filterCompatibleAddons([addon1, addon2, addon3, addon4, addon5, addon6], plfEnterpriseJboss41) == [addon3]
+  }
+
+  def "filterCompatibleAddons for PLF Community Bitnami"() {
+    expect:
+    addonService.filterCompatibleAddons([addon1, addon2, addon3, addon4, addon5, addon6], plfCommunityBitnami41) == [addon1]
+  }
+
+  def "filterCompatibleAddons for PLF Enterprise Bitnami"() {
+    expect:
+    addonService.filterCompatibleAddons([addon1, addon2, addon3, addon4, addon5, addon6], plfEnterpriseBitnami41) == [addon2]
+  }
+
+  def "filterCompatibleAddons for PLF Community Tomcat with 2 results"() {
+    expect:
+    !addonService.filterCompatibleAddons([addon1, addon2, addon3, addon4, addon5, addon6, addon7], plfCommunityTomcat41).disjoint([addon1, addon7])
+  }
+
+  def "filterCompatibleAddons for PLF Enterprise Tomcat with 2 results"() {
+    expect:
+    !addonService.filterCompatibleAddons([addon1, addon2, addon3, addon4, addon5, addon6, addon7], plfEnterpriseTomcat41).disjoint([addon2, addon7])
+  }
+
+  def "filterCompatibleAddons for PLF Enterprise Jboss with 2 results"() {
+    expect:
+    !addonService.filterCompatibleAddons([addon1, addon2, addon3, addon4, addon5, addon6, addon7], plfEnterpriseJboss41).disjoint([addon3, addon7])
+  }
+
+  def "filterCompatibleAddons for PLF Community Bitnami with 2 results"() {
+    expect:
+    !addonService.filterCompatibleAddons([addon1, addon2, addon3, addon4, addon5, addon6, addon7], plfCommunityBitnami41).disjoint([addon1, addon7])
+  }
+
+  def "filterCompatibleAddons for PLF Enterprise Bitnami with 2 results"() {
+    expect:
+    !addonService.filterCompatibleAddons([addon1, addon2, addon3, addon4, addon5, addon6, addon7], plfEnterpriseBitnami41).disjoint([addon2, addon7])
   }
 
   @Unroll

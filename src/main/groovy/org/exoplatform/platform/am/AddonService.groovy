@@ -442,7 +442,7 @@ class AddonService {
    */
   protected Boolean isCompatible(Addon addon, PlatformSettings plfSettings) {
     return addon.supportedDistributions.contains(plfSettings.distributionType) &&
-        addon.supportedApplicationServers.contains(plfSettings.appServerType) &&
+        testAppServerTypeCompatibility(plfSettings.appServerType, addon.supportedApplicationServers) &&
         testVersionCompatibility(plfSettings.version, addon.compatibility)
   }
 
@@ -808,6 +808,19 @@ class AddonService {
   ) {
     assert version
     !constraint || VERSION_SCHEME.parseVersionConstraint(constraint).containsVersion(VERSION_SCHEME.parseVersion(version))
+  }
+
+  /**
+   * Test if the Application Server type is supported
+   * @param appServerType An application server type
+   * @param supportedServerType A list of supported server type
+   */
+  protected Boolean testAppServerTypeCompatibility(
+      PlatformSettings.AppServerType appServerType,
+      List<PlatformSettings.AppServerType> supportedServerType
+  ) {
+    return supportedServerType.contains(appServerType) || 
+           supportedServerType.contains(PlatformSettings.AppServerType.TOMCAT) && appServerType.equals(PlatformSettings.AppServerType.BITNAMI)
   }
 
   private enum ParsingErrorType {
