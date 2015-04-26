@@ -522,7 +522,7 @@ class AddonServiceTest extends UnitTestsSpecification {
   }
 
   @Unroll
-  @Issue("https://jira.exoplatform.org/browse/AM-105")
+  @Issue("https://jira.exoplatform.org/browse/AM-106")
   def "testVersionCompatibility"(String version, String constraint, Boolean expectedResult) {
     expect:
     addonService.testVersionCompatibility(version, constraint) == expectedResult
@@ -540,5 +540,8 @@ class AddonServiceTest extends UnitTestsSpecification {
     "4.1-M2"         | "[4.0.0,),[4.1-M2]" | TRUE  // 4.1-M2 is in [4.0.0,) and [4.1-M2]
     "4.1.x-SNAPSHOT" | "[4.0.0,)"          | TRUE  // 4.1.x-SNAPSHOT is in [4.0.0,)
     "4.1.x-SNAPSHOT" | "[4.0.0,),[4.1-M2]" | TRUE  // 4.1.x-SNAPSHOT is in [4.0.0,)
+    "4.1.x-SNAPSHOT" | "[4.1.0,)"          | TRUE  // 4.1.x > 4.1.0, hence its SNAPSHOT
+    "4.1.x"          | "[4.1.1,)"          | FALSE  // 4.1.0 < 4.1.x < 4.1.1
+    "4.1.x-SNAPSHOT" | "[4.1.1,)"          | FALSE  // 4.1.0 < 4.1.x < 4.1.1, hence its SNAPSHOT
   }
 }
