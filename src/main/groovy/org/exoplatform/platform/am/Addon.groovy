@@ -45,6 +45,7 @@ class Addon implements Comparable<Addon> {
   String authorEmail
   String license
   String licenseUrl
+  Boolean supported
   Boolean mustAcceptLicense
   List<PlatformSettings.DistributionType> supportedDistributions
   List<PlatformSettings.AppServerType> supportedApplicationServers

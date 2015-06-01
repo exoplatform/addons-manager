@@ -181,10 +181,21 @@ public class AddonInstallService {
       }
     } else {
       //[LICENSE_06] no licenseUrl or mustAcceptLicenseTerms=false
-      LOG.warn("DISCLAIMER : You are about to install third-party software available on your eXo Platform instance.")
-      LOG.warn(
-          "This software is provided \"as is\" without warranty of any kind, either expressed or implied and such software is to be used at your own risk. Use of this software is governed by its license and/or terms and conditions and it is your sole responsibility to accept and respect them prior to installing and using this software.")
-      LOG.warn("This software is not supported by eXo's Support Services.")
+      if ("eXo".equalsIgnoreCase(addon.vendor)) {
+        LOG.warn("DISCLAIMER : You are about to install an eXo Add-On available on your eXo Platform instance.")
+        LOG.warn(
+            "This software is provided \"as is\" without warranty of any kind, either expressed or implied and such software is to be used at your own risk.")
+        if (addon.supported) {
+          LOG.warn("This software is covered by eXo's Support Services provided you are a current subscriber.");
+        } else {
+          LOG.warn("This software is not covered by eXo's Support Services.")
+        }
+      } else {
+        LOG.warn("DISCLAIMER : You are about to install third-party software available on your eXo Platform instance.")
+        LOG.warn(
+            "This software is provided \"as is\" without warranty of any kind, either expressed or implied and such software is to be used at your own risk. Use of this software is governed by its license and/or terms and conditions and it is your sole responsibility to accept and respect them prior to installing and using this software.")
+        LOG.warn("This software is not supported by eXo's Support Services.")
+      }
     }
     LOG.info("Installing @|yellow ${addon.id}:${addon.version}|@")
     // Let's download it

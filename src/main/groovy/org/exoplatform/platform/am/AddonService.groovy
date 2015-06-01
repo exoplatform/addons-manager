@@ -553,6 +553,7 @@ class AddonService {
     addonObj.license = anAddon.license
     addonObj.licenseUrl = anAddon.licenseUrl
     addonObj.mustAcceptLicense = anAddon.mustAcceptLicense
+    addonObj.supported = anAddon.supported
     if (anAddon.supportedDistributions instanceof String) {
       addonObj.supportedDistributions = anAddon.supportedDistributions.split(',').collect {
         String it ->
