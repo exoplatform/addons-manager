@@ -152,7 +152,8 @@ To install this add-on:
         "License must be accepted"          : addon.mustAcceptLicense,
         "Supported application Server(s)"   : addon.supportedApplicationServers.join(", "),
         "Supported platform distribution(s)": addon.supportedDistributions.join(", "),
-        "Supported platform version(s)"     : addon.compatibility] as LinkedHashMap //LinkedHashMap to keep the insertion order
+        "Supported platform version(s)"     : addon.compatibility,
+        "eXo Support Services"              : addon.supported ? "yes": null] as LinkedHashMap //LinkedHashMap to keep the insertion order
     map.keySet().findAll { map.get(it) }.each {
       LOG.info String.format("@|bold %-${map.keySet()*.size().max()}s|@ : %s", it, map.get(it))
     }
