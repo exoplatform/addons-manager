@@ -39,7 +39,7 @@ class CompatibilityException extends AddonsManagerException {
                     "Only distribution ${addon.supportedDistributions[0]} is supported. " :
                     "Only distributions ${addon.supportedDistributions.join(", ")} are supported. " :
                 "") +
-            (!addon.supportedApplicationServers.contains(plfSettings.appServerType) ?
+            (!AddonService.instance.testAppServerTypeCompatibility(plfSettings.appServerType, addon.supportedApplicationServers) ?
                 addon.supportedApplicationServers.size() == 1 ?
                     "Only application server ${addon.supportedApplicationServers[0]} is supported. " :
                     "Only application servers ${addon.supportedApplicationServers} are supported. " :
