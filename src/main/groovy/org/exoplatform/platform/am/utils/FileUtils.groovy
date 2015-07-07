@@ -138,7 +138,7 @@ class FileUtils {
         return
       }
       if (warnIfOverride) {
-        LOG.warn("Filr ${destFile.name} already exists. Replacing it.")
+        LOG.warn("File ${destFile.name} already exists. Replacing it.")
       }
     }
     if (!message) {
