@@ -191,6 +191,24 @@ class AddonServiceTest extends UnitTestsSpecification {
     thrown(InvalidJSONException)
   }
 
+  def "createAddonFromJsonText parse an invalid JSON text containing İ in Turkish"() {
+    when:
+    addonService.createAddonFromJsonText("""
+    {
+        "id": "my-addon",
+        "version": "1.0.0",
+        "name": "The super add-on Turkish",
+        "downloadUrl": "http://path/to/archive.zip",
+        "vendor": "eXo platform",
+        "license": "LGPLv3",
+        "supportedDistributions": "ENTERPRİSE,COMMUNİTY",
+        "supportedApplicationServers": "TOMCAT,JBOSS"
+    }
+""")
+    then:
+    thrown(InvalidJSONException)
+  }
+
   def "createAddonsFromJsonText must silently ignore all invalid entries"() {
     when:
     def addons = addonService.createAddonsFromJsonText("""
