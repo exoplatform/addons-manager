@@ -24,6 +24,7 @@ import groovy.util.slurpersupport.GPathResult
 import org.exoplatform.platform.am.cli.CommandLineParameters
 import org.exoplatform.platform.am.ex.AddonNotInstalledException
 import org.exoplatform.platform.am.settings.EnvironmentSettings
+import org.exoplatform.platform.am.utils.FileUtils
 import org.exoplatform.platform.am.utils.Logger
 
 import static org.exoplatform.platform.am.utils.FileUtils.copyFile
@@ -96,11 +97,11 @@ public class AddonUninstallService {
 
     addon.installedLibraries.each {
       library ->
-        File fileToDelete = new File(env.platform.homeDirectory, library)
+        File fileToDelete = new File(env.platform.librariesDirectory, FileUtils.extractFilename(library))
         if (!fileToDelete.exists()) {
-          LOG.warn("No library ${library} to delete")
+          LOG.warn("No library ${fileToDelete} to delete")
         } else {
-          LOG.withStatus("Deleting library ${library}") {
+          LOG.withStatus("Deleting library ${fileToDelete}") {
             fileToDelete.delete()
             assert !fileToDelete.exists()
           }
@@ -114,11 +115,11 @@ public class AddonUninstallService {
       webapp ->
         String contextRoot = webapp.substring(webapp.lastIndexOf('/')+1, webapp.length() - 4)
         String webUri = webapp.substring(webapp.lastIndexOf('/')+1, webapp.length())
-        File fileToDelete = new File(env.platform.homeDirectory, webapp)
+        File fileToDelete = new File(env.platform.webappsDirectory, FileUtils.extractFilename(webapp))
         if (!fileToDelete.exists()) {
-          LOG.warn("No web application ${webapp} to delete")
+          LOG.warn("No web application ${fileToDelete} to delete")
         } else {
-          LOG.withStatus("Deleting web application ${webapp}") {
+          LOG.withStatus("Deleting web application ${fileToDelete}") {
             fileToDelete.delete()
             assert !fileToDelete.exists()
           }
@@ -141,7 +142,7 @@ public class AddonUninstallService {
 
     addon.installedProperties.each {
       propFile ->
-        File fileToDelete = new File(env.platform.homeDirectory, propFile)
+        File fileToDelete = new File(env.platform.propertiesDirectory, propFile)
         if (!fileToDelete.exists()) {
           LOG.warn("No ${fileToDelete} to delete")
         } else {
@@ -152,7 +153,7 @@ public class AddonUninstallService {
           File parentDirectory = fileToDelete.parentFile
           while (parentDirectory.isDirectory() && !parentDirectory.list()) {
             LOG.withStatus(
-                "Deleting empty directory ${env.platform.homeDirectory.toURI().relativize(parentDirectory.toURI()).getPath()}") {
+                "Deleting empty directory ${parentDirectory.toURI().getPath()}") {
               parentDirectory.delete()
             }
             parentDirectory = parentDirectory.parentFile
@@ -173,7 +174,7 @@ public class AddonUninstallService {
           File parentDirectory = fileToDelete.parentFile
           while (parentDirectory.isDirectory() && !parentDirectory.list()) {
             LOG.withStatus(
-                "Deleting empty directory ${env.platform.homeDirectory.toURI().relativize(parentDirectory.toURI()).getPath()}") {
+                "Deleting empty directory ${parentDirectory.toURI().getPath()}") {
               parentDirectory.delete()
             }
             parentDirectory = parentDirectory.parentFile
@@ -185,7 +186,20 @@ public class AddonUninstallService {
     addon.overwrittenFiles.each {
       fileToRecover ->
         File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${fileToRecover}")
-        File originalFile = new File(env.platform.homeDirectory, fileToRecover)
+        File originalFile
+        if (fileToRecover ==~ /^.*jar$/) {
+          // jar files
+          originalFile = new File(env.platform.librariesDirectory, FileUtils.extractFilename(fileToRecover))
+        } else if (fileToRecover ==~ /^.*war$/) {
+          // war files
+          originalFile = new File(env.platform.webappsDirectory, FileUtils.extractFilename(fileToRecover))
+        } else if (fileToRecover ==~ /^.*properties$/) {
+          // properties files
+          originalFile = new File(env.platform.propertiesDirectory, fileToRecover)
+        } else {
+          // other files
+          originalFile = new File(env.platform.homeDirectory, fileToRecover)
+        }
         copyFile("Reinstalling original file ${fileToRecover}", backupFile, originalFile)
         LOG.withStatus("Deleting backup file of ${fileToRecover}") {
           backupFile.delete()
