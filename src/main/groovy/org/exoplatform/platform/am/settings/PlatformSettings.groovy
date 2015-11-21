@@ -39,16 +39,18 @@ class PlatformSettings {
    * Application Server types on which PLF add-ons can be managed
    */
   enum AppServerType {
-    TOMCAT("lib", "webapps"),
-    JBOSS("standalone/deployments/platform.ear/lib", "standalone/deployments/platform.ear"),
-    BITNAMI("lib", "../../apache-tomcat/webapps"),
-    UNKNOWN("", "")
+    TOMCAT("lib", "webapps", "gatein/conf"),
+    JBOSS("standalone/deployments/platform.ear/lib", "standalone/deployments/platform.ear", "standalone/configuration/gatein"),
+    BITNAMI("lib", "../../apache-tomcat/webapps", "gatein/conf"),
+    UNKNOWN("", "", "")
     final String librariesPath
     final String webappsPath
+    final String propertiesPath
 
-    AppServerType(String librariesPath, String webappsPath) {
+    AppServerType(String librariesPath, String webappsPath, String propertiesPath) {
       this.librariesPath = librariesPath
       this.webappsPath = webappsPath
+      this.propertiesPath = propertiesPath
     }
   }
 
@@ -65,6 +67,7 @@ class PlatformSettings {
   String version
   File librariesDirectory
   File webappsDirectory
+  File propertiesDirectory
 
   /**
    * Platform Settings for the instance located with PLATFORM_HOME_SYS_PROP system property
@@ -128,6 +131,13 @@ class PlatformSettings {
       throw new ErroneousSetupException(
           "Erroneous setup, platform web applications directory (${this.webappsDirectory}) is invalid.")
     }
+
+    this.propertiesDirectory = new File(homeDirectory, this.appServerType.propertiesPath)
+    if (!this.propertiesDirectory.isDirectory()) {
+      throw new ErroneousSetupException(
+          "Erroneous setup, platform properties directory (${this.propertiesDirectory}) is invalid.")
+    }
+
     Pattern filePattern = ~/platform-component-upgrade-plugins.*jar/
     String fileFound
     Closure findFilenameClosure = {
