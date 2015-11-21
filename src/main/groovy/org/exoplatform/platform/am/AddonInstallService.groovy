@@ -228,27 +228,31 @@ public class AddonInstallService {
         ZipEntry entry
         while (entry = zipInputStream.nextEntry) {
           File destinationFile
+          String fileName
           LOG.debug("ZIP entry : ${entry.name}")
           if (entry.isDirectory() || entry.name?.equalsIgnoreCase("README")) {
             // Do nothing
             continue
           } else if (entry.name ==~ /^.*jar$/) {
             // [AM_STRUCT_02] Add-ons libraries target directory
-            destinationFile = new File(env.platform.librariesDirectory, FileUtils.extractFilename(entry.name))
+            fileName = FileUtils.extractFilename(entry.name)
+            destinationFile = new File(env.platform.librariesDirectory, fileName)
           } else if (entry.name ==~ /^.*war$/) {
             // [AM_STRUCT_03] Add-ons webapps target directory
-            destinationFile = new File(env.platform.webappsDirectory, FileUtils.extractFilename(entry.name))
+            fileName = FileUtils.extractFilename(entry.name)
+            destinationFile = new File(env.platform.webappsDirectory, fileName)
           } else if (entry.name ==~ /^.*properties$/) {
             // [AM_STRUCT_07] Add-ons properties target directory
-            destinationFile = new File(env.platform.propertiesDirectory, FileUtils.extractParentAndFilename(entry.name))
+            fileName = FileUtils.extractParentAndFilename(entry.name)
+            destinationFile = new File(env.platform.propertiesDirectory, fileName)
           } else {
             // see [AM_STRUCT_04] non war/jar files locations
-            destinationFile = new File(env.platform.homeDirectory, entry.name)
+            fileName = entry.name
+            destinationFile = new File(env.platform.homeDirectory, fileName)
           }
           LOG.debug("Destination : ${destinationFile}")
-          String plfHomeRelativePath = env.platform.homeDirectory.toURI().relativize(destinationFile.toURI()).getPath()
           if (destinationFile.exists()) {
-            conflictingFiles << plfHomeRelativePath
+            conflictingFiles << fileName
           }
         }
       }
@@ -268,6 +272,7 @@ public class AddonInstallService {
       zipInputStream.withStream {
         ZipEntry entry
         while (entry = zipInputStream.nextEntry) {
+          String fileName
           File destinationFile
           List<String> installationList
           LOG.debug("ZIP entry : ${entry.name}")
@@ -287,44 +292,48 @@ public class AddonInstallService {
             continue
           } else if (entry.name ==~ /^.*jar$/) {
             // [AM_STRUCT_02] Add-ons libraries target directory
-            destinationFile = new File(env.platform.librariesDirectory, FileUtils.extractFilename(entry.name))
+            fileName = FileUtils.extractFilename(entry.name)
+            destinationFile = new File(env.platform.librariesDirectory, fileName)
             installationList = addon.installedLibraries
           } else if (entry.name ==~ /^.*war$/) {
             // [AM_STRUCT_03] Add-ons webapps target directory
-            destinationFile = new File(env.platform.webappsDirectory, FileUtils.extractFilename(entry.name))
+            fileName = FileUtils.extractFilename(entry.name)
+            destinationFile = new File(env.platform.webappsDirectory, fileName)
             installationList = addon.installedWebapps
           } else if (entry.name ==~ /^.*properties$/) {
             // [AM_STRUCT_07] Add-ons properties target directory
-            destinationFile = new File(env.platform.propertiesDirectory, FileUtils.extractParentAndFilename(entry.name))
+            fileName = FileUtils.extractParentAndFilename(entry.name)
+            destinationFile = new File(env.platform.propertiesDirectory, fileName)
             installationList = addon.installedProperties
           } else {
             // see [AM_STRUCT_04] non war/jar files locations
-            destinationFile = new File(env.platform.homeDirectory, entry.name)
+            fileName = entry.name
+            destinationFile = new File(env.platform.homeDirectory, fileName)
             installationList = addon.installedOthersFiles
           }
           LOG.debug("Destination : ${destinationFile}")
           if (!destinationFile.parentFile.exists()) {
             FileUtils.mkdirs(destinationFile.parentFile)
           }
-          String plfHomeRelativePath = env.platform.homeDirectory.toURI().relativize(destinationFile.toURI()).getPath()
+          
           if (destinationFile.exists()) {
             switch (conflict) {
               case Conflict.OVERWRITE:
-                LOG.warn("File ${plfHomeRelativePath} already exists. Overwritten.")
+                LOG.warn("File ${destinationFile} already exists. Overwritten.")
                 // Let's save it before
-                File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${plfHomeRelativePath}")
+                File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${fileName}")
                 if (!backupFile.parentFile.exists()) {
                   FileUtils.mkdirs(backupFile.parentFile)
                 }
                 copyFile("Archiving existing file ${destinationFile.name}", destinationFile, backupFile)
-                addon.overwrittenFiles.add(plfHomeRelativePath)
+                addon.overwrittenFiles.add(fileName)
                 break
               case Conflict.SKIP:
-                LOG.warn("File ${plfHomeRelativePath} already exists. Skipped.")
+                LOG.warn("File ${destinationFile} already exists. Skipped.")
                 continue // Next entry
             }
           }
-          LOG.withStatus("Installing file ${plfHomeRelativePath}") {
+          LOG.withStatus("Installing file ${destinationFile}") {
             FileOutputStream output = new FileOutputStream(destinationFile)
             output.withStream {
               int len = 0;
@@ -334,7 +343,7 @@ public class AddonInstallService {
               }
             }
           }
-          installationList.add(plfHomeRelativePath)
+          installationList.add(fileName)
         }
       }
       // Update application.xml if it exists
