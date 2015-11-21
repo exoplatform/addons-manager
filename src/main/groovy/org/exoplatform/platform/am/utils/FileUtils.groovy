@@ -183,4 +183,14 @@ class FileUtils {
     return fullpath.substring(0, fullpath.lastIndexOf('/'))
   }
 
+  static String extractParentAndFilename(String fullpath) {
+    if (fullpath.lastIndexOf("/") < 0) return fullpath
+    String subPath = fullpath.substring(0, fullpath.lastIndexOf("/") -1)
+    if (subPath.indexOf("/") < 0) {
+      return fullpath
+    } else {
+      return fullpath.substring(subPath.lastIndexOf("/") + 1)
+    }
+  }
+
 }
