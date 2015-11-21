@@ -51,6 +51,7 @@ class Addon implements Comparable<Addon> {
   String compatibility
   List<String> installedLibraries
   List<String> installedWebapps
+  List<String> installedProperties
   List<String> installedOthersFiles
   List<String> overwrittenFiles
 

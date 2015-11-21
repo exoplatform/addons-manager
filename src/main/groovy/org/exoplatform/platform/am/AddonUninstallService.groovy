@@ -139,6 +139,19 @@ public class AddonUninstallService {
         }
     }
 
+    addon.installedProperties.each {
+      propFile ->
+        File fileToDelete = new File(env.platform.homeDirectory, propFile)
+        if (!fileToDelete.exists()) {
+          LOG.warn("No ${fileToDelete} to delete")
+        } else {
+          LOG.withStatus("Deleting ${fileToDelete}") {
+            fileToDelete.delete()
+            assert !fileToDelete.exists()
+          }
+        }
+    }
+
     addon.installedOthersFiles.each {
       otherFile ->
         File fileToDelete = new File(env.platform.homeDirectory, otherFile)
