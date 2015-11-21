@@ -98,9 +98,9 @@ public class AddonUninstallService {
       library ->
         File fileToDelete = new File(env.platform.homeDirectory, library)
         if (!fileToDelete.exists()) {
-          LOG.warn("No library ${library} to delete")
+          LOG.warn("No library ${fileToDelete} to delete")
         } else {
-          LOG.withStatus("Deleting library ${library}") {
+          LOG.withStatus("Deleting library ${fileToDelete}") {
             fileToDelete.delete()
             assert !fileToDelete.exists()
           }
@@ -116,9 +116,9 @@ public class AddonUninstallService {
         String webUri = webapp.substring(webapp.lastIndexOf('/')+1, webapp.length())
         File fileToDelete = new File(env.platform.homeDirectory, webapp)
         if (!fileToDelete.exists()) {
-          LOG.warn("No web application ${webapp} to delete")
+          LOG.warn("No web application ${fileToDelete} to delete")
         } else {
-          LOG.withStatus("Deleting web application ${webapp}") {
+          LOG.withStatus("Deleting web application ${fileToDelete}") {
             fileToDelete.delete()
             assert !fileToDelete.exists()
           }
@@ -163,7 +163,13 @@ public class AddonUninstallService {
     // Restore overwritten files
     addon.overwrittenFiles.each {
       fileToRecover ->
-        File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${fileToRecover}")
+        String pathInOverwrittenDir = fileToRecover.substring(0, fileToRecover.lastIndexOf("/") -1)
+        if (fileToRecover.indexOf("/") < 0) {
+          pathInOverwrittenDir = fileToRecover
+        } else {
+          pathInOverwrittenDir = fileToRecover.substring(pathInOverwrittenDir.lastIndexOf("/") + 1)
+        }
+        File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${pathInOverwrittenDir}")
         File originalFile = new File(env.platform.homeDirectory, fileToRecover)
         copyFile("Reinstalling original file ${fileToRecover}", backupFile, originalFile)
         LOG.withStatus("Deleting backup file of ${fileToRecover}") {

@@ -298,13 +298,19 @@ public class AddonInstallService {
           if (!destinationFile.parentFile.exists()) {
             FileUtils.mkdirs(destinationFile.parentFile)
           }
-          String plfHomeRelativePath = env.platform.homeDirectory.toURI().relativize(destinationFile.toURI()).getPath()
+          String plfHomeRelativePath = destinationFile.getPath().substring(env.platform.homeDirectory.getPath().length() + 1)
           if (destinationFile.exists()) {
             switch (conflict) {
               case Conflict.OVERWRITE:
-                LOG.warn("File ${plfHomeRelativePath} already exists. Overwritten.")
+                LOG.warn("File ${destinationFile} already exists. Overwritten.")
                 // Let's save it before
-                File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${plfHomeRelativePath}")
+                String pathInOverwrittenDir = plfHomeRelativePath.substring(0, plfHomeRelativePath.lastIndexOf("/") -1)
+                if (pathInOverwrittenDir.indexOf("/") < 0) {
+                  pathInOverwrittenDir = plfHomeRelativePath
+                } else {
+                  pathInOverwrittenDir = plfHomeRelativePath.substring(pathInOverwrittenDir.lastIndexOf("/") + 1)
+                }
+                File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${pathInOverwrittenDir}")
                 if (!backupFile.parentFile.exists()) {
                   FileUtils.mkdirs(backupFile.parentFile)
                 }
