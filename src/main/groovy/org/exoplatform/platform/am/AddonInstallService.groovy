@@ -240,7 +240,7 @@ public class AddonInstallService {
             destinationFile = new File(env.platform.webappsDirectory, FileUtils.extractFilename(entry.name))
           } else if (entry.name ==~ /^.*properties$/) {
             // [AM_STRUCT_07] Add-ons properties target directory
-            destinationFile = new File(env.platform.propertiesDirectory, FileUtils.extractFilename(entry.name))
+            destinationFile = new File(env.platform.propertiesDirectory, FileUtils.extractParentAndFilename(entry.name))
           } else {
             // see [AM_STRUCT_04] non war/jar files locations
             destinationFile = new File(env.platform.homeDirectory, entry.name)
@@ -295,7 +295,7 @@ public class AddonInstallService {
             installationList = addon.installedWebapps
           } else if (entry.name ==~ /^.*properties$/) {
             // [AM_STRUCT_07] Add-ons properties target directory
-            destinationFile = new File(env.platform.propertiesDirectory, FileUtils.extractFilename(entry.name))
+            destinationFile = new File(env.platform.propertiesDirectory, FileUtils.extractParentAndFilename(entry.name))
             installationList = addon.installedProperties
           } else {
             // see [AM_STRUCT_04] non war/jar files locations

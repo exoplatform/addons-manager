@@ -145,9 +145,17 @@ public class AddonUninstallService {
         if (!fileToDelete.exists()) {
           LOG.warn("No ${fileToDelete} to delete")
         } else {
-          LOG.withStatus("Deleting ${fileToDelete}") {
+          LOG.withStatus("Deleting properties file ${fileToDelete}") {
             fileToDelete.delete()
             assert !fileToDelete.exists()
+          }
+          File parentDirectory = fileToDelete.parentFile
+          while (parentDirectory.isDirectory() && !parentDirectory.list()) {
+            LOG.withStatus(
+                "Deleting empty directory ${env.platform.homeDirectory.toURI().relativize(parentDirectory.toURI()).getPath()}") {
+              parentDirectory.delete()
+            }
+            parentDirectory = parentDirectory.parentFile
           }
         }
     }
