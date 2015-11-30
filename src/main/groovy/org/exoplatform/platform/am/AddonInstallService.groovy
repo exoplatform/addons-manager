@@ -242,7 +242,7 @@ public class AddonInstallService {
             destinationFile = new File(env.platform.homeDirectory, entry.name)
           }
           LOG.debug("Destination : ${destinationFile}")
-          String plfHomeRelativePath = destinationFile.getPath().substring(env.platform.homeDirectory.getPath().length() + 1)
+          String plfHomeRelativePath = destinationFile.toURI().getPath().substring(env.platform.homeDirectory.toURI().getPath().length())
           if (destinationFile.exists()) {
             conflictingFiles << plfHomeRelativePath
           }
@@ -298,7 +298,7 @@ public class AddonInstallService {
           if (!destinationFile.parentFile.exists()) {
             FileUtils.mkdirs(destinationFile.parentFile)
           }
-          String plfHomeRelativePath = destinationFile.getPath().substring(env.platform.homeDirectory.getPath().length() + 1)
+          String plfHomeRelativePath = destinationFile.toURI().getPath().substring(env.platform.homeDirectory.toURI().getPath().length())
           if (destinationFile.exists()) {
             switch (conflict) {
               case Conflict.OVERWRITE:
