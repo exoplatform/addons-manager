@@ -688,7 +688,7 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
     // Verify return code
     AddonsManagerConstants.RETURN_CODE_INCOMPATIBILITY_ERROR == process.exitValue()
     // Verify error message
-    process.stdoutText =~ "The add-on incompatible-foo-addon is not compatible : .*. Use --no-compat to bypass this compatibility check and install anyway"
+    process.stdoutText =~ "The add-on incompatible-foo-addon:42 is not compatible : .*. Use --no-compat to bypass this compatibility check and install anyway"
   }
 
   /**
