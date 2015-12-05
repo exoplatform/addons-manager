@@ -68,7 +68,7 @@
     <ut.verbose>false</ut.verbose>
     <it.platform.groupId>org.exoplatform.platform.distributions</it.platform.groupId>
     <it.platform.artifactId>plf-community-tomcat-standalone</it.platform.artifactId>
-    <it.platform.version>4.1-M2</it.platform.version>
+    <it.platform.version>4.3.0-RC1-1</it.platform.version>
     <it.dataDirPath>${project.build.directory}/test-data</it.dataDirPath>
     <it.workingDirPath>${project.build.directory}/integration-tests</it.workingDirPath>
     <it.verbose>false</it.verbose>
