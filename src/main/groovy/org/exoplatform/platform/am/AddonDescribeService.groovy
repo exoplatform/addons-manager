@@ -110,9 +110,10 @@ public class AddonDescribeService {
     if (displayIncompatibleAddonsNote) {
       LOG.info " @|red,bold (*)|@ Your eXo Platform instance is not compatible with this version of the add-on"
     }
+    String compat_opt = ADDON_SERVICE.isCompatible(addon, env.platform) ? "" : "@|red --no-compat|@"
     LOG.info String.format("""
 To install this add-on:
-  ${env.manager.scriptName} install @|yellow ${addon.id}:${addon.version}|@
+  ${env.manager.scriptName} install @|yellow ${addon.id}:${addon.version}|@ ${compat_opt}
 """)
 
   }
@@ -128,7 +129,7 @@ To install this add-on:
       List<String> snapshotsVersions) {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd")
     LOG.infoHR("=")
-    LOG.info "Informations about add-on @|bold,yellow ${addon.id}:${addon.version}|@"
+    LOG.info "Information about add-on @|bold,yellow ${addon.id}:${addon.version}|@"
     LOG.infoHR("=")
     Map map = [
         "Identifier"                        : addon.id,
