@@ -33,7 +33,7 @@ class CompatibilityException extends AddonsManagerException {
 
   CompatibilityException(Addon addon, PlatformSettings plfSettings) {
     super(
-        "The add-on ${addon.id} is not compatible : " +
+        "The add-on ${addon.id}:${addon.version} is not compatible : " +
             (!addon.supportedDistributions.contains(plfSettings.distributionType) ?
                 addon.supportedDistributions.size() == 1 ?
                     "Only distribution ${addon.supportedDistributions[0]} is supported. " :
