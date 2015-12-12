@@ -123,6 +123,17 @@ public class AddonUninstallService {
             assert !fileToDelete.exists()
           }
         }
+        // AM-119: delete unzipped war folder
+        File folderToDelete = new File(fileToDelete.getPath().substring(0, fileToDelete.getPath().length() - 4))
+        if (folderToDelete.isDirectory()) {
+          LOG.withStatus("Deleting web application folder ${folderToDelete}") {
+            folderToDelete.deleteDir()
+            assert !folderToDelete.exists()
+          }
+        } else {
+          LOG.warn("No web application folder ${folderToDelete} to delete")
+        }
+
         if (applicationDescriptorFile.exists()) {
           LOG.withStatus("Removing context declaration /${contextRoot} for ${webUri} in application.xml") {
             ADDON_SERVICE.processFileInplace(applicationDescriptorFile) { text ->
