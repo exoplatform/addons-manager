@@ -601,6 +601,7 @@ class AddonService {
     addonObj.compatibility = anAddon.compatibility
     addonObj.installedLibraries = anAddon.installedLibraries
     addonObj.installedWebapps = anAddon.installedWebapps
+    addonObj.installedProperties = anAddon.installedProperties
     addonObj.installedOthersFiles = anAddon.installedOthersFiles
     addonObj.overwrittenFiles = anAddon.overwrittenFiles
     if (!addonObj.id) {
