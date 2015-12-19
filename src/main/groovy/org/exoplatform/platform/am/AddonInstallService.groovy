@@ -242,7 +242,7 @@ public class AddonInstallService {
             destinationFile = new File(env.platform.homeDirectory, entry.name)
           }
           LOG.debug("Destination : ${destinationFile}")
-          String plfHomeRelativePath = env.platform.homeDirectory.toURI().relativize(destinationFile.toURI()).getPath()
+          String plfHomeRelativePath = destinationFile.toURI().getPath().substring(env.platform.homeDirectory.toURI().getPath().length())
           if (destinationFile.exists()) {
             conflictingFiles << plfHomeRelativePath
           }
@@ -298,13 +298,19 @@ public class AddonInstallService {
           if (!destinationFile.parentFile.exists()) {
             FileUtils.mkdirs(destinationFile.parentFile)
           }
-          String plfHomeRelativePath = env.platform.homeDirectory.toURI().relativize(destinationFile.toURI()).getPath()
+          String plfHomeRelativePath = destinationFile.toURI().getPath().substring(env.platform.homeDirectory.toURI().getPath().length())
           if (destinationFile.exists()) {
             switch (conflict) {
               case Conflict.OVERWRITE:
-                LOG.warn("File ${plfHomeRelativePath} already exists. Overwritten.")
+                LOG.warn("File ${destinationFile} already exists. Overwritten.")
                 // Let's save it before
-                File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${plfHomeRelativePath}")
+                String pathInOverwrittenDir = plfHomeRelativePath.substring(0, plfHomeRelativePath.lastIndexOf("/") -1)
+                if (pathInOverwrittenDir.indexOf("/") < 0) {
+                  pathInOverwrittenDir = plfHomeRelativePath
+                } else {
+                  pathInOverwrittenDir = plfHomeRelativePath.substring(pathInOverwrittenDir.lastIndexOf("/") + 1)
+                }
+                File backupFile = new File(env.overwrittenFilesDirectory, "${addon.id}/${pathInOverwrittenDir}")
                 if (!backupFile.parentFile.exists()) {
                   FileUtils.mkdirs(backupFile.parentFile)
                 }
