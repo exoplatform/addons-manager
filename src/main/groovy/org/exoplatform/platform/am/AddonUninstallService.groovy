@@ -130,8 +130,6 @@ public class AddonUninstallService {
             folderToDelete.deleteDir()
             assert !folderToDelete.exists()
           }
-        } else {
-          LOG.warn("No web application folder ${folderToDelete} to delete")
         }
 
         if (applicationDescriptorFile.exists()) {
