@@ -852,6 +852,23 @@ class AddonsManagerInstallIT extends IntegrationTestsSpecification {
   }
 
   /**
+   * Properties files are installed to the right location
+   */
+  def "[AM_STRUCT_07] addon(.bat) install properties-files-addon"() {
+    setup:
+    ProcessResult process = launchAddonsManager([INSTALL_CMD, "properties-files-addon:42"])
+    expect:
+    // Install it
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
+    // Verify that the add-on is correctly installed
+    verifyAddonContentPresent(PROP_FILES_ADDON_42_CONTENT)
+    cleanup:
+    // Uninstall it
+    AddonsManagerConstants.RETURN_CODE_OK == launchAddonsManager([UNINSTALL_CMD, "properties-files-addon"]).exitValue()
+  }
+
+  /**
    * Other files and folders located at the root of the add-on archive are copied as-is under $PLATFORM_HOME
    */
   def "[AM_STRUCT_04] addon(.bat) install other-files-addon"() {

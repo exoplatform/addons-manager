@@ -127,5 +127,18 @@
     "supportedDistributions": "community,enterprise",
     "supportedApplicationServers": "tomcat,jboss",
     "compatibility": "[4.0.0,)"
+  },
+  {
+    "id": "properties-files-addon",
+    "version": "42",
+    "name": "Fake addon with properties files",
+    "description": "A fake addon with properties files",
+    "releaseDate": "2015-12-19T00:00:00.000Z",
+    "downloadUrl": "http://localhost:${it.webServerHttpPort}/properties-files-addon-42.zip",
+    "vendor": "eXo",
+    "license": "LGPLv3",
+    "supportedDistributions": "community,enterprise",
+    "supportedApplicationServers": "tomcat,jboss",
+    "compatibility": "[4.0.0,)"
   }
 ]
