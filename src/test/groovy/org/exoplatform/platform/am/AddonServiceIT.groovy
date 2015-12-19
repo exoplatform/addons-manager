@@ -32,7 +32,7 @@ class AddonServiceIT extends IntegrationTestsSpecification {
   /**
    * Logger
    */
-  private static final int NB_ADDONS_CATALOG_JSON = 10
+  private static final int NB_ADDONS_CATALOG_JSON = 11
 
   @Shared
   @Subject
