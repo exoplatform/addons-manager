@@ -107,8 +107,8 @@ class AddonsManagerUninstallIT extends IntegrationTestsSpecification {
     verifyAddonContentNotPresent(OTHER_FILES_ADDON_42_CONTENT)
     // Verify that the empty directory was removed
     !new File(getPlatformSettings().homeDirectory, "conf/other-files-addon").exists()
-    if (getPlatformSettings().appServerType == TOMCAT) {
-      // /conf/ mustn't be deleted on tomcat, it has others files
+    if (getPlatformSettings().appServerType == TOMCAT || getPlatformSettings().appServerType == BITNAMI) {
+      // /conf/ mustn't be deleted on tomcat or bitnami, it has other files
       assert new File(getPlatformSettings().homeDirectory, "conf").exists()
     } else {
       // /conf/ doesn't exist on Jboss thus it must be removed
@@ -116,4 +116,28 @@ class AddonsManagerUninstallIT extends IntegrationTestsSpecification {
     }
   }
 
+  /**
+   * Properties files are removed
+   */
+  @Issue("https://jira.exoplatform.org/browse/AM-134")
+  def "[AM_STRUCT_07] addon(.bat) uninstall properties-files-addon"() {
+    setup:
+    launchAddonsManagerSilently([INSTALL_CMD, "properties-files-addon"])
+    ProcessResult process = launchAddonsManager([UNINSTALL_CMD, "properties-files-addon"])
+    expect:
+    // Install it
+    // Verify return code
+    AddonsManagerConstants.RETURN_CODE_OK == process.exitValue()
+    // Verify that the add-on is correctly installed
+    verifyAddonContentNotPresent(PROP_FILES_ADDON_42_CONTENT)
+    // Verify that the empty directory was removed
+    !new File(getPlatformSettings().homeDirectory, "conf/properties-files-addon").exists()
+    if (getPlatformSettings().appServerType == TOMCAT || getPlatformSettings().appServerType == BITNAMI) {
+      // /conf/ mustn't be deleted on tomcat or bitnami, it has other files
+      assert new File(getPlatformSettings().homeDirectory, "conf").exists()
+    } else {
+      // /conf/ doesn't exist on Jboss thus it must be removed
+      assert !new File(getPlatformSettings().homeDirectory, "conf").exists()
+    }
+  }
 }

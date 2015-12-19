@@ -24,6 +24,7 @@ import groovy.util.slurpersupport.GPathResult
 import org.exoplatform.platform.am.settings.AddonsManagerSettings
 import org.exoplatform.platform.am.settings.EnvironmentSettings
 import org.exoplatform.platform.am.settings.PlatformSettings
+import org.exoplatform.platform.am.utils.FileUtils
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -52,7 +53,7 @@ abstract class IntegrationTestsSpecification extends Specification {
   final static Map<String, String[]> OTHER_FILES_ADDON_42_CONTENT = [
       libraries  : ["other-files-addon-42.jar"],
       webapps    : ["other-files-addon-42.war"],
-      othersFiles: ["conf/other-files-addon/configuration1.properties", "conf/other-files-addon/configuration2.properties"]
+      othersFiles: ["conf/other-files-addon/misc1.txt", "conf/other-files-addon/misc2.txt"]
   ]
 
   final static Map<String, String[]> README_ADDON_42_CONTENT = [
@@ -68,6 +69,12 @@ abstract class IntegrationTestsSpecification extends Specification {
   final static Map<String, String[]> FOO_ADDON_43_SNAPSHOT_CONTENT = [
       libraries: ["foo-addon-43-SNAPSHOT.jar"],
       webapps  : ["foo-addon-43-SNAPSHOT.war"]
+  ]
+
+  final static Map<String, String[]> PROP_FILES_ADDON_42_CONTENT = [
+      libraries  : ["libs/properties-files-addon-42.jar"],
+      webapps    : ["webapps/properties-files-addon-42.war"],
+      properties : ["conf/configuration1.properties", "conf/properties-files-addon/configuration2.properties"]
   ]
 
   @Shared
@@ -173,18 +180,18 @@ abstract class IntegrationTestsSpecification extends Specification {
   /**
    * Helper method to check that an add-on is correctly installed
    * @param addonContent a Map describing the add-on content. It may have 3 keys and for each a list of paths in the archive.
-   * @{code libraries} gives le list of libraries (*.jar) in the archive. @{code webapps} gives le list of webapps (*.war)
-   * in the archive. @{code othersFiles} gives le list of others files.
+   * @{code libraries} gives the list of libraries (*.jar) in the archive. @{code webapps} gives the list of webapps (*.war)
+   * in the archive. @{code othersFiles} gives the list of other files.
    */
   void verifyAddonContentPresent(Map<String, String[]> addonContent) {
     if (addonContent.libraries) {
       addonContent.libraries.each { library ->
-        assert new File(getPlatformSettings().librariesDirectory, library).exists()
+        assert new File(getPlatformSettings().librariesDirectory, FileUtils.extractFilename(library)).exists()
       }
     }
     if (addonContent.webapps) {
       addonContent.webapps.each { webapp ->
-        assert new File(getPlatformSettings().webappsDirectory, webapp).exists()
+        assert new File(getPlatformSettings().webappsDirectory, FileUtils.extractFilename(webapp)).exists()
         if (PlatformSettings.AppServerType.JBOSS == getPlatformSettings().appServerType) {
           // Verify the application.xml
           GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(
@@ -197,6 +204,11 @@ abstract class IntegrationTestsSpecification extends Specification {
         }
       }
     }
+    if (addonContent.properties) {
+      addonContent.properties.each { properties ->
+        assert new File(getPlatformSettings().propertiesDirectory, FileUtils.extractParentAndFilename(properties)).exists()      
+      }
+    }
     if (addonContent.othersFiles) {
       addonContent.othersFiles.each { otherFile ->
         assert new File(getPlatformSettings().homeDirectory, otherFile).exists()
@@ -207,18 +219,18 @@ abstract class IntegrationTestsSpecification extends Specification {
   /**
    * Helper method to check that an add-on is not installed
    * @param addonContent a Map describing the add-on content. It may have 3 keys and for each a list of paths in the archive.
-   * @{code libraries} gives le list of libraries (*.jar) in the archive. @{code webapps} gives le list of webapps (*.war)
-   * in the archive. @{code othersFiles} gives le list of others files.
+   * @{code libraries} gives the list of libraries (*.jar) in the archive. @{code webapps} gives the list of webapps (*.war)
+   * in the archive. @{code othersFiles} gives the list of other files.
    */
   void verifyAddonContentNotPresent(Map<String, String[]> addonContent) {
     if (addonContent.libraries) {
       addonContent.libraries.each { library ->
-        assert !new File(getPlatformSettings().librariesDirectory, library).exists()
+        assert !new File(getPlatformSettings().librariesDirectory, FileUtils.extractFilename(library)).exists()
       }
     }
     if (addonContent.webapps) {
       addonContent.webapps.each { webapp ->
-        assert !new File(getPlatformSettings().webappsDirectory, webapp).exists()
+        assert !new File(getPlatformSettings().webappsDirectory, FileUtils.extractFilename(webapp)).exists()
         if (PlatformSettings.AppServerType.JBOSS == getPlatformSettings().appServerType) {
           // Verify the application.xml
           GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(
@@ -230,6 +242,11 @@ abstract class IntegrationTestsSpecification extends Specification {
           }.size() == 0
         }
 
+      }
+    }
+    if (addonContent.properties) {
+      addonContent.properties.each { properties ->
+        assert !new File(getPlatformSettings().propertiesDirectory, FileUtils.extractParentAndFilename(properties)).exists()
       }
     }
     if (addonContent.othersFiles) {
