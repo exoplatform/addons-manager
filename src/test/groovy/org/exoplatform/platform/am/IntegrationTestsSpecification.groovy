@@ -191,15 +191,16 @@ abstract class IntegrationTestsSpecification extends Specification {
     }
     if (addonContent.webapps) {
       addonContent.webapps.each { webapp ->
-        assert new File(getPlatformSettings().webappsDirectory, FileUtils.extractFilename(webapp)).exists()
+        String fileName = FileUtils.extractFilename(webapp)
+        assert new File(getPlatformSettings().webappsDirectory, fileName).exists()
         if (PlatformSettings.AppServerType.JBOSS == getPlatformSettings().appServerType) {
           // Verify the application.xml
           GPathResult applicationXmlContent = new XmlSlurper(false, false).parseText(
               new File(getPlatformSettings().webappsDirectory, "META-INF/application.xml").text)
           assert applicationXmlContent.depthFirst().findAll {
             (it.name() == 'module') &&
-                (it.'web'.'context-root'.text() == webapp.substring(0, webapp.size() - 4)) &&
-                (it.'web'.'web-uri'.text() == webapp)
+                (it.'web'.'context-root'.text() == fileName.substring(0, fileName.size() - 4)) &&
+                (it.'web'.'web-uri'.text() == fileName)
           }.size() == 1
         }
       }
