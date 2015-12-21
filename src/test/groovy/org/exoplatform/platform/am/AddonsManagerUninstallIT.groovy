@@ -25,6 +25,8 @@ import spock.lang.Subject
 
 import static org.exoplatform.platform.am.cli.CommandLineParameters.*
 import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.TOMCAT
+import static org.exoplatform.platform.am.settings.PlatformSettings.AppServerType.BITNAMI
+
 /**
  * @author Arnaud Héritier <aheritier@exoplatform.com>
  */
