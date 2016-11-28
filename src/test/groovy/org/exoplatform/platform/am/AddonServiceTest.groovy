@@ -543,5 +543,69 @@ class AddonServiceTest extends UnitTestsSpecification {
     "4.1.x-SNAPSHOT" | "[4.1.0,)"          | TRUE  // 4.1.x > 4.1.0, hence its SNAPSHOT
     "4.1.x"          | "[4.1.1,)"          | FALSE  // 4.1.0 < 4.1.x < 4.1.1
     "4.1.x-SNAPSHOT" | "[4.1.1,)"          | FALSE  // 4.1.0 < 4.1.x < 4.1.1, hence its SNAPSHOT
+    "4.1.1"          | "[4.1.1,4.2)"       | TRUE
+    "4.1.2"          | "[4.1.1,4.2)"       | TRUE
+    "4.3.0-RC02"     | "[4.2,4.3)"         | TRUE
+    "4.2.0"          | "[4.2,4.3)"         | TRUE
+    "4.2.1"          | "[4.2,4.3)"         | TRUE
+    "4.2.1"          | "[4.2.0,4.3.0)"     | TRUE
+    "4.2"            | "[4.1.1,4.2)"       | FALSE
+    "4.2"            | "[4.1.1,4.2]"       | TRUE
+    "4.2"            | "[4.1.1,4.2.0)"     | FALSE
+    "4.2"            | "[4.1.1,4.2.0]"     | TRUE
+    "4.2.0"          | "[4.1.1,4.2)"       | FALSE
+    "4.2.0"          | "[4.1.1,4.2]"       | TRUE
+    "4.2.0"          | "[4.1.1,4.2.0)"     | FALSE
+    "4.2.0"          | "[4.1.1,4.2.0]"     | TRUE
+    // Testing pattern equality
+    "4.4.0"          | "[4.4]"             | TRUE  // 4.4.0 = 4.4 (zero are ignored)
+    "4.4"            | "[4.4.000]"         | TRUE  // 4.4 = 4.4.000 (zero are ignored)
+    "4.4.000"        | "[4.4]"             | TRUE  // 4.4.000 = 4.4 (zero are ignored)
+    "4.4.0-rc"       | "[4.4-rc]"          | TRUE  // 4.4.0-rc = 4.4-rc (zero are ignored)
+    "4.4-RC"         | "[4.4-rc]"          | TRUE  // 4.4-RC = 4.4-rc (case non sensitive)
+    "4.4-RC0"        | "[4.4-rc]"          | TRUE  // 4.4-RC0 = 4.4-rc (zero are ignored)
+    "4.4-RC01"       | "[4.4-rc]"          | FALSE // 4.4-RC01 != 4.4-rc
+    "4.4-RC01"       | "[4.4-rc1]"         | TRUE  // 4.4-RC01 = 4.4-rc1 (zero are ignored)
+    "4.4-M"          | "[4.4-m]"           | TRUE  // 4.4-M = 4.4-m (case non sensitive)
+    "4.4-M0"         | "[4.4-m]"           | FALSE // 4.4-M0 != 4.4-m ( !!! -M is different from -M0)
+    "4.4-M0"         | "[4.4-M0]"          | TRUE  // 4.4-M0 = 4.4-M0 (zero are ignored)
+    "4.4-M01"        | "[4.4-M1]"          | TRUE  // 4.4-M01 = 4.4-M1 (zero are ignored)
+    // Testing Tribe special pattern
+    "4.4.0-tribe"    | "[4.4,)"            | TRUE
+    "4.4.0-tribe"    | "[4.4,4.5)"         | TRUE
+    // Testing RC pattern range
+    "4.4.0-RC01"     | "[4.4-alpha,4.5)"   | TRUE  // 4.2-alpha   < 4.4.0-RC01  < 4.5
+    "4.4.0-RC01"     | "[4.4-beta,4.5)"    | TRUE  // 4.2-beta    < 4.4.0-RC01  < 4.5
+    "4.4.0-RC01"     | "[4.4-M0,4.5)"      | TRUE  // 4.2-M0      < 4.4.0-RC01  < 4.5
+    "4.4.0-RC01"     | "[4.4-M01,4.5)"     | TRUE  // 4.4-M01     < 4.4.0-RC01  < 4.5
+    "4.4.0-RC01"     | "[4.4-RC,4.5)"      | TRUE  // 4.4-RC      < 4.4.0-RC01  < 4.5
+    "4.4.0-RC01"     | "[4.4-RC0,4.5)"     | TRUE  // 4.4-RC0     < 4.4.0-RC01  < 4.5
+    "4.4.0-RC01"     | "[4.4-RC1,4.5)"     | TRUE  // 4.4-RC1     = 4.4.0-RC01  < 4.5
+    "4.4.0-RC01"     | "[4.4-RC2,4.5)"     | FALSE // 4.4-RC2     > 4.4.0-RC01  < 4.5
+    "4.4.0-RC01"     | "[4.4,4.5)"         | FALSE // 4.4         > 4.4.0-RC01  < 4.5
+    // Testing M pattern range
+    "4.4.0-M01"      | "[4.4-m,4.5)"       | FALSE // 4.4-m   < 4.4.0-M01
+    "4.4.0-M01"      | "[4.4-m,4.5)"       | FALSE // 4.4-m   < 4.4.0-M01
+    "4.4.0-M01"      | "[4.4-m0,4.5)"      | TRUE  // 4.4-m0  < 4.4.0-M01
+    // Testing .x-SNAPSHOT pattern range
+    "4.4.x-SNAPSHOT" | "[4.4,4.5)"         | TRUE
+    "4.4.x-SNAPSHOT" | "[4.4.0,4.5)"       | TRUE
+    "4.4.x-SNAPSHOT" | "[4.4.1,4.5)"       | FALSE
+    "4.4.x-SNAPSHOT" | "[4.4.1,4.5),[4.4.x-SNAPSHOT]"     | TRUE
+    // Testing .x-translation-SNAPSHOT pattern range
+    "4.4.x-translation-SNAPSHOT" | "[4.4.x-translation-SNAPSHOT]" | TRUE
+    // Testing eXo dev process
+    "4.4.x-SNAPSHOT"              | "[4.4-m1,4.5-m1)"         | TRUE
+    "4.4.x-translation-SNAPSHOT"  | "[4.4-m1,4.5-m1)"         | TRUE
+    "4.4.0-M01"                   | "[4.4-m1,4.5-m1)"         | TRUE
+    "4.4.0-M02"                   | "[4.4-m1,4.5-m1)"         | TRUE
+    "4.4.0-RC01"                  | "[4.4-m1,4.5-m1)"         | TRUE
+    "4.4.0-RC02"                  | "[4.4-m1,4.5-m1)"         | TRUE
+    "4.4.0"                       | "[4.4-m1,4.5-m1)"         | TRUE
+    "4.4.0-CP01"                  | "[4.4-m1,4.5-m1)"         | TRUE
+    "4.5.0-M01"                   | "[4.4-m1,4.5-m1)"         | FALSE
+    "4.5.0-RC01"                  | "[4.4-m1,4.5-m1)"         | FALSE
+    "4.5.0"                       | "[4.4-m1,4.5-m1)"         | FALSE
+    "4.5.x-SNAPSHOT"              | "[4.4-m1,4.5-m1)"         | FALSE
   }
 }
