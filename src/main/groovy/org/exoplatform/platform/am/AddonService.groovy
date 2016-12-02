@@ -109,9 +109,12 @@ class AddonService {
         loadAddonsFromUrl(remoteCatalogUrl, noCache, offline, env.catalogsCacheDirectory),
         loadAddonsFromFile(env.localAddonsCatalogFile)
     )
+
+    // check for new addons manager version availability
+    def allStableAddons = filterAddonsByVersion(allAddons, true, false, false)
     Addon newerAddonManager = findAddonsNewerThan(
         new Addon(id: ADDONS_MANAGER_CATALOG_ID, version: env.manager.version),
-        filterAddonsByVersion(allAddons, true, false, false))?.max()
+        filterCompatibleAddons(allStableAddons, env.platform))?.max()
     if (newerAddonManager) {
       LOG.info(
           "New Add-ons Manager version @|yellow,bold ${newerAddonManager.version}|@ found. It will be automatically updated " +
