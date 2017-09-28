@@ -99,6 +99,29 @@ if [ -f "$PLF_HOME/addons/addons-manager.jar.new" ]; then
   mv "$PLF_HOME/addons/addons-manager.jar.new" "$PLF_HOME/addons/addons-manager.jar"
 fi
 
-JAVA_OPTS="-Dplf.home=\"$PLF_HOME\" -Duser.language=\"en\" -XX:+IgnoreUnrecognizedVMOptions \"--add-opens java.base/jdk.internal.loader=ALL-UNNAMED\""
+JAVA_OPTS="-Dplf.home=\"$PLF_HOME\""
+JAVA_OPTS="$JAVA_OPTS -Duser.language=\"en\""
+# Ignore unrecognized option to avoid JDK 8 to complain about JDK 9 option (--add-opens)
+JAVA_OPTS="$JAVA_OPTS -XX:+IgnoreUnrecognizedVMOptions"
+# Open all required modules for reflective access operations
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.lang=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.lang.invoke=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.lang.reflect=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.io=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.math=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.net=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.nio.channels=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.security=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.text=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.util=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.util.jar=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.util.regex=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/java.util.zip=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/sun.net.www.protocol.http=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/sun.net.www.protocol.https=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/sun.nio.ch=ALL-UNNAMED"
+JAVA_OPTS="$JAVA_OPTS --add-opens=java.base/sun.security.util=ALL-UNNAMED"
 
 eval exec \"$_RUNJAVA\" "$JAVA_OPTS" -jar \"$PLF_HOME/addons/addons-manager.jar\" "$@"
