@@ -99,4 +99,6 @@ if [ -f "$PLF_HOME/addons/addons-manager.jar.new" ]; then
   mv "$PLF_HOME/addons/addons-manager.jar.new" "$PLF_HOME/addons/addons-manager.jar"
 fi
 
-eval exec \"$_RUNJAVA\" -Dplf.home=\"$PLF_HOME\" -Duser.language=\"en\" -jar \"$PLF_HOME/addons/addons-manager.jar\" "$@"
+JAVA_OPTS="-Dplf.home=\"$PLF_HOME\" -Duser.language=\"en\" -XX:+IgnoreUnrecognizedVMOptions \"--add-opens java.base/jdk.internal.loader=ALL-UNNAMED\""
+
+eval exec \"$_RUNJAVA\" "$JAVA_OPTS" -jar \"$PLF_HOME/addons/addons-manager.jar\" "$@"
