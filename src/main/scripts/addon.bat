@@ -107,32 +107,32 @@ if not exist "%PLF_HOME%\addons\addons-manager.jar.new" goto execCmd
 move /y "%PLF_HOME%\addons\addons-manager.jar.new" "%PLF_HOME%\addons\addons-manager.jar"
 
 :execCmd
-set JAVA_OPTS="-Dplf.home=%PLF_HOME%"
-set JAVA_OPTS="%JAVA_OPTS% -Duser.language=\"en\""
+set JAVA_OPTS=-Dplf.home=%PLF_HOME%
+set JAVA_OPTS=%JAVA_OPTS% -Duser.language="en"
 rem Ignore unrecognized option to avoid JDK 8 to complain about JDK 9 option (--add-opens)
-set JAVA_OPTS="%JAVA_OPTS% -XX:+IgnoreUnrecognizedVMOptions"
+set JAVA_OPTS=%JAVA_OPTS% -XX:+IgnoreUnrecognizedVMOptions
 rem Open all required modules for reflective access operations
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.lang=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.lang.invoke=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.lang.reflect=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.io=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.math=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.net=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.nio.channels=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.security=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.text=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.util=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.util.jar=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.util.regex=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/java.util.zip=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/javax.net.ssl=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/sun.net.www.protocol.http=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/sun.net.www.protocol.https=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/sun.nio.ch=ALL-UNNAMED"
-set JAVA_OPTS="%JAVA_OPTS% --add-opens=java.base/sun.security.util=ALL-UNNAMED"
-%_RUNJAVA% "%JAVA_OPTS%" -jar "%PLF_HOME%\addons\addons-manager.jar" %CMD_LINE_ARGS%
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.lang=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.io=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.math=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.net=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.nio.channels=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.security=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.text=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.util=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.util.jar=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.util.regex=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/java.util.zip=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/sun.net.www.protocol.http=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/sun.net.www.protocol.https=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+set JAVA_OPTS=%JAVA_OPTS% --add-opens=java.base/sun.security.util=ALL-UNNAMED
+%_RUNJAVA% %JAVA_OPTS% -jar "%PLF_HOME%\addons\addons-manager.jar" %CMD_LINE_ARGS%
 goto end
 
 :exit
