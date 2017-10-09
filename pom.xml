@@ -53,7 +53,7 @@
     <!-- Project Dependencies -->
     <!-- **************************************** -->
     <aether.version>1.1.0</aether.version>
-    <groovy.version>2.3.6</groovy.version>
+    <groovy.version>2.4.12</groovy.version>
     <jcommander.version>1.35</jcommander.version>
     <jline.version>2.12</jline.version>
     <!-- Tests dependencies -->
@@ -71,7 +71,7 @@
     <ut.verbose>false</ut.verbose>
     <it.platform.groupId>org.exoplatform.platform.distributions</it.platform.groupId>
     <it.platform.artifactId>plf-community-tomcat-standalone</it.platform.artifactId>
-    <it.platform.version>4.4.0-RC02</it.platform.version>
+    <it.platform.version>4.4.0</it.platform.version>
     <it.dataDirPath>${project.build.directory}/test-data</it.dataDirPath>
     <it.workingDirPath>${project.build.directory}/integration-tests</it.workingDirPath>
     <it.verbose>false</it.verbose>
