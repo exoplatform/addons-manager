@@ -107,7 +107,7 @@ if not exist "%PLF_HOME%\addons\addons-manager.jar.new" goto execCmd
 move /y "%PLF_HOME%\addons\addons-manager.jar.new" "%PLF_HOME%\addons\addons-manager.jar"
 
 :execCmd
-set JAVA_OPTS=-Dplf.home=%PLF_HOME%
+set JAVA_OPTS=-Dplf.home=%PLF_HOME% %EXO_AM_OPTS%
 set JAVA_OPTS=%JAVA_OPTS% -Duser.language="en"
 rem Ignore unrecognized option to avoid JDK 8 to complain about JDK 9 option (--add-opens)
 set JAVA_OPTS=%JAVA_OPTS% -XX:+IgnoreUnrecognizedVMOptions
