@@ -31,7 +31,7 @@
   </parent>
   <groupId>org.exoplatform.platform</groupId>
   <artifactId>addons-manager</artifactId>
-  <version>1.3.2</version>
+  <version>1.3.x-acc210-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>eXo Platform - Add-ons Manager</name>
   <description>Command line utility to manage Platform add-ons</description>
