@@ -77,6 +77,11 @@ abstract class IntegrationTestsSpecification extends Specification {
       properties : ["conf/configuration1.properties", "conf/properties-files-addon/configuration2.properties"]
   ]
 
+  final static Map<String, String[]> PROP_FILES_PATCH_52_CONTENT = [
+          libraries  : ["libs/foo.jar"],
+          webapps    : ["webapps/foo.war"]
+  ]
+
   @Shared
   private File _testedArtifact
 

@@ -46,18 +46,20 @@ class CommandLineParameters {
   static final String OFFLINE_LONG_OPT = "--offline"
   static final String CONFLICT_LONG_OPT = "--conflict"
   static final String FORCE_LONG_OPT = "--force"
+  static final String CRCCHECK_OPT = "--crc"
 
   // CLI Commands
   static final String LIST_CMD = "list"
   static final String DESCRIBE_CMD = "describe"
   static final String INSTALL_CMD = "install"
   static final String UNINSTALL_CMD = "uninstall"
+  static final String APPLY_CMD = "apply"
 
   /**
    * The enumeration of all possible commands
    */
   enum Command {
-    LIST(LIST_CMD), DESCRIBE(DESCRIBE_CMD), INSTALL(INSTALL_CMD), UNINSTALL(UNINSTALL_CMD)
+    LIST(LIST_CMD), DESCRIBE(DESCRIBE_CMD), INSTALL(INSTALL_CMD), UNINSTALL(UNINSTALL_CMD), APPLY(APPLY_CMD)
     final String name
 
     Command(String name) {
@@ -81,6 +83,10 @@ class CommandLineParameters {
    * Uninstall command parameters
    */
   UninstallCommandParameters commandUninstall = new UninstallCommandParameters()
+  /**
+   * Offline install command parameters
+   */
+  ApplyCommandParameters commandApply = new ApplyCommandParameters()
   /**
    * The command asked by the user
    */
@@ -106,7 +112,7 @@ class CommandLineParameters {
    * @return true if the verbose option is activated as main parameter or command parameter
    */
   Boolean isVerbose() {
-    return _verbose || commandList.verbose || commandDescribe.verbose || commandInstall.verbose || commandUninstall.verbose
+    return _verbose || commandList.verbose || commandDescribe.verbose || commandInstall.verbose || commandUninstall.verbose || commandApply.verbose
   }
 
   /**
@@ -114,7 +120,7 @@ class CommandLineParameters {
    * @return true if the help option is activated as main parameter or command parameter
    */
   Boolean isHelp() {
-    return _help || commandList.help || commandDescribe.help || commandInstall.help || commandUninstall.help
+    return _help || commandList.help || commandDescribe.help || commandInstall.help || commandUninstall.help || commandApply.help
   }
 
   /**
@@ -122,7 +128,7 @@ class CommandLineParameters {
    * @return true if the batch option is activated as main parameter or command parameter
    */
   Boolean isBatchMode() {
-    return _batchMode || commandList.batchMode || commandDescribe.batchMode || commandInstall.batchMode || commandUninstall.batchMode
+    return _batchMode || commandList.batchMode || commandDescribe.batchMode || commandInstall.batchMode || commandUninstall.batchMode || commandApply.batchMode
   }
 
   /**
@@ -231,6 +237,34 @@ class CommandLineParameters {
     @Parameter(names = [CommandLineParameters.BATCH_SHORT_OPT, CommandLineParameters.BATCH_LONG_OPT], description = "Run in non-interactive (batch) mode", hidden = true)
     protected Boolean batchMode
     String addonId
+  }
+
+  /**
+   * Specific parameters to apply a patch
+   */
+  @Parameters(commandDescription = "Apply an offline patch", commandNames = CommandLineParameters.APPLY_CMD, separators = "=")
+  class ApplyCommandParameters {
+    @Parameter(description = "patchFile keyFile", arity = 2, required = true)
+    protected List<String> addon;
+    @Parameter(names = [CommandLineParameters.VERBOSE_SHORT_OPT, CommandLineParameters.VERBOSE_LONG_OPT], hidden = true)
+    protected Boolean verbose
+    @Parameter(names = [CommandLineParameters.HELP_SHORT_OPT, CommandLineParameters.HELP_LONG_OPT], help = true, hidden = true)
+    protected Boolean help
+    @Parameter(names = [CommandLineParameters.BATCH_SHORT_OPT, CommandLineParameters.BATCH_LONG_OPT], description = "Run in non-interactive (batch) mode", hidden = true)
+    protected Boolean batchMode
+    String patchFile
+    String keyFile
+    @Parameter(names = [CommandLineParameters.FORCE_LONG_OPT], description = "Enforce to reinstall a patch already deployed")
+    Boolean force
+    @Parameter(names = [CommandLineParameters.NO_COMPAT_LONG_OPT], description = "Install the patch even if not marked as compatible with your platform instance")
+    Boolean noCompat
+    @Parameter(names = [CommandLineParameters.CRCCHECK_OPT], description = "Enable the CRC Verification of the patch")
+    long crcCheck
+    @Parameter(names = [CommandLineParameters.CONFLICT_LONG_OPT],
+            description = "Behavior when installing a file already existing in your PLF instance",
+            validateWith = ConflictValidator.class,
+            converter = ConflictConverter.class)
+    Conflict conflict = Conflict.FAIL
   }
 
 }

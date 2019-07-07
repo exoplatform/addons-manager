@@ -61,6 +61,7 @@ class CommandLineParser {
     _jCommander.addCommand(_cliArgs.commandList)
     _jCommander.addCommand(_cliArgs.commandDescribe)
     _jCommander.addCommand(_cliArgs.commandInstall)
+    _jCommander.addCommand(_cliArgs.commandApply)
     _jCommander.addCommand(_cliArgs.commandUninstall)
     _jCommander.setColumnSize(columnSize)
     _jCommander.setProgramName(scriptName)
@@ -191,6 +192,18 @@ class CommandLineParser {
         _cliArgs.commandInstall.addonId = _cliArgs.commandInstall.addon[0]
       }
       if (_cliArgs.commandInstall.force) {
+        LOG.debug("Force mode activated")
+      }
+    }
+    else if (CommandLineParameters.APPLY_CMD.equals(_jCommander.getParsedCommand())) {
+      _cliArgs.command = CommandLineParameters.Command.APPLY
+      if (_cliArgs?.commandApply?.addon?.size() != 2) {
+        throw new CommandLineParsingException(
+            "Invalid command line parameter(s) : Command ${CommandLineParameters.Command.APPLY} must have two arguments (found : ${_cliArgs?.commandApply?.addon})");
+      }
+      _cliArgs.commandApply.patchFile = _cliArgs.commandApply.addon[0]
+      _cliArgs.commandApply.keyFile = _cliArgs.commandApply.addon[1]
+      if (_cliArgs.commandApply.force) {
         LOG.debug("Force mode activated")
       }
     } else if (CommandLineParameters.UNINSTALL_CMD.equals(_jCommander.getParsedCommand())) {

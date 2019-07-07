@@ -75,6 +75,9 @@ try {
     case CommandLineParameters.Command.UNINSTALL:
       AddonUninstallService.instance.uninstallAddon(env, commandLineParameters.commandUninstall)
       break
+    case CommandLineParameters.Command.APPLY:
+      AddonApplyService.instance.apply(env, commandLineParameters.commandApply,commandLineParameters.batchMode)
+      break
   }
 } catch (CommandLineParsingException clpe) {
   // display header
@@ -99,5 +102,6 @@ log.debug("Command Line Global Parameters", commandLineParameters?.properties,
 log.debug("Command Line List Parameters", commandLineParameters?.commandList?.properties, ["class"])
 log.debug("Command Line Install Parameters", commandLineParameters?.commandInstall?.properties, ["class"])
 log.debug("Command Line Uninstall Parameters", commandLineParameters?.commandUninstall?.properties, ["class"])
+log.debug("Command Line Apply Parameters", commandLineParameters?.commandApply?.properties, ["class"])
 log.debug("System Properties", System.properties, ["class"])
 System.exit returnCode
