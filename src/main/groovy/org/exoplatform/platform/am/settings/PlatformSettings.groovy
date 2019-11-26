@@ -138,7 +138,7 @@ class PlatformSettings {
           "Erroneous setup, platform properties directory (${this.propertiesDirectory}) is invalid.")
     }
 
-    Pattern filePattern = ~/platform-extension-config.*jar/
+    Pattern filePattern = ~/plf-configuration.*jar/
     String fileFound
     Closure findFilenameClosure = {
       if (filePattern.matcher(it.name).find()) {
@@ -148,7 +148,7 @@ class PlatformSettings {
     this.librariesDirectory.eachFile(findFilenameClosure)
     if (fileFound == null) {
       throw new ErroneousSetupException(
-          "Erroneous setup, Unable to find platform-extension-config jar in ${librariesDirectory}")
+          "Erroneous setup, Unable to find plf-configuration jar in ${librariesDirectory}")
     } else {
       JarFile jarFile = new JarFile(fileFound)
       JarEntry jarEntry = jarFile.getJarEntry("conf/platform.properties")
