@@ -71,7 +71,7 @@
     <ut.verbose>false</ut.verbose>
     <it.platform.groupId>org.exoplatform.platform.distributions</it.platform.groupId>
     <it.platform.artifactId>plf-community-tomcat-standalone</it.platform.artifactId>
-    <it.platform.version>4.4.0</it.platform.version>
+    <org.exoplatform.platform.distributions.version>6.0.x-SNAPSHOT</org.exoplatform.platform.distributions.version>
     <it.dataDirPath>${project.build.directory}/test-data</it.dataDirPath>
     <it.workingDirPath>${project.build.directory}/integration-tests</it.workingDirPath>
     <it.verbose>false</it.verbose>
@@ -373,7 +373,7 @@
                 <it.dataDirPath>${it.dataDirPath}</it.dataDirPath>
                 <it.workingDirPath>${it.workingDirPath}</it.workingDirPath>
                 <it.jacocoAgent>${argLine}</it.jacocoAgent>
-                <it.platformVersion>${it.platform.version}</it.platformVersion>
+                <it.platformVersion>${org.exoplatform.platform.distributions.version}</it.platformVersion>
                 <it.testedArtifactPath>${project.build.directory}/${project.build.finalName}.jar</it.testedArtifactPath>
                 <it.verbose>${it.verbose}</it.verbose>
                 <it.webServerHttpPort>${it.webServerHttpPort}</it.webServerHttpPort>
@@ -386,7 +386,7 @@
         <dependency>
           <groupId>${it.platform.groupId}</groupId>
           <artifactId>${it.platform.artifactId}</artifactId>
-          <version>${it.platform.version}</version>
+          <version>${org.exoplatform.platform.distributions.version}</version>
           <type>zip</type>
           <scope>test</scope>
         </dependency>
