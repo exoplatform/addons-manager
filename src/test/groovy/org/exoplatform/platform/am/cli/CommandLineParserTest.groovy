@@ -64,6 +64,8 @@ class CommandLineParserTest extends UnitTestsSpecification {
         [INSTALL_CMD, HELP_LONG_OPT],
         [UNINSTALL_CMD, HELP_SHORT_OPT],
         [UNINSTALL_CMD, HELP_LONG_OPT],
+        [APPLY_CMD, HELP_SHORT_OPT],
+        [APPLY_CMD, HELP_LONG_OPT],
     ]
   }
 
@@ -731,6 +733,64 @@ class CommandLineParserTest extends UnitTestsSpecification {
     args << [
         [INSTALL_CMD, "my-addon", "${CATALOG_LONG_OPT}=${validCatalogUrl}"],
         [INSTALL_CMD, "my-addon:42", "${CATALOG_LONG_OPT}=${validCatalogUrl}"],
+    ]
+  }
+
+  def "Test command line parameters to apply a patch with a valid patch file parameter with arguments : #args"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.APPLY == cliArgs.command
+    "patch-5.2-1.zip.enc".equals(cliArgs.commandApply.patchFile)
+    "public.exokey".equals(cliArgs.commandApply.keyFile)
+    cliArgs.commandApply.conflict == Conflict.FAIL
+    !cliArgs.commandApply.force
+    !cliArgs.commandApply.noCompat
+    !cliArgs.help
+    !cliArgs.verbose
+    !cliArgs.batchMode
+    where:
+    args << [
+            [APPLY_CMD, "patch-5.2-1.zip.enc", "public.exokey"],
+    ]
+  }
+
+  def "Test command line parameters to apply a patch with a valid patch file parameter and missing crc with arguments : #args"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    "patch-5.2-1.zip.enc".equals(cliArgs.commandApply.patchFile)
+    "public.exokey".equals(cliArgs.commandApply.keyFile)
+    0L == cliArgs.commandApply.crcCheck
+    cliArgs.commandApply.conflict == Conflict.FAIL
+    !cliArgs.commandApply.force
+    !cliArgs.commandApply.noCompat
+    !cliArgs.help
+    !cliArgs.verbose
+    !cliArgs.batchMode
+    where:
+    args << [
+            [APPLY_CMD, "patch-5.2-1.zip.enc", "public.exokey"],
+    ]
+  }
+
+  def "Test command line parameters to apply a patch with a valid patch file parameter and crc with arguments : #args"(String[] args) {
+    when:
+    CommandLineParameters cliArgs = clp.parse(args)
+    then:
+    CommandLineParameters.Command.APPLY == cliArgs.command
+    "patch-5.2-1.zip.enc".equals(cliArgs.commandApply.patchFile)
+    "public.exokey".equals(cliArgs.commandApply.keyFile)
+    6545454545L == cliArgs.commandApply.crcCheck
+    cliArgs.commandApply.conflict == Conflict.FAIL
+    !cliArgs.commandApply.force
+    !cliArgs.commandApply.noCompat
+    !cliArgs.help
+    !cliArgs.verbose
+    !cliArgs.batchMode
+    where:
+    args << [
+            [APPLY_CMD,"patch-5.2-1.zip.enc", "public.exokey","${CRCCHECK_OPT}="+6545454545],
     ]
   }
 

@@ -86,6 +86,14 @@ Install the version ```42.0``` of the add-on ```foo```
 Enforce to reinstall the latest stable version of the add-on ```foo```
 
     addon install foo --force
+    
+Install the local patch  ```patch-plfversion.zip.enc```
+    
+    addon apply ../../patchfolderpath/patch-plfversion.zip.enc
+        
+Install with CRC Verification of the patch```patch-plfversion.zip.enc``` 
+    
+    addon apply ../../patchfolderpath/patch-plfversion.zip.enc --crc xxxxxxxxxxxxx
 
 Uninstall the add-on ```foo```
 
